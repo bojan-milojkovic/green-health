@@ -32,7 +32,7 @@ public class UserJPA {
 	private String username;
 	
 	@Column(name="password")
-	@JsonProperty(access = Access.READ_WRITE)
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@Pattern(regexp="^[^ ;]{5,}$", message="Password cannot contain a white space or ;")
 	private String password;
 	
