@@ -27,14 +27,24 @@ public class UserJPA {
 	@JsonProperty(access = Access.READ_ONLY)
 	private Long id;
 	
+	@Column(name="username")
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="^[A-Za-z0-9._-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
+	private String username;
+	
+	@Column(name="password")
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="^[^ ;]{5,}$", message="Password cannot contain a white space or ;")
+	private String password;
+	
 	@Column(name="first_name")
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Z][a-z]+",message="Invalid first name")
+	@Pattern(regexp="^[A-Z][a-z]+$", message="First name must start with a capital letter, followed by small letters.")
 	private String firstName;
 	
 	@Column(name="last_name")
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Z][a-z]+",message="Invalid last name")
+	@Pattern(regexp="[A-Z][a-z]+", message="First name must start with a capital letter, followed by small letters.")
 	private String lastName;
 	
 	@Column(name="registration")

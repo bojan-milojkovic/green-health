@@ -24,28 +24,28 @@ public class UserController {
 	@Autowired
 	private UserService userServiceImpl;
 	
-	// .../users/all
+	// .../gh/users/all
 	@RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody List<UserJPA> getAllUsers(){
 		return userServiceImpl.getAll();
 	}
 	
-	// .../users/3
+	// .../gh/users/3
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserById(@PathVariable("id") Long id){
 		return userServiceImpl.getUserById(id);
 	}
 	
-	// .../users?email=blatruc@gmail.com
+	// .../gh/users?email=blatruc@gmail.com
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserByEmail(@RequestParam(value="email", required=true) String email){
 		return userServiceImpl.getUserByEmail(email);
 	}
 	
-	// .../users
+	// .../gh/users/new
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)

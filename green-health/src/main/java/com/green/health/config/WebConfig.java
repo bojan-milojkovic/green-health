@@ -15,7 +15,7 @@ public class WebConfig {
 
 	@Bean
     public WebMvcRegistrationsAdapter webMvcRegistrationsHandlerMapping() {
-		// this adds a /gh prefix to all requests
+		// this adds a /gh path prefix to all request urls
         return new WebMvcRegistrationsAdapter() {
             @Override
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
