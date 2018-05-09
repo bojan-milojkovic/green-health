@@ -7,11 +7,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.green.health.annotations.EmailPattern;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -54,8 +53,8 @@ public class UserJPA {
 	
 	@Column(name="email")
 	@JsonProperty(access = Access.READ_WRITE)
-	@Email
-	private String email;	
+	@EmailPattern
+	private String email;
 	
 	public Long getId() {
 		return id;
