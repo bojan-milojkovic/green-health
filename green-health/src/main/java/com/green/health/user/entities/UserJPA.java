@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Pattern;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -27,10 +29,12 @@ public class UserJPA {
 	
 	@Column(name="first_name")
 	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[A-Z][a-z]+",message="Invalid first name")
 	private String firstName;
 	
 	@Column(name="last_name")
 	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[A-Z][a-z]+",message="Invalid last name")
 	private String lastName;
 	
 	@Column(name="registration")

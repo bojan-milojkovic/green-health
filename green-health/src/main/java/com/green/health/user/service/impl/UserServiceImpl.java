@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
 	
 	// get all users :
 	public List<UserJPA> getAll(){
-		return null;
+		return userRepository.findAll();
 	}
 	
 	// get a specific user :
@@ -32,7 +32,6 @@ public class UserServiceImpl implements UserService {
 	// add new user to db :
 	public void addUserToDb(final UserJPA jpa){
 		jpa.setRegistration(LocalDate.now());
-		System.out.println("\n\tmethod invoked.");
 		//userRepository.save(jpa);
 	}
 }
