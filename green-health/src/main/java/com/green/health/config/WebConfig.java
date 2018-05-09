@@ -20,7 +20,7 @@ public class WebConfig {
             @Override
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
                 return new RequestMappingHandlerMapping() {
-                    private final static String API_BASE_PATH = "/gh";
+                    private final static String API_BASE_PATH = "gh";
 
                     @Override
                     protected void registerHandlerMethod(Object handler, Method method, RequestMappingInfo mapping) {

@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages={"com.green.health.user.*"})
+@ComponentScan(basePackages={"com.green.health.*"})
 public class GreenHealthApplication {
 
 	public static void main(String[] args) {

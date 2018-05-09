@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.green.health.user.dao.UserJPA;
+import com.green.health.user.entities.UserJPA;
 import com.green.health.user.service.UserService;
 
 @RestController

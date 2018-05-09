@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.green.health.user.dao.UserJPA;
-import com.green.health.user.repository.UserRepository;
+import com.green.health.user.entities.UserJPA;
+import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
 
 @Service
@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService {
 	// add new user to db :
 	public void addUserToDb(final UserJPA jpa){
 		jpa.setRegistration(LocalDate.now());
-		userRepository.save(jpa);
+		System.out.println("\n\tmethod invoked.");
+		//userRepository.save(jpa);
 	}
 }

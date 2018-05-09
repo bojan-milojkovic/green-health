@@ -1,4 +1,4 @@
-package com.green.health.user.dao;
+package com.green.health.user.entities;
 
 import java.time.LocalDate;
 import javax.persistence.Column;

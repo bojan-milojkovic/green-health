@@ -1,7 +1,7 @@
 package com.green.health.user.service;
 
 import java.util.List;
-import com.green.health.user.dao.UserJPA;
+import com.green.health.user.entities.UserJPA;
 
 public interface UserService {
 	
