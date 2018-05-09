@@ -17,8 +17,8 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories("com.green.health.user.*")
-@EntityScan("com.green.health.user.*")
+@EnableJpaRepositories(	basePackages = { "com.green.health.user.*" })
+@EntityScan( basePackages = { "com.green.health.user.*" })
 @PropertySource({ "classpath:application.properties"})
 public class PersistenceContext {
 	
