@@ -50,7 +50,6 @@ public class UserController {
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveNewUser(@RequestBody @Valid UserJPA dao){
-		System.out.println("\n\tinvoking method...");
 		userServiceImpl.addUserToDb(dao);
 	}
 }

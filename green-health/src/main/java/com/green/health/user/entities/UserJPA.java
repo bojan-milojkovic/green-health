@@ -46,7 +46,7 @@ public class UserJPA {
 	@Pattern(regexp="[A-Z][a-z]+", message="First name must start with a capital letter, followed by small letters.")
 	private String lastName;
 	
-	@Column(name="registration")
+	@Column(name="reg_date")
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDateObject from json string
 	private LocalDate registration;
@@ -79,5 +79,23 @@ public class UserJPA {
 	}
 	public void setRegistration(LocalDate registration) {
 		this.registration = registration;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
 	}
 }

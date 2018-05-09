@@ -3,6 +3,7 @@ package com.green.health.user.service.impl;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.dao.UserRepository;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
 	// add new user to db :
 	public void addUserToDb(final UserJPA jpa){
 		jpa.setRegistration(LocalDate.now());
-		//userRepository.save(jpa);
+		jpa.setPassword(BCrypt.hashpw(jpa.getPassword(), BCrypt.gensalt()));
+		userRepository.save(jpa);
 	}
 }
