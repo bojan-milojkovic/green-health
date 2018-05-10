@@ -10,6 +10,12 @@ public interface UserService {
 	UserJPA getUserById(final Long id);
 	
 	UserJPA getUserByEmail(final String email);
+	
+	UserJPA getUserByUsername(final String username);
 
-	void addUserToDb(final UserJPA jpa);
+	void addUserToDb(UserJPA resource);
+	
+	UserJPA editUser(UserJPA resource, Long id);
+	
+	void deleteUser(final Long id);
 }

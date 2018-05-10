@@ -45,11 +45,37 @@ public class UserController {
 		return userServiceImpl.getUserByEmail(email);
 	}
 	
+	// .../gh/users?username=Lazaruss
+	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody UserJPA getUserByUsername(@RequestParam(value="username", required=true) String username) {
+		return userServiceImpl.getUserByUsername(username);
+	}
+	
+	
+	
+	
 	// .../gh/users/new
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public void saveNewUser(@RequestBody @Valid UserJPA dao){
-		userServiceImpl.addUserToDb(dao);
+	public void saveNewUser(@RequestBody @Valid UserJPA resource){
+		userServiceImpl.addUserToDb(resource);
+	}
+	
+	// .../gh/users/3
+	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) {
+		System.out.println("\n\tEdit invoked.");
+		return userServiceImpl.editUser(resource, id);
+	}
+	
+	// .../gh/users/3
+	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void deleteUserById(@PathVariable("id") Long id) {
+		System.out.println("\n\tDelete invoked.");
+		userServiceImpl.deleteUser(id);
 	}
 }

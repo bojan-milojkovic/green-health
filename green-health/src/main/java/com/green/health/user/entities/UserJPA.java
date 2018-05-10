@@ -48,13 +48,21 @@ public class UserJPA {
 	
 	@Column(name="reg_date")
 	@JsonProperty(access = Access.READ_ONLY)
-	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDateObject from json string
+	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDate object from json string
 	private LocalDate registration;
 	
 	@Column(name="email")
 	@JsonProperty(access = Access.READ_WRITE)
 	@EmailPattern
 	private String email;
+	
+	public boolean checkDataForPost() {
+		return username!=null && password!=null && email!=null && firstName!=null && lastName!=null;
+	}
+	
+	public boolean checkDataForPatch() {
+		return username!=null || password!=null || email!=null || firstName!=null || lastName!=null;
+	}
 	
 	public Long getId() {
 		return id;
