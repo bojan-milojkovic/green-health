@@ -18,6 +18,7 @@ public class SpringConfig {
         // this makes sure that datetime in string format in input 
 		// is automatically converted to LocalDateTime object
         ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         return objectMapper;
     }

@@ -42,14 +42,14 @@ public class UserController {
 	}
 	
 	// .../gh/users?email=blatruc@gmail.com
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/e", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserByEmail(@RequestParam(value="email", required=true) String email){
 		return userServiceImpl.getUserByEmail(email);
 	}
 	
 	// .../gh/users?username=Lazaruss
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/u", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserByUsername(@RequestParam(value="username", required=true) String username) {
 		return userServiceImpl.getUserByUsername(username);

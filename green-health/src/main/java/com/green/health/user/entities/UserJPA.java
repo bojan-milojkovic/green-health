@@ -1,6 +1,5 @@
 package com.green.health.user.entities;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,9 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "user")
 @JsonInclude(Include.NON_NULL)
-public class UserJPA implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class UserJPA {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

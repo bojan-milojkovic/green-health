@@ -93,9 +93,10 @@ public class UserServiceImpl implements UserService {
 				jpa.setLastName(resource.getLastName());
 			}
 			
-			return jpa;
+			userRepository.save(jpa);
 		}
-		return null;
+		
+		return jpa;
 	}
 
 	@Override

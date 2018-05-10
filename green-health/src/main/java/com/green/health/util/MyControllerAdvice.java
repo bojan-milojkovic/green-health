@@ -1,14 +1,13 @@
 package com.green.health.util;
 
 import java.util.stream.Collectors;
+import javax.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.green.health.util.exceptions.MyResourceDoesNotExistException;
 import com.green.health.util.exceptions.MyValueAlreadyTakenException;
 
 @ControllerAdvice
@@ -39,11 +38,11 @@ public class MyControllerAdvice {
 				ex.getDuplicateValue());
 	}
 	
-	@ExceptionHandler(MyResourceDoesNotExistException.class)
+	@ExceptionHandler(EntityNotFoundException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-	public MyBadInputResponse BadRequest_WrongEntity(MyResourceDoesNotExistException ex) {
+	public MyBadInputResponse BadRequest_WrongEntity(EntityNotFoundException ex) {
 		return new MyBadInputResponse("You are attempting to access a missing entity.", 
-				ex.getMissingEntityMessage());
+				ex.getLocalizedMessage());
 	}
 }
