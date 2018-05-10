@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.green.health.util.exceptions.MyResourceDoesNotExistException;
+import com.green.health.util.exceptions.MyValueAlreadyTakenException;
+
 @ControllerAdvice
 public class MyControllerAdvice {
 
@@ -28,4 +31,19 @@ public class MyControllerAdvice {
 		return bir;
 	}
 	
+	@ExceptionHandler(MyValueAlreadyTakenException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public MyBadInputResponse badRequest_TakenValues(MyValueAlreadyTakenException ex) {
+		return new MyBadInputResponse("Some fields in your request body are already being used by other users", 
+				ex.getDuplicateValue());
+	}
+	
+	@ExceptionHandler(MyResourceDoesNotExistException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+	public MyBadInputResponse BadRequest_WrongEntity(MyResourceDoesNotExistException ex) {
+		return new MyBadInputResponse("You are attempting to access a missing entity.", 
+				ex.getMissingEntityMessage());
+	}
 }

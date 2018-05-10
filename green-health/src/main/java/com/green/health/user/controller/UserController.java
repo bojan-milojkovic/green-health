@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.service.UserService;
+import com.green.health.util.RestPreconditions;
+import com.green.health.util.exceptions.MyResourceDoesNotExistException;
+import com.green.health.util.exceptions.MyValueAlreadyTakenException;
 
 @Controller
 @RequestMapping(value="/users")
@@ -59,15 +62,16 @@ public class UserController {
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public void saveNewUser(@RequestBody @Valid UserJPA resource){
+	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException{
+		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a db record with a null object");
 		userServiceImpl.addUserToDb(resource);
 	}
 	
 	// .../gh/users/3
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) {
-		System.out.println("\n\tEdit invoked.");
+	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException {
+		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a db record with a null object");
 		return userServiceImpl.editUser(resource, id);
 	}
 	
@@ -75,7 +79,6 @@ public class UserController {
 	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteUserById(@PathVariable("id") Long id) {
-		System.out.println("\n\tDelete invoked.");
 		userServiceImpl.deleteUser(id);
 	}
 }

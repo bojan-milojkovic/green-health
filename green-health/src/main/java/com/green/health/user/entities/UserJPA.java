@@ -1,5 +1,6 @@
 package com.green.health.user.entities;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +20,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "user")
 @JsonInclude(Include.NON_NULL)
-public class UserJPA {
+public class UserJPA implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,11 +59,11 @@ public class UserJPA {
 	@EmailPattern
 	private String email;
 	
-	public boolean checkDataForPost() {
+	public boolean isPostDataPresent() {
 		return username!=null && password!=null && email!=null && firstName!=null && lastName!=null;
 	}
 	
-	public boolean checkDataForPatch() {
+	public boolean isPatchDataPresent() {
 		return username!=null || password!=null || email!=null || firstName!=null || lastName!=null;
 	}
 	

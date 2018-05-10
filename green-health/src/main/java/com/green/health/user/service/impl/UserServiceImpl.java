@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
+import com.green.health.util.RestPreconditions;
+import com.green.health.util.exceptions.MyResourceDoesNotExistException;
+import com.green.health.util.exceptions.MyValueAlreadyTakenException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,24 +39,34 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	// add new user to db :
-	public void addUserToDb(final UserJPA resource){
+	public void addUserToDb(final UserJPA resource) throws MyValueAlreadyTakenException {
 		// check everything except id and registration is present in resource :
-		if(resource!=null && resource.checkDataForPost()) {
+		if(resource.isPostDataPresent()) {
 			// check that username and email are unique :
-			if(userRepository.findByEmail(resource.getEmail())==null && userRepository.findByUsername(resource.getUsername())==null) {
-				resource.setRegistration(LocalDate.now());
-				resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
-				userRepository.save(resource);
-			}
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(resource.getUsername()), 
+					"Username "+ resource.getUsername()+" belongs to another user.");
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
+					"Email " + resource.getEmail() + " belongs to another user.");
+			
+			resource.setRegistration(LocalDate.now());
+			resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
+			userRepository.save(resource);
+			
 		}
 	}
 
 	@Override
-	public UserJPA editUser(UserJPA resource, Long id) {
-		UserJPA jpa = userRepository.getOne(id);
-		if(jpa != null && resource!=null && resource.checkDataForPatch()) {
+	public UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException {
+		UserJPA jpa = (UserJPA) RestPreconditions.checkEntityDoesNotExist(userRepository.getOne(id),
+								"Cannot find user with id = "+id);
+		if(resource.isPatchDataPresent()) {
+			
 			// username
 			if(resource.getUsername()!=null && !jpa.getUsername().equals(resource.getUsername())) {
+				// check this username isn't in the db already :
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(resource.getUsername()), 
+						"Username "+resource.getUsername()+" belongs to another user");
+				
 				jpa.setUsername(resource.getUsername());
 			}
 			// password
@@ -65,6 +78,10 @@ public class UserServiceImpl implements UserService {
 			}
 			// email
 			if(resource.getEmail()!=null && !jpa.getEmail().equals(resource.getEmail())) {
+				// check this username isn't in the db already :
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
+						"Email "+resource.getEmail()+" belongs to another user.");
+				
 				jpa.setEmail(resource.getEmail());
 			}
 			// first name
@@ -72,7 +89,6 @@ public class UserServiceImpl implements UserService {
 				jpa.setFirstName(resource.getFirstName());
 			}
 			// last name
-			
 			if(resource.getLastName()!=null && !jpa.getLastName().equals(resource.getLastName())) {
 				jpa.setLastName(resource.getLastName());
 			}
