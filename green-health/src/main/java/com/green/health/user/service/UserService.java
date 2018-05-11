@@ -2,7 +2,6 @@ package com.green.health.user.service;
 
 import java.util.List;
 import com.green.health.user.entities.UserJPA;
-import com.green.health.util.exceptions.MyResourceDoesNotExistException;
 import com.green.health.util.exceptions.MyValueAlreadyTakenException;
 
 public interface UserService {
@@ -17,7 +16,7 @@ public interface UserService {
 
 	void addUserToDb(UserJPA resource) throws MyValueAlreadyTakenException;
 	
-	UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException;
+	UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException;
 	
 	void deleteUser(final Long id);
 }

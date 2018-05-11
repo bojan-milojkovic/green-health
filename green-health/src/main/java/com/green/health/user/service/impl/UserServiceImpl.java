@@ -9,7 +9,6 @@ import com.green.health.user.entities.UserJPA;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
-import com.green.health.util.exceptions.MyResourceDoesNotExistException;
 import com.green.health.util.exceptions.MyValueAlreadyTakenException;
 
 @Service
@@ -56,9 +55,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException {
-		UserJPA jpa = (UserJPA) RestPreconditions.checkEntityDoesNotExist(userRepository.getOne(id),
-								"Cannot find user with id = "+id);
+	public UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException {
+		UserJPA jpa = userRepository.getOne(id);
 		if(resource.isPatchDataPresent()) {
 			
 			// username
