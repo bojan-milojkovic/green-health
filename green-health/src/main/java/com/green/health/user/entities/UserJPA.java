@@ -14,6 +14,7 @@ import com.green.health.annotations.EmailPattern;
 import com.green.health.parents.DtoParent;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -57,12 +58,14 @@ public class UserJPA implements DtoParent {
 	@EmailPattern
 	private String email;
 	
+	@JsonIgnore
 	public boolean isPostDataPresent() {
 		return username!=null && password!=null && email!=null && firstName!=null && lastName!=null;
 	}
 	
+	@JsonIgnore
 	public boolean isPatchDataPresent() {
-		return username!=null || password!=null || email!=null || firstName!=null || lastName!=null;
+		return password!=null || email!=null || firstName!=null || lastName!=null;
 	}
 	
 	public Long getId() {

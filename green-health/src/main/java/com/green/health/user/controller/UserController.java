@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.service.UserService;
-import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Controller
@@ -39,14 +38,14 @@ public class UserController {
 		return userServiceImpl.getUserById(id);
 	}
 	
-	// .../gh/users?email=blatruc@gmail.com
+	// .../gh/users/e?email=blatruc@gmail.com
 	@RequestMapping(value = "/e", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserByEmail(@RequestParam(value="email", required=true) String email){
 		return userServiceImpl.getUserByEmail(email);
 	}
 	
-	// .../gh/users?username=Lazaruss
+	// .../gh/users/u?username=Lazaruss
 	@RequestMapping(value = "/u", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserJPA getUserByUsername(@RequestParam(value="username", required=true) String username) {
@@ -61,7 +60,6 @@ public class UserController {
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyRestPreconditionsException {
-		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a new user with a null object");
 		userServiceImpl.addUserToDb(resource);
 	}
 	
@@ -69,7 +67,6 @@ public class UserController {
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) throws MyRestPreconditionsException {
-		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot modify your user by using a null object");
 		return userServiceImpl.editUser(resource, id);
 	}
 	

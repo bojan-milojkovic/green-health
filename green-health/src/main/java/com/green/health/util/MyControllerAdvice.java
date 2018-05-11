@@ -1,13 +1,19 @@
 package com.green.health.util;
 
 import java.util.stream.Collectors;
+
 import javax.persistence.EntityNotFoundException;
+
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @ControllerAdvice
@@ -34,14 +40,18 @@ public class MyControllerAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public MyBadInputResponse badRequest_TakenValues(MyRestPreconditionsException ex) {
-		return new MyBadInputResponse(ex.getDescription(), ex.getDetails());
+		MyBadInputResponse bir = new MyBadInputResponse(ex.getDescription(), ex.getDetails());
+		
+		bir.setValidationErrors(ex.getErrors());
+
+		return bir;
 	}
 	
-	@ExceptionHandler(EntityNotFoundException.class)
+	@ExceptionHandler({JsonMappingException.class, EmptyResultDataAccessException.class, EntityNotFoundException.class, HttpMessageNotReadableException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-	public MyBadInputResponse BadRequest_MissingEntity(EntityNotFoundException ex) {
-		return new MyBadInputResponse("You are attempting to access a missing entity.", 
+	public MyBadInputResponse BadRequest_MissingEntity(RuntimeException ex) {
+		return new MyBadInputResponse("You are attempting to process an invalid object.", 
 				ex.getLocalizedMessage());
 	}
 }

@@ -51,11 +51,33 @@ public class UserServiceImpl implements UserService {
 			resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
 			userRepository.save(resource);
 			
+		}else{
+			MyRestPreconditionsException ex = 
+					new MyRestPreconditionsException("You cannot register",
+							"The following data is missing from your registration form");
+			if(resource.getEmail()==null){
+				ex.getErrors().add("email");
+			}
+			if(resource.getFirstName()==null){
+				ex.getErrors().add("first name");
+			}
+			if(resource.getLastName()==null){
+				ex.getErrors().add("last name");
+			}
+			if(resource.getPassword()==null){
+				ex.getErrors().add("password");
+			}
+			if(resource.getUsername()==null){
+				ex.getErrors().add("username");
+			}
+			
+			throw ex;
 		}
 	}
 
 	@Override
 	public UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException {
+		
 		UserJPA jpa = userRepository.getOne(id);
 		if(resource.isPatchDataPresent()) {
 
@@ -84,6 +106,12 @@ public class UserServiceImpl implements UserService {
 			}
 			
 			userRepository.save(jpa);
+		} else {
+			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot edit your user",
+					"Your user edit request is invalid.");
+			ex.getErrors().add("You must provide some editable data");
+			ex.getErrors().add("Username is not editable");
+			throw ex;
 		}
 		
 		return jpa;

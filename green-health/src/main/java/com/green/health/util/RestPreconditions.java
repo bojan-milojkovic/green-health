@@ -3,12 +3,6 @@ package com.green.health.util;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public class RestPreconditions {
-			
-	public static void checkEntityDoesNotExist(Object entity, String message) throws MyRestPreconditionsException{
-		if(entity == null) {
-			throw new MyRestPreconditionsException("Operation must have non-null arguments", message);
-		}
-	}
 	
 	public static void checkSuchEntityAlreadyExists(Object entity, String message) throws MyRestPreconditionsException{
 		if(entity!=null) {
