@@ -2,7 +2,7 @@ package com.green.health.user.service;
 
 import java.util.List;
 import com.green.health.user.entities.UserJPA;
-import com.green.health.util.exceptions.MyValueAlreadyTakenException;
+import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface UserService {
 	
@@ -14,9 +14,9 @@ public interface UserService {
 	
 	UserJPA getUserByUsername(final String username);
 
-	void addUserToDb(UserJPA resource) throws MyValueAlreadyTakenException;
+	void addUserToDb(UserJPA resource) throws MyRestPreconditionsException;
 	
-	UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException;
+	UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException;
 	
 	void deleteUser(final Long id);
 }

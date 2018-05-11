@@ -9,7 +9,7 @@ import com.green.health.user.entities.UserJPA;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
-import com.green.health.util.exceptions.MyValueAlreadyTakenException;
+import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,14 +38,14 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	// add new user to db :
-	public void addUserToDb(final UserJPA resource) throws MyValueAlreadyTakenException {
+	public void addUserToDb(final UserJPA resource) throws MyRestPreconditionsException {
 		// check everything except id and registration is present in resource :
 		if(resource.isPostDataPresent()) {
 			// check that username and email are unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(resource.getUsername()), 
-					"Username "+ resource.getUsername()+" belongs to another user.");
+					"Create user : the username "+ resource.getUsername()+" belongs to another user.");
 			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
-					"Email " + resource.getEmail() + " belongs to another user.");
+					"Create user : Email " + resource.getEmail() + " belongs to another user.");
 			
 			resource.setRegistration(LocalDate.now());
 			resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
@@ -55,18 +55,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserJPA editUser(UserJPA resource, Long id) throws MyValueAlreadyTakenException {
+	public UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException {
 		UserJPA jpa = userRepository.getOne(id);
 		if(resource.isPatchDataPresent()) {
-			
-			// username
-			if(resource.getUsername()!=null && !jpa.getUsername().equals(resource.getUsername())) {
-				// check this username isn't in the db already :
-				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(resource.getUsername()), 
-						"Username "+resource.getUsername()+" belongs to another user");
-				
-				jpa.setUsername(resource.getUsername());
-			}
+
 			// password
 			if(resource.getPassword() != null) {
 				resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
@@ -78,7 +70,7 @@ public class UserServiceImpl implements UserService {
 			if(resource.getEmail()!=null && !jpa.getEmail().equals(resource.getEmail())) {
 				// check this username isn't in the db already :
 				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
-						"Email "+resource.getEmail()+" belongs to another user.");
+						"Edit user : Email "+resource.getEmail()+" belongs to another user.");
 				
 				jpa.setEmail(resource.getEmail());
 			}

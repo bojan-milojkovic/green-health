@@ -11,6 +11,7 @@ import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.green.health.annotations.EmailPattern;
+import com.green.health.parents.DtoParent;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "user")
 @JsonInclude(Include.NON_NULL)
-public class UserJPA {
+public class UserJPA implements DtoParent {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

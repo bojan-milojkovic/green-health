@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
-import com.green.health.util.exceptions.MyResourceDoesNotExistException;
-import com.green.health.util.exceptions.MyValueAlreadyTakenException;
+import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Controller
 @RequestMapping(value="/users")
@@ -62,16 +60,16 @@ public class UserController {
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "/new", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException{
-		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a db record with a null object");
+	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyRestPreconditionsException {
+		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a new user with a null object");
 		userServiceImpl.addUserToDb(resource);
 	}
 	
 	// .../gh/users/3
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) throws MyValueAlreadyTakenException, MyResourceDoesNotExistException {
-		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot create a db record with a null object");
+	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id) throws MyRestPreconditionsException {
+		RestPreconditions.checkEntityDoesNotExist(resource, "You cannot modify your user by using a null object");
 		return userServiceImpl.editUser(resource, id);
 	}
 	
