@@ -10,9 +10,7 @@ public interface UserService {
 	
 	UserJPA getUserById(final Long id);
 	
-	UserJPA getUserByEmail(final String email);
-	
-	UserJPA getUserByUsername(final String username);
+	UserJPA getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException;
 
 	void addUserToDb(UserJPA resource) throws MyRestPreconditionsException;
 	

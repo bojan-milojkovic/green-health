@@ -38,20 +38,14 @@ public class UserController {
 		return userServiceImpl.getUserById(id);
 	}
 	
-	// .../gh/users/e?email=blatruc@gmail.com
-	@RequestMapping(value = "/e", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	// .../gh/users/ue?username=Koala2&email=blatruc@gmail.com
+	@RequestMapping(value = "/ue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserJPA getUserByEmail(@RequestParam(value="email", required=true) String email){
-		return userServiceImpl.getUserByEmail(email);
-	}
-	
-	// .../gh/users/u?username=Lazaruss
-	@RequestMapping(value = "/u", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserJPA getUserByUsername(@RequestParam(value="username", required=true) String username) {
-		return userServiceImpl.getUserByUsername(username);
-	}
-	
+	public @ResponseBody UserJPA getUserByUsernameOrEmail(@RequestParam(value="username", required=false) String username,
+														  @RequestParam(value="email", required=false) String email) 
+														  throws MyRestPreconditionsException{
+		return userServiceImpl.getUserByUsernameOrEmail(username, email);
+	}	
 	
 	
 	

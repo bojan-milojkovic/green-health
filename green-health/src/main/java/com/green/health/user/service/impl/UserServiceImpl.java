@@ -27,14 +27,19 @@ public class UserServiceImpl implements UserService {
 		return userRepository.getOne(id);
 	}
 	
-	// get by username :
-	public UserJPA getUserByUsername(String username) {
-		return userRepository.findByUsername(username);
-	}
-	
-	// get user by email :
-	public UserJPA getUserByEmail(final String email){
-		return userRepository.findByEmail(email);
+	public UserJPA getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
+		if(RestPreconditions.checkString(username)){
+			return userRepository.findByUsername(username);
+		}
+		if(RestPreconditions.checkString(email)){
+			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
+				throw new MyRestPreconditionsException("Finding user by parameters failed",
+						"You must provide a valid email address.");
+			}
+			return userRepository.findByEmail(email);
+		}
+		throw new MyRestPreconditionsException("Finding user by parameters failed",
+				"When searching a user, you must provide at least one parameter - username or password.");
 	}
 	
 	// add new user to db :
@@ -90,7 +95,7 @@ public class UserServiceImpl implements UserService {
 			}
 			// email
 			if(resource.getEmail()!=null && !jpa.getEmail().equals(resource.getEmail())) {
-				// check this username isn't in the db already :
+				// check this email isn't in the db already :
 				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
 						"Edit user : Email "+resource.getEmail()+" belongs to another user.");
 				
