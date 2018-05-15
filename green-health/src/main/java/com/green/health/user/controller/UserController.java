@@ -24,8 +24,8 @@ public class UserController {
 	@Autowired
 	private UserService userServiceImpl;
 	
-	// .../gh/users/all
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	// .../gh/users
+	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody List<UserJPA> getAllUsers(){
 		return userServiceImpl.getAll();
@@ -49,9 +49,9 @@ public class UserController {
 	
 	
 	
-	// .../gh/users/new
+	// .../gh/users
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
-	@RequestMapping(value = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyRestPreconditionsException {
 		userServiceImpl.addUserToDb(resource);
