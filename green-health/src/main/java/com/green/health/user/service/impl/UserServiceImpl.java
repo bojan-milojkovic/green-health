@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 			return userRepository.findByEmail(email);
 		}
 		throw new MyRestPreconditionsException("Finding user by parameters failed",
-				"When searching a user, you must provide at least one parameter - username or password.");
+				"When searching a user, you must provide at least one parameter - username or email.");
 	}
 	
 	// add new user to db :
