@@ -25,7 +25,7 @@ public class UserJPA implements DtoParent {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;
 	
 	@Column(name="username")

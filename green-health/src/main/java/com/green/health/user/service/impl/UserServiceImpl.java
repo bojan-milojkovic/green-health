@@ -82,15 +82,17 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException {
+		// check that ids match :
+		RestPreconditions.assertTrue(resource.getId()==id, "You cannot edit someone else's user account.");
 		
 		UserJPA jpa = userRepository.getOne(id);
 		if(resource.isPatchDataPresent()) {
 
 			// password
 			if(resource.getPassword() != null) {
-				resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
-				if(!jpa.getPassword().equals(resource.getPassword())) {
-					jpa.setPassword(resource.getPassword());
+				// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
+				if(!BCrypt.checkpw(resource.getPassword(), jpa.getPassword())) {
+					jpa.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
 				}
 			}
 			// email
