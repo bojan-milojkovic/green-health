@@ -49,36 +49,30 @@ public class JwtTokenUtil implements Serializable {
 	private UserSecurityRepository userSecurityRepository;
 
     public String getUsernameFromToken(String token) {
-        String username;
         try {
             //final Claims claims = getClaimsFromToken(token);
-            username = getClaimsFromToken(token).getSubject();
+            return getClaimsFromToken(token).getSubject();
         } catch (Exception e) {
-            username = null;
+            return null;
         }
-        return username;
     }
 
     public Date getCreatedDateFromToken(String token) {
-        Date created;
         try {
             //final Claims claims = getClaimsFromToken(token);
-            created = new Date((Long) (getClaimsFromToken(token).get(CLAIM_KEY_CREATED)));
+            return new Date((Long) (getClaimsFromToken(token).get(CLAIM_KEY_CREATED)));
         } catch (Exception e) {
-            created = null;
+            return null;
         }
-        return created;
     }
 
     public Date getExpirationDateFromToken(String token) {
-        Date expiration;
         try {
             //final Claims claims = getClaimsFromToken(token);
-            expiration = getClaimsFromToken(token).getExpiration();
+            return getClaimsFromToken(token).getExpiration();
         } catch (Exception e) {
-            expiration = null;
+            return null;
         }
-        return expiration;
     }
     
     public String getIpFromToken(String token){
@@ -99,27 +93,23 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public String getAudienceFromToken(String token) {
-        String audience;
         try {
             //final Claims claims = getClaimsFromToken(token);
-            audience = (String) (getClaimsFromToken(token).get(CLAIM_KEY_AUDIENCE));
+            return (String) (getClaimsFromToken(token).get(CLAIM_KEY_AUDIENCE));
         } catch (Exception e) {
-            audience = null;
+            return null;
         }
-        return audience;
     }
 
     private Claims getClaimsFromToken(String token) {
-        Claims claims;
         try {
-            claims = Jwts.parser()
+            return Jwts.parser()
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            claims = null;
+            return null;
         }
-        return claims;
     }
     
     //TODO
@@ -200,33 +190,32 @@ public class JwtTokenUtil implements Serializable {
         return claims;
     }
     
-    public UserDetails getUserDetailsFromToken(final String token){
-    	Map<String, Object> claims = getClaimsFromToken(token);
+    public Collection<GrantedAuthority> getAuthoritiesFromToken(String token){
     	Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+    	Map<String, Object> claims = getClaimsFromToken(token);
     	//TODO: extracting authorities
     	for(String role : ((String)claims.get(CLAIM_KEY_AUTHORITIES)).split("#")){
 			if(!role.isEmpty()){
 				if(role.equals(ROLE_SUPER_ADMIN)){
 					authorities.add(new SimpleGrantedAuthority("ROLE_SUPERADMIN"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_ADMINIZE"));
 				}
 				else if(role.equals(ROLE_ADMIN)){
 					authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_READ"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_WRITE"));
 				}
 				else if(role.equals(ROLE_HERBALIST)){
 					authorities.add(new SimpleGrantedAuthority("ROLE_HERBALIST"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_HERBALIST_READ"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_HERBALIST_WRITE"));
 				}
 				else if(role.equals(ROLE_USER)){
 					authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_USER_READ"));
-					authorities.add(new SimpleGrantedAuthority("ROLE_USER_WRITE"));
 				}
 			}
 		}
+    	return authorities;
+    }
+    
+    public UserDetails getUserDetailsFromToken(final String token){
+    	Map<String, Object> claims = getClaimsFromToken(token);
+    	Collection<GrantedAuthority> authorities = getAuthoritiesFromToken(token);
     	
     	String username = (String)claims.get(CLAIM_KEY_USERNAME);
     	UserSecurityJPA userSecurity = userSecurityRepository.findByUsername(username);
@@ -267,15 +256,13 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public String refreshToken(String token) {
-        String refreshedToken;
         try {
             final Claims claims = getClaimsFromToken(token);
             claims.put(CLAIM_KEY_CREATED, new Date());
-            refreshedToken = generateTokenFromClaims(claims);
+            return generateTokenFromClaims(claims);
         } catch (Exception e) {
-            refreshedToken = null;
+            return null;
         }
-        return refreshedToken;
     }
 
     public Boolean validateToken(String token) {

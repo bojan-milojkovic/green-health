@@ -24,20 +24,17 @@ public class BokiAuthenticationProvider implements AuthenticationProvider {
 	public Authentication authenticate(Authentication auth) throws AuthenticationException {
 		String username = auth.getName();
 		
-		System.err.println("\n\t\t\t3) check username ");
-		
 		if(RestPreconditions.checkString(username)){
 			UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
 			
 			if(jpa!=null){
 				String password = auth.getCredentials().toString();
-				System.err.println("\n\t\t\t4) check password ");
+				
 				if(BCrypt.checkpw(password, jpa.getPassword())){
 
 					@SuppressWarnings("unchecked")
 					List<SimpleGrantedAuthority> authorities = (List<SimpleGrantedAuthority>) auth.getAuthorities();
 
-					System.err.println("\n\t\t\t5) return authenticated ");
 					return new UsernamePasswordAuthenticationToken(
 							jpa.getUsername(),
 							null,

@@ -31,24 +31,22 @@ public class CredentialsFilter extends OncePerRequestFilter{
         response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-My-Security-Token, Authorization, Origin, Content-Type, Version");
         response.setHeader("Access-Control-Expose-Headers", "X-Requested-With, Authorization, Origin, Content-Type");
         
-        if(request.getRequestURI().contains("roles")){
-        	chain.doFilter(request, response);
-        }else{
+        if(!request.getRequestURI().contains("roles")){
         	String token = request.getHeader("X-My-Security-Token");
         	String username = jwtTokenUtil.getUsernameFromToken(token);
-        	System.err.println("\n\t1) username = "+username);
+
         	if (username!=null && SecurityContextHolder.getContext().getAuthentication()==null && jwtTokenUtil.validateToken(token)){
         		UsernamePasswordAuthenticationToken 
         		authentication = new UsernamePasswordAuthenticationToken(
 		                				username, 
 		                				jwtTokenUtil.getPasswordFromToken(token), 
-		                				jwtTokenUtil.getUserDetailsFromToken(token).getAuthorities());
+		                				jwtTokenUtil.getAuthoritiesFromToken(token));
         		
         		SecurityContextHolder.getContext().setAuthentication(authentication);
-        	}
-        	System.err.println("\n\t\t\t2) doing filter ...");
-    		chain.doFilter(request, response);
+        	}	
         }
+        
+        chain.doFilter(request, response);
 	}
 
 }
