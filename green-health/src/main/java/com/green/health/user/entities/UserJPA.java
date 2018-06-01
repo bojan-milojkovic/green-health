@@ -1,17 +1,22 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDate;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.green.health.annotations.EmailPattern;
 import com.green.health.parents.DtoParent;
+import com.green.health.security.entities.UserSecurityJPA;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,6 +31,7 @@ public class UserJPA implements DtoParent {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@JsonProperty(access = Access.READ_WRITE)
+	@Column(name="user_id")
 	private Long id;
 	
 	@Column(name="username")
@@ -58,6 +64,9 @@ public class UserJPA implements DtoParent {
 	@EmailPattern
 	private String email;
 	
+	@OneToOne(mappedBy="userJpa", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.LAZY)
+	private UserSecurityJPA userSecurityJpa;
+	
 	@JsonIgnore
 	public boolean isPostDataPresent() {
 		return username!=null && password!=null && email!=null && firstName!=null && lastName!=null;
@@ -68,6 +77,15 @@ public class UserJPA implements DtoParent {
 		return password!=null || email!=null || firstName!=null || lastName!=null;
 	}
 	
+	
+	public UserSecurityJPA getUserSecurityJpa() {
+		return userSecurityJpa;
+	}
+
+	public void setUserSecurityJpa(UserSecurityJPA userSecurityJpa) {
+		this.userSecurityJpa = userSecurityJpa;
+	}
+
 	public Long getId() {
 		return id;
 	}

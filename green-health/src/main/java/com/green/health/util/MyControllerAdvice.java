@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
+import com.green.health.util.exceptions.UsernameNotFoundException;
 
 @ControllerAdvice
 public class MyControllerAdvice {
@@ -52,6 +53,14 @@ public class MyControllerAdvice {
     @ResponseBody
 	public MyBadInputResponse BadRequest_MissingEntity(RuntimeException ex) {
 		return new MyBadInputResponse("You are attempting to process an invalid object.", 
+				ex.getLocalizedMessage());
+	}
+	
+	@ExceptionHandler(UsernameNotFoundException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+	public MyBadInputResponse BadCredentials(UsernameNotFoundException ex){
+		return new MyBadInputResponse("Your credentials are invalid.", 
 				ex.getLocalizedMessage());
 	}
 }
