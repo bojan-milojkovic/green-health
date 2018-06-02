@@ -15,7 +15,6 @@ import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.security.service.SecurityService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Service
 public class SecurityServiceImpl implements SecurityService {
@@ -67,11 +66,5 @@ public class SecurityServiceImpl implements SecurityService {
 		}
 		
 		return "Error - no user with those credentials.";
-	}
-	
-	// TODO: for token testing only ; remove after enabling the filter and authentication service
-	@Override
-	public UserDetails getAuthoritiesFromToken(final String token){
-		return jwtTokenUtil.getUserDetailsFromToken(token);
 	}
 }

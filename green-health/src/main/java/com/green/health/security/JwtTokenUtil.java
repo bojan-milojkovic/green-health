@@ -6,7 +6,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.green.health.security.entities.UserSecurityJPA;
@@ -19,7 +18,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtTokenUtil implements Serializable {
@@ -27,14 +25,14 @@ public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -3301605591108950415L;
 
     private static final String CLAIM_KEY_USERNAME = "sub";
-    private static final String CLAIM_KEY_AUDIENCE = "audience";
     private static final String CLAIM_KEY_CREATED = "created";
     private static final String CLAIM_KEY_AUTHORITIES = "a";
     private static final String CLAIM_KEY_PASSWORD = "pwd";
-    private static final String CLAIM_KEY_IP = "ipad";
     
+    /*private static final String CLAIM_KEY_IP = "ipad";
+    private static final String CLAIM_KEY_AUDIENCE = "audience";
     private static final String AUDIENCE_MOBILE = "mobile";
-    private static final String AUDIENCE_TABLET = "tablet";    
+    private static final String AUDIENCE_TABLET = "tablet"; */   
 
     private static final String ROLE_USER = "1urw";
     private static final String ROLE_HERBALIST = "2hrw";
@@ -48,6 +46,83 @@ public class JwtTokenUtil implements Serializable {
     @Autowired
 	private UserSecurityRepository userSecurityRepository;
 
+    //TODO: Use these functions at later stages for tighter security
+    /*public String getAudienceFromToken(String token) {
+        try {
+            //final Claims claims = getClaimsFromToken(token);
+            return (String) (getClaimsFromToken(token).get(CLAIM_KEY_AUDIENCE));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public String getIpFromToken(String token){
+    	try {
+            //final Claims claims = getClaimsFromToken(token);
+            return (String) (getClaimsFromToken(token).get(CLAIM_KEY_IP));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private Boolean ignoreTokenExpiration(String token) {
+	    String audience = getAudienceFromToken(token);
+	    return (AUDIENCE_TABLET.equals(audience) || AUDIENCE_MOBILE.equals(audience));
+	}
+	public Boolean canTokenBeRefreshed(String token, Date lastPasswordReset) {
+		final Date created = getCreatedDateFromToken(token);
+			return isTokenCreatedAfterLastPasswordReset(created, lastPasswordReset)
+	        	&& (isTokenNotExpired(token) || ignoreTokenExpiration(token));
+	}
+    public UserDetails getUserDetailsFromToken(final String token){
+    	Map<String, Object> claims = getClaimsFromToken(token);
+    	Collection<GrantedAuthority> authorities = getAuthoritiesFromToken(token);
+    	
+    	String username = (String)claims.get(CLAIM_KEY_USERNAME);
+    	UserSecurityJPA userSecurity = userSecurityRepository.findByUsername(username);
+    	
+    	return new User(username, 
+    					(String)claims.get(CLAIM_KEY_PASSWORD), 
+    					userSecurity.isActive(), 
+    					true, 
+    					isTokenNotExpired(token), // login was too old ; token has expired
+    					userSecurity.isNotLocked(), 
+    					authorities);
+    }
+    
+    public String addIpToToken(String token, HttpServletRequest request){
+    	Claims claims = getClaimsFromToken(token);
+		
+    	String ipAddress = (request.getHeader("X-FORWARDED-FOR")!=null ? request.getHeader("X-FORWARDED-FOR") : request.getRemoteAddr());
+    	if(ipAddress!=null){	
+			claims.put(CLAIM_KEY_IP, ipAddress);
+			token = generateTokenFromClaims(claims);
+		}
+    	
+    	return token;
+    }
+    
+    public boolean checkRequestIp(final String token, final HttpServletRequest request){
+    	String expectedIp = getIpFromToken(token);
+    	String actualIp = request.getHeader("X-FORWARDED-FOR") == null ? request.getRemoteAddr() : request.getHeader("X-FORWARDED-FOR");
+
+		if(actualIp!=null && expectedIp!=null){
+			return expectedIp.equals(actualIp); // if nether is null, they should be equal
+		} else if(actualIp!=null || expectedIp!=null){
+			return false; // one is null the other is not
+		}
+		return true; // both are null
+    }
+    
+    public String refreshToken(String token) {
+        try {
+            final Claims claims = getClaimsFromToken(token);
+            claims.put(CLAIM_KEY_CREATED, new Date());
+            return generateTokenFromClaims(claims);
+        } catch (Exception e) {
+            return null;
+        }
+    }*/
+    
     public String getUsernameFromToken(String token) {
         try {
             //final Claims claims = getClaimsFromToken(token);
@@ -75,28 +150,10 @@ public class JwtTokenUtil implements Serializable {
         }
     }
     
-    public String getIpFromToken(String token){
-    	try {
-            //final Claims claims = getClaimsFromToken(token);
-            return (String) (getClaimsFromToken(token).get(CLAIM_KEY_IP));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    
     public String getPasswordFromToken(String token){
     	try {
     		return (String) (getClaimsFromToken(token).get(CLAIM_KEY_PASSWORD));
     	} catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String getAudienceFromToken(String token) {
-        try {
-            //final Claims claims = getClaimsFromToken(token);
-            return (String) (getClaimsFromToken(token).get(CLAIM_KEY_AUDIENCE));
-        } catch (Exception e) {
             return null;
         }
     }
@@ -110,19 +167,6 @@ public class JwtTokenUtil implements Serializable {
         } catch (Exception e) {
             return null;
         }
-    }
-    
-    //TODO
-    public String addIpToToken(String token, HttpServletRequest request){
-    	Claims claims = getClaimsFromToken(token);
-		
-    	String ipAddress = (request.getHeader("X-FORWARDED-FOR")!=null ? request.getHeader("X-FORWARDED-FOR") : request.getRemoteAddr());
-    	if(ipAddress!=null){	
-			claims.put(CLAIM_KEY_IP, ipAddress);
-			token = generateTokenFromClaims(claims);
-		}
-    	
-    	return token;
     }
     
     public String generateToken(UserDetails userDetails/*, Device device, HttpServletRequest request*/) {
@@ -152,11 +196,7 @@ public class JwtTokenUtil implements Serializable {
     private Boolean isTokenCreatedAfterLastPasswordReset(Date created, Date lastPasswordReset) {
         return (lastPasswordReset != null && created.after(lastPasswordReset));
     }
-
-    private Boolean ignoreTokenExpiration(String token) {
-        String audience = getAudienceFromToken(token);
-        return (AUDIENCE_TABLET.equals(audience) || AUDIENCE_MOBILE.equals(audience));
-    }
+    
     private boolean isTokenCreatedAtLastLogin(final Date created, final Date lastLogin){
     	return Math.abs(created.getTime() - lastLogin.getTime()) < 1000;
     }
@@ -164,13 +204,11 @@ public class JwtTokenUtil implements Serializable {
     	return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    
-    
     private Map<String, Object> generateClaims(Map<String, Object> claims, UserDetails userDetails){
     	String authorities = "";
     	
     	for(GrantedAuthority ga : userDetails.getAuthorities()){
-	    	//TODO: add role to token
+	    	//add role to token
 			if(ga.getAuthority().equals("ROLE_SUPERADMIN")){
 				authorities += (ROLE_SUPER_ADMIN+"#");
 			}
@@ -193,7 +231,7 @@ public class JwtTokenUtil implements Serializable {
     public Collection<GrantedAuthority> getAuthoritiesFromToken(String token){
     	Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
     	Map<String, Object> claims = getClaimsFromToken(token);
-    	//TODO: extracting authorities
+    	// extracting authorities
     	for(String role : ((String)claims.get(CLAIM_KEY_AUTHORITIES)).split("#")){
 			if(!role.isEmpty()){
 				if(role.equals(ROLE_SUPER_ADMIN)){
@@ -212,34 +250,6 @@ public class JwtTokenUtil implements Serializable {
 		}
     	return authorities;
     }
-    
-    public UserDetails getUserDetailsFromToken(final String token){
-    	Map<String, Object> claims = getClaimsFromToken(token);
-    	Collection<GrantedAuthority> authorities = getAuthoritiesFromToken(token);
-    	
-    	String username = (String)claims.get(CLAIM_KEY_USERNAME);
-    	UserSecurityJPA userSecurity = userSecurityRepository.findByUsername(username);
-    	
-    	return new User(username, 
-    					(String)claims.get(CLAIM_KEY_PASSWORD), 
-    					userSecurity.isActive(), 
-    					true, 
-    					isTokenNotExpired(token), // login was too old ; token has expired
-    					userSecurity.isNotLocked(), 
-    					authorities);
-    }
-    
-    public boolean checkRequestIp(final String token, final HttpServletRequest request){
-    	String expectedIp = getIpFromToken(token);
-    	String actualIp = request.getHeader("X-FORWARDED-FOR") == null ? request.getRemoteAddr() : request.getHeader("X-FORWARDED-FOR");
-
-		if(actualIp!=null && expectedIp!=null){
-			return expectedIp.equals(actualIp); // if nether is null, they should be equal
-		} else if(actualIp!=null || expectedIp!=null){
-			return false; // one is null the other is not
-		}
-		return true; // both are null
-    }
 
     public String generateTokenFromClaims(Map<String, Object> claims) {
         return Jwts.builder()
@@ -249,21 +259,7 @@ public class JwtTokenUtil implements Serializable {
                 .compact();
     }
 
-    public Boolean canTokenBeRefreshed(String token, Date lastPasswordReset) {
-        final Date created = getCreatedDateFromToken(token);
-        return isTokenCreatedAfterLastPasswordReset(created, lastPasswordReset)
-                && (isTokenNotExpired(token) || ignoreTokenExpiration(token));
-    }
-
-    public String refreshToken(String token) {
-        try {
-            final Claims claims = getClaimsFromToken(token);
-            claims.put(CLAIM_KEY_CREATED, new Date());
-            return generateTokenFromClaims(claims);
-        } catch (Exception e) {
-            return null;
-        }
-    }
+    
 
     public Boolean validateToken(String token) {
         final String username = getUsernameFromToken(token);
