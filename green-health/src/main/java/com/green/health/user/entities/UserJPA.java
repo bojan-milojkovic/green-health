@@ -1,7 +1,6 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDate;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 @Entity
 @Table(name = "user")
@@ -64,6 +64,7 @@ public class UserJPA implements DtoParent {
 	@EmailPattern
 	private String email;
 	
+	@JsonIgnore
 	@OneToOne(mappedBy="userJpa", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.LAZY)
 	private UserSecurityJPA userSecurityJpa;
 	
@@ -76,7 +77,6 @@ public class UserJPA implements DtoParent {
 	public boolean isPatchDataPresent() {
 		return password!=null || email!=null || firstName!=null || lastName!=null;
 	}
-	
 	
 	public UserSecurityJPA getUserSecurityJpa() {
 		return userSecurityJpa;

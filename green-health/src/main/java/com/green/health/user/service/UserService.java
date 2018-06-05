@@ -16,5 +16,5 @@ public interface UserService {
 	
 	UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException;
 	
-	void deleteUser(final Long id);
+	void deleteUser(final Long id, final String username) throws MyRestPreconditionsException;
 }

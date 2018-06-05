@@ -1,17 +1,27 @@
 package com.green.health.config;
 
 import java.lang.reflect.Method;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 
 @Configuration
 public class WebConfig {
+	
+	@Bean
+	public HttpMessageConverters customConverters() {
+		// this makes json nicely formated
+	    HttpMessageConverter<?> additional = new FastJsonHttpMessageConverter();
+	    return new HttpMessageConverters(additional);
+	}
 
 	@Bean
     public WebMvcRegistrationsAdapter webMvcRegistrationsHandlerMapping() {

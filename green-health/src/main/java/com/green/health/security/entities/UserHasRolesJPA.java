@@ -1,6 +1,5 @@
 package com.green.health.security.entities;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -24,7 +23,7 @@ public class UserHasRolesJPA {
 	@JoinColumn(name="user_id")
 	private UserSecurityJPA userSecurityJpa;
 	
-	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.PERSIST)
+	@ManyToOne(fetch = FetchType.EAGER/*, cascade=CascadeType.PERSIST*/)
 	@JoinColumn(name="role_id")
 	private RoleJPA roleJpa;
 	

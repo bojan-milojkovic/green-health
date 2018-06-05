@@ -155,9 +155,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void deleteUser(Long id) {
-		if(userRepository.getOne(id) != null) {
-			userRepository.deleteById(id);
+	public void deleteUser(final Long id, final String username) throws MyRestPreconditionsException {
+		UserJPA jpa = userRepository.getOne(id);
+		if(jpa != null) {
+			if(jpa.getUsername().equals(username)){
+				userRepository.deleteById(id);
+			} else {
+				throw new MyRestPreconditionsException("Access violation !!!","You are trying to delete someone elses's user");
+			}
+		} else {
+			throw new MyRestPreconditionsException("Invalid id","Entity with that id does not exist in the system.");
 		}
 	}
 }

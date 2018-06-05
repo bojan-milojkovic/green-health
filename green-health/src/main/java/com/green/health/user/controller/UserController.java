@@ -75,7 +75,7 @@ public class UserController {
 	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void deleteUserById(@PathVariable("id") Long id) {
-		userServiceImpl.deleteUser(id);
+	public void deleteUserById(@PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
+		userServiceImpl.deleteUser(id, principal.getName());
 	}
 }
