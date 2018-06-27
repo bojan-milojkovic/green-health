@@ -12,7 +12,7 @@ public class WebInitializer implements WebApplicationInitializer{
 	@Override
 	public void onStartup(ServletContext sc) throws ServletException {
 		AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
-		rootContext.setConfigLocations(new String[]{"com.green.health.config", "com.green.health.security"});
+		rootContext.setConfigLocations(new String[]{"com.green.health.config", "com.green.health.security.*"});
 		
 		ServletRegistration.Dynamic apiSR = sc.addServlet("api-dispatcher", new DispatcherServlet(rootContext));
 		apiSR.setLoadOnStartup(1);

@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import com.green.health.user.entities.UserJPA;
+import com.green.health.security.entities.UserHasRolesJPA;
+import com.green.health.security.entities.UserSecurityJPA;
+import com.green.health.security.repositories.RoleRepository;
+import com.green.health.security.repositories.UserHasRolesRepository;
+import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
@@ -16,6 +21,15 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
+	private UserSecurityRepository userSecurityRepository;
+	
+	@Autowired
+	private UserHasRolesRepository userHasRolesRepository;
 	
 	// get all users :
 	public List<UserJPA> getAll(){
@@ -54,7 +68,23 @@ public class UserServiceImpl implements UserService {
 			
 			resource.setRegistration(LocalDate.now());
 			resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
+			
 			userRepository.save(resource);
+			
+			UserSecurityJPA usJpa = new UserSecurityJPA();
+			usJpa.setActive(true);
+			usJpa.setNotLocked(true);
+			usJpa.setPassword(resource.getPassword());
+			usJpa.setUsername(resource.getUsername());
+			usJpa.setUserJpa(resource);
+			resource.setUserSecurityJpa(usJpa);
+			userSecurityRepository.save(usJpa);
+			
+			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
+			uhrJpa.setUserSecurityJpa(usJpa);
+			uhrJpa.setRoleJpa(roleRepository.getOne(1L));
+			usJpa.getUserHasRolesJpa().add(uhrJpa);
+			userHasRolesRepository.save(uhrJpa);
 			
 		}else{
 			MyRestPreconditionsException ex = 
@@ -83,9 +113,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException {
 		// check that ids match :
-		RestPreconditions.assertTrue(resource.getId()==id, "You cannot edit someone else's user account.");
+		UserJPA jpa = userRepository.findByUsername(resource.getUsername());
+		RestPreconditions.assertTrue(jpa.getId()==id, "You cannot edit someone else's user account.");
 		
-		UserJPA jpa = userRepository.getOne(id);
 		if(resource.isPatchDataPresent()) {
 
 			// password
@@ -125,9 +155,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void deleteUser(Long id) {
-		if(userRepository.getOne(id) != null) {
-			userRepository.deleteById(id);
+	public void deleteUser(final Long id, final String username) throws MyRestPreconditionsException {
+		UserJPA jpa = userRepository.getOne(id);
+		if(jpa != null) {
+			if(jpa.getUsername().equals(username)){
+				userRepository.deleteById(id);
+			} else {
+				throw new MyRestPreconditionsException("Access violation !!!","You are trying to delete someone elses's user");
+			}
+		} else {
+			throw new MyRestPreconditionsException("Invalid id","Entity with that id does not exist in the system.");
 		}
 	}
 }

@@ -19,5 +19,4 @@ public class RestPreconditions {
 	public static boolean checkString(final String s){
 		return s!=null && !s.trim().isEmpty();
 	}
-
 }

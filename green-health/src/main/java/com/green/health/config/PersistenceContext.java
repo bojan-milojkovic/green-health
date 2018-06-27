@@ -13,12 +13,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(	basePackages = { "com.green.health.user.*" })
-@EntityScan( basePackages = { "com.green.health.user.*" })
+@EnableJpaRepositories(	basePackages = { "com.green.health.*" })
 @PropertySource({ "classpath:application.properties"})
 public class PersistenceContext {
 	
@@ -40,7 +38,7 @@ public class PersistenceContext {
 		
 		entityManagerFactoryBean.setDataSource(dataSource);
 		entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-		entityManagerFactoryBean.setPackagesToScan("com.green.health.user.entities");
+		entityManagerFactoryBean.setPackagesToScan("com.green.health.*");
 		
 		Properties jpaProperties = new Properties();
 		
