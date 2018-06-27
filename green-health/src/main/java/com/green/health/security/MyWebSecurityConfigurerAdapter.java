@@ -14,7 +14,7 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 				
-		// request handling
+		// request handling for user
 		http.authorizeRequests()
 			.antMatchers(HttpMethod.GET, "/gh/users").permitAll()
 			.antMatchers(HttpMethod.GET, "/gh/users/*").permitAll()
@@ -23,7 +23,6 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.DELETE, "/gh/users/*").permitAll()
 			;
 		
-
 		// disable csrf
 		http.csrf().disable();
 		
