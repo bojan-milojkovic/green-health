@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import com.green.health.user.entities.UserJPA;
+import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -30,7 +30,7 @@ public class UserController {
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody List<UserJPA> getAllUsers(){
+	public @ResponseBody List<UserDTO> getAllUsers(){
 		return userServiceImpl.getAll();
 	}
 	
@@ -38,7 +38,7 @@ public class UserController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserJPA getUserById(@PathVariable("id") Long id){
+	public @ResponseBody UserDTO getUserById(@PathVariable("id") Long id){
 		return userServiceImpl.getUserById(id);
 	}
 	
@@ -46,7 +46,7 @@ public class UserController {
 	@RequestMapping(value = "/ue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserJPA getUserByUsernameOrEmail(@RequestParam(value="username", required=false) String username,
+	public @ResponseBody UserDTO getUserByUsernameOrEmail(@RequestParam(value="username", required=false) String username,
 														  @RequestParam(value="email", required=false) String email) 
 														  throws MyRestPreconditionsException{
 		return userServiceImpl.getUserByUsernameOrEmail(username, email);
@@ -58,17 +58,17 @@ public class UserController {
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public void saveNewUser(@RequestBody @Valid UserJPA resource) throws MyRestPreconditionsException {
-		userServiceImpl.addUserToDb(resource);
+	public void saveNewUser(@RequestBody @Valid UserDTO model) throws MyRestPreconditionsException {
+		userServiceImpl.addUserToDb(model);
 	}
 	
 	// .../gh/users/3
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public @ResponseBody UserJPA editUserById(@RequestBody @Valid UserJPA resource, @PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
-		resource.setUsername(principal.getName());
-		return userServiceImpl.editUser(resource, id);
+	public @ResponseBody UserDTO editUserById(@RequestBody @Valid UserDTO model, @PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
+		model.setUsername(principal.getName());
+		return userServiceImpl.editUser(model, id);
 	}
 	
 	// .../gh/users/3

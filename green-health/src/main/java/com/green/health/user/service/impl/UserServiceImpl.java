@@ -1,10 +1,12 @@
 package com.green.health.user.service.impl;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
@@ -32,52 +34,62 @@ public class UserServiceImpl implements UserService {
 	private UserHasRolesRepository userHasRolesRepository;
 	
 	// get all users :
-	public List<UserJPA> getAll(){
-		return userRepository.findAll();
+	public List<UserDTO> getAll(){
+		return userRepository.findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
 	}
 	
 	// get a specific user :
-	public UserJPA getUserById(final Long id){
-		return userRepository.getOne(id);
+	public UserDTO getUserById(final Long id){
+		return convertJpaToModel(userRepository.getOne(id));
 	}
 	
-	public UserJPA getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
+	public boolean isPostDataPresent(final UserDTO model) {
+		return model!=null && model.getUsername()!=null && model.getPassword()!=null && model.getEmail()!=null 
+				&& model.getFirstName()!=null && model.getLastName()!=null;
+	}
+	
+	public boolean isPatchDataPresent(final UserDTO model) {
+		return model.getPassword()!=null || model.getEmail()!=null || model.getFirstName()!=null || model.getLastName()!=null;
+	}
+	
+	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
-			return userRepository.findByUsername(username);
+			return convertJpaToModel(userRepository.findByUsername(username));
 		}
 		if(RestPreconditions.checkString(email)){
 			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
 				throw new MyRestPreconditionsException("Finding user by parameters failed",
 						"You must provide a valid email address.");
 			}
-			return userRepository.findByEmail(email);
+			return convertJpaToModel(userRepository.findByEmail(email));
 		}
 		throw new MyRestPreconditionsException("Finding user by parameters failed",
 				"When searching a user, you must provide at least one parameter - username or email.");
 	}
 	
 	// add new user to db :
-	public void addUserToDb(final UserJPA resource) throws MyRestPreconditionsException {
+	public void addUserToDb(final UserDTO model) throws MyRestPreconditionsException {
 		// check everything except id and registration is present in resource :
-		if(resource.isPostDataPresent()) {
+		if(isPostDataPresent(model)) {
 			// check that username and email are unique :
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(resource.getUsername()), 
-					"Create user : the username "+ resource.getUsername()+" belongs to another user.");
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
-					"Create user : Email " + resource.getEmail() + " belongs to another user.");
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(model.getUsername()), 
+					"Create user : the username "+ model.getUsername()+" belongs to another user.");
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
+					"Create user : Email " + model.getEmail() + " belongs to another user.");
 			
-			resource.setRegistration(LocalDate.now());
-			resource.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
+			model.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 			
-			userRepository.save(resource);
+			UserJPA jpa = convertModelToJPA(model);
+			
+			userRepository.save(jpa);
 			
 			UserSecurityJPA usJpa = new UserSecurityJPA();
 			usJpa.setActive(true);
 			usJpa.setNotLocked(true);
-			usJpa.setPassword(resource.getPassword());
-			usJpa.setUsername(resource.getUsername());
-			usJpa.setUserJpa(resource);
-			resource.setUserSecurityJpa(usJpa);
+			usJpa.setPassword(jpa.getPassword());
+			usJpa.setUsername(jpa.getUsername());
+			usJpa.setUserJpa(jpa);
+			jpa.setUserSecurityJpa(usJpa);
 			userSecurityRepository.save(usJpa);
 			
 			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
@@ -90,19 +102,19 @@ public class UserServiceImpl implements UserService {
 			MyRestPreconditionsException ex = 
 					new MyRestPreconditionsException("You cannot register",
 							"The following data is missing from your registration form");
-			if(resource.getEmail()==null){
+			if(model.getEmail()==null){
 				ex.getErrors().add("email");
 			}
-			if(resource.getFirstName()==null){
+			if(model.getFirstName()==null){
 				ex.getErrors().add("first name");
 			}
-			if(resource.getLastName()==null){
+			if(model.getLastName()==null){
 				ex.getErrors().add("last name");
 			}
-			if(resource.getPassword()==null){
+			if(model.getPassword()==null){
 				ex.getErrors().add("password");
 			}
-			if(resource.getUsername()==null){
+			if(model.getUsername()==null){
 				ex.getErrors().add("username");
 			}
 			
@@ -111,38 +123,49 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserJPA editUser(UserJPA resource, Long id) throws MyRestPreconditionsException {
+	public UserDTO editUser(UserDTO model, Long id) throws MyRestPreconditionsException {
+		
 		// check that ids match :
-		UserJPA jpa = userRepository.findByUsername(resource.getUsername());
+		UserJPA jpa = userRepository.findByUsername(model.getUsername());
 		RestPreconditions.assertTrue(jpa.getId()==id, "You cannot edit someone else's user account.");
 		
-		if(resource.isPatchDataPresent()) {
+		if(isPatchDataPresent(model)) {
 
 			// password
-			if(resource.getPassword() != null) {
+			if(model.getPassword() != null) {
 				// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
-				if(!BCrypt.checkpw(resource.getPassword(), jpa.getPassword())) {
-					jpa.setPassword(BCrypt.hashpw(resource.getPassword(), BCrypt.gensalt()));
+				if(!BCrypt.checkpw(model.getPassword(), jpa.getPassword())) {
+					jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 				}
 			}
 			// email
-			if(resource.getEmail()!=null && !jpa.getEmail().equals(resource.getEmail())) {
-				// check this email isn't in the db already :
-				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(resource.getEmail()), 
-						"Edit user : Email "+resource.getEmail()+" belongs to another user.");
+			if(model.getEmail()!=null && !jpa.getEmail().equals(model.getEmail())) {
+				// check this new email isn't in the db already :
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
+						"Edit user : Email "+model.getEmail()+" belongs to another user.");
 				
-				jpa.setEmail(resource.getEmail());
+				jpa.setEmail(model.getEmail());
 			}
 			// first name
-			if(resource.getFirstName()!=null && !jpa.getFirstName().equals(resource.getFirstName())) {
-				jpa.setFirstName(resource.getFirstName());
+			if(model.getFirstName()!=null && !jpa.getFirstName().equals(model.getFirstName())) {
+				jpa.setFirstName(model.getFirstName());
 			}
 			// last name
-			if(resource.getLastName()!=null && !jpa.getLastName().equals(resource.getLastName())) {
-				jpa.setLastName(resource.getLastName());
+			if(model.getLastName()!=null && !jpa.getLastName().equals(model.getLastName())) {
+				jpa.setLastName(model.getLastName());
 			}
 			
 			userRepository.save(jpa);
+			
+			// update user security :
+			UserSecurityJPA usJpa = jpa.getUserSecurityJpa();
+			usJpa.setLastUpdate(LocalDateTime.now());
+			usJpa.setPassword(jpa.getPassword()); // maybe it was changed
+			
+			userSecurityRepository.save(usJpa);
+			
+			return convertJpaToModel(jpa);
+			
 		} else {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot edit your user",
 					"Your user edit request is invalid.");
@@ -150,8 +173,6 @@ public class UserServiceImpl implements UserService {
 			ex.getErrors().add("Username is not editable");
 			throw ex;
 		}
-		
-		return jpa;
 	}
 
 	@Override
@@ -166,5 +187,46 @@ public class UserServiceImpl implements UserService {
 		} else {
 			throw new MyRestPreconditionsException("Invalid id","Entity with that id does not exist in the system.");
 		}
+	}
+
+	@Override
+	public UserJPA convertModelToJPA(UserDTO model) {
+		UserJPA jpa = new UserJPA();
+		if(model.getId()==null){
+			jpa.setEmail(model.getEmail());
+			jpa.setFirstName(model.getFirstName());
+			jpa.setLastName(model.getLastName());
+			jpa.setPassword(model.getPassword());
+			jpa.setRegistration(LocalDateTime.now());
+			jpa.setUsername(model.getUsername());
+		} else {
+			if(RestPreconditions.checkString(model.getEmail())){
+				jpa.setEmail(model.getEmail());
+			}
+			if(RestPreconditions.checkString(model.getFirstName())){
+				jpa.setFirstName(model.getFirstName());
+			}
+			if(RestPreconditions.checkString(model.getLastName())){
+				jpa.setLastName(model.getLastName());
+			}
+			if(RestPreconditions.checkString(model.getUsername())){
+				jpa.setUsername(model.getUsername());
+			}
+		}
+		
+		return jpa;
+	}
+
+	@Override
+	public UserDTO convertJpaToModel(UserJPA jpa) {
+		UserDTO model = new UserDTO();
+		
+		model.setId(jpa.getId());
+		model.setUsername(jpa.getUsername());
+		model.setFirstName(jpa.getFirstName());
+		model.setLastName(jpa.getLastName());
+		model.setEmail(jpa.getEmail());
+		
+		return model;
 	}
 }
