@@ -54,7 +54,10 @@ public class UserServiceImpl implements UserService {
 	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
-			return convertJpaToModel(userRepository.findByUsername(username));
+			UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
+			if(jpa!=null){
+				return convertJpaToModel(jpa.getUserJpa());
+			}
 		}
 		if(RestPreconditions.checkString(email)){
 			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
@@ -72,31 +75,12 @@ public class UserServiceImpl implements UserService {
 		// check everything except id and registration is present in resource :
 		if(isPostDataPresent(model)) {
 			// check that username and email are unique :
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByUsername(model.getUsername()), 
+			RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
 					"Create user : the username "+ model.getUsername()+" belongs to another user.");
 			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
 					"Create user : Email " + model.getEmail() + " belongs to another user.");
 			
-			model.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
-			
-			UserJPA jpa = convertModelToJPA(model);
-			
-			userRepository.save(jpa);
-			
-			UserSecurityJPA usJpa = new UserSecurityJPA();
-			usJpa.setActive(true);
-			usJpa.setNotLocked(true);
-			usJpa.setPassword(jpa.getPassword());
-			usJpa.setUsername(jpa.getUsername());
-			usJpa.setUserJpa(jpa);
-			jpa.setUserSecurityJpa(usJpa);
-			userSecurityRepository.save(usJpa);
-			
-			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
-			uhrJpa.setUserSecurityJpa(usJpa);
-			uhrJpa.setRoleJpa(roleRepository.getOne(1L));
-			usJpa.getUserHasRolesJpa().add(uhrJpa);
-			userHasRolesRepository.save(uhrJpa);
+			userRepository.save(convertModelToJPA(model));
 			
 		}else{
 			MyRestPreconditionsException ex = 
@@ -126,16 +110,25 @@ public class UserServiceImpl implements UserService {
 	public UserDTO editUser(UserDTO model, Long id) throws MyRestPreconditionsException {
 		
 		// check that ids match :
+		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
+		RestPreconditions.assertTrue(usJpa.getId()==id, "You cannot edit someone else's user account.");
+		
+		UserJPA jpa = usJpa.getUserJpa();
+		
+		/*
 		UserJPA jpa = userRepository.findByUsername(model.getUsername());
 		RestPreconditions.assertTrue(jpa.getId()==id, "You cannot edit someone else's user account.");
+		
+		UserSecurityJPA usJpa = jpa.getUserSecurityJpa();
+		*/
 		
 		if(isPatchDataPresent(model)) {
 
 			// password
 			if(model.getPassword() != null) {
 				// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
-				if(!BCrypt.checkpw(model.getPassword(), jpa.getPassword())) {
-					jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
+				if(!BCrypt.checkpw(model.getPassword(), usJpa.getPassword())) {
+					usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 				}
 			}
 			// email
@@ -158,9 +151,7 @@ public class UserServiceImpl implements UserService {
 			userRepository.save(jpa);
 			
 			// update user security :
-			UserSecurityJPA usJpa = jpa.getUserSecurityJpa();
 			usJpa.setLastUpdate(LocalDateTime.now());
-			usJpa.setPassword(jpa.getPassword()); // maybe it was changed
 			
 			userSecurityRepository.save(usJpa);
 			
@@ -177,7 +168,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void deleteUser(final Long id, final String username) throws MyRestPreconditionsException {
-		UserJPA jpa = userRepository.getOne(id);
+		UserSecurityJPA jpa = userSecurityRepository.getOne(id);
 		if(jpa != null) {
 			if(jpa.getUsername().equals(username)){
 				userRepository.deleteById(id);
@@ -196,9 +187,22 @@ public class UserServiceImpl implements UserService {
 			jpa.setEmail(model.getEmail());
 			jpa.setFirstName(model.getFirstName());
 			jpa.setLastName(model.getLastName());
-			jpa.setPassword(model.getPassword());
 			jpa.setRegistration(LocalDateTime.now());
-			jpa.setUsername(model.getUsername());
+			
+			UserSecurityJPA usJpa = new UserSecurityJPA();
+			usJpa.setActive(true);
+			usJpa.setNotLocked(true);
+			usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
+			usJpa.setUsername(model.getUsername());
+			usJpa.setUserJpa(jpa);
+			jpa.setUserSecurityJpa(usJpa);
+			userSecurityRepository.save(usJpa);
+			
+			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
+			uhrJpa.setUserSecurityJpa(usJpa);
+			uhrJpa.setRoleJpa(roleRepository.getOne(1L));
+			usJpa.getUserHasRolesJpa().add(uhrJpa);
+			userHasRolesRepository.save(uhrJpa);
 		} else {
 			if(RestPreconditions.checkString(model.getEmail())){
 				jpa.setEmail(model.getEmail());
@@ -208,9 +212,6 @@ public class UserServiceImpl implements UserService {
 			}
 			if(RestPreconditions.checkString(model.getLastName())){
 				jpa.setLastName(model.getLastName());
-			}
-			if(RestPreconditions.checkString(model.getUsername())){
-				jpa.setUsername(model.getUsername());
 			}
 		}
 		
@@ -222,7 +223,7 @@ public class UserServiceImpl implements UserService {
 		UserDTO model = new UserDTO();
 		
 		model.setId(jpa.getId());
-		model.setUsername(jpa.getUsername());
+		model.setUsername(jpa.getUserSecurityJpa().getUsername());
 		model.setFirstName(jpa.getFirstName());
 		model.setLastName(jpa.getLastName());
 		model.setEmail(jpa.getEmail());

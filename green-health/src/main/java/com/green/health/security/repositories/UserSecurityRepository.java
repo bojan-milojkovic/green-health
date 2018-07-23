@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.green.health.security.entities.UserSecurityJPA;
 
 @Repository
-public interface UserSecurityRepository extends JpaRepository<UserSecurityJPA, String> {
+public interface UserSecurityRepository extends JpaRepository<UserSecurityJPA, Long> {
 
 	@Query("select u from UserSecurityJPA u where u.username = :param")
 	UserSecurityJPA findByUsername(@Param("param") final String username);
