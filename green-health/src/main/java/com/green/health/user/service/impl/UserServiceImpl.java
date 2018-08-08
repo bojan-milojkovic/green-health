@@ -126,13 +126,7 @@ public class UserServiceImpl implements UserService {
 		UserJPA jpa = usJpa.getUserJpa();
 		
 		if(isPatchDataPresent(model)) {
-
-			/*// password
-			if(RestPreconditions.checkString(model.getPassword()) &&
-				// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
-				!BCrypt.checkpw(model.getPassword(), usJpa.getPassword())) {
-					usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
-			}*/
+			
 			// email
 			if(RestPreconditions.checkString(model.getEmail()) && !jpa.getEmail().equals(model.getEmail())) {
 				// check this new email isn't in the db already :
@@ -185,11 +179,10 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void changePassword(MiniUserDTO model, String username) throws MyRestPreconditionsException {
 		
-		if((model.getId()==null || (model.getId()!=null && model.getId()<0)) || 
-				RestPreconditions.checkString(model.getPassword()) || 
-				RestPreconditions.checkString(model.getNewPassword())) {
-			MyRestPreconditionsException ex = new MyRestPreconditionsException("Change password error","request json is missing some elements.");
-			
+		{
+			MyRestPreconditionsException ex = 
+					new MyRestPreconditionsException("Change password error","request json is missing some elements.");
+	
 			if((model.getId()==null || (model.getId()!=null && model.getId()<0))) {
 				ex.getErrors().add("Invalid or missing user id");
 			}
@@ -200,9 +193,11 @@ public class UserServiceImpl implements UserService {
 				ex.getErrors().add("New password is mandatory");
 			}
 			
-			throw ex;
+			if(!ex.getErrors().isEmpty()){
+				throw ex;
+			}
 		}
-		
+
 		UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
 		
 		if(jpa.getId() == model.getId()) {
