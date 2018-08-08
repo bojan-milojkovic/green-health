@@ -22,27 +22,27 @@ public class HerbDTO implements PojoParent{
 	private String latinName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb description can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb description can consist only of letters, digits, dot, comma, and whitespaces")
 	private String description;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb growsAt can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb growsAt can consist only of letters, digits, dot, comma, and whitespaces")
 	private String growsAt;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb picking tips can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb picking tips can consist only of letters, digits, dot, comma, and whitespaces")
 	private String whenToPick;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb buying tips can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb buying tips can consist only of letters, digits, dot, comma, and whitespaces")
 	private String whereToBuy;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb properties can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb properties can consist only of letters, digits, dot, comma, and whitespaces")
 	private String properties;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,;:'-]+", message="Herb use warnings can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Herb use warnings can consist only of letters, digits, dot, comma, and whitespaces")
 	private String warnings;
 
 	public Long getId() {

@@ -41,13 +41,12 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	// get a specific user :
-	public UserDTO getUserById(final Long id){
+	public UserDTO getOneById(final Long id){
 		return convertJpaToModel(userRepository.getOne(id));
 	}
 	
 	public boolean isPostDataPresent(final UserDTO model) {
-		return model!=null && 
-				RestPreconditions.checkString(model.getUsername()) && 
+		return RestPreconditions.checkString(model.getUsername()) && 
 				RestPreconditions.checkString(model.getPassword()) && 
 				RestPreconditions.checkString(model.getEmail()) && 
 				RestPreconditions.checkString(model.getFirstName()) && 
@@ -55,11 +54,10 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	public boolean isPatchDataPresent(final UserDTO model) {
-		return model!=null && (
-				/*RestPreconditions.checkString(model.getPassword()) ||*/ 
+		return /*RestPreconditions.checkString(model.getPassword()) ||*/ 
 				RestPreconditions.checkString(model.getEmail()) || 
 				RestPreconditions.checkString(model.getFirstName()) || 
-				RestPreconditions.checkString(model.getLastName()));
+				RestPreconditions.checkString(model.getLastName());
 	}
 	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
@@ -81,7 +79,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	// add new user to db :
-	public void addUserToDb(final UserDTO model) throws MyRestPreconditionsException {
+	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
 		// check everything except id and registration is present in resource :
 		if(isPostDataPresent(model)) {
 			// check that username and email are unique :
@@ -117,7 +115,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserDTO editUser(UserDTO model, Long id) throws MyRestPreconditionsException {
+	public UserDTO edit(UserDTO model, final Long id) throws MyRestPreconditionsException {
 		
 		// check that ids match :
 		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
@@ -163,17 +161,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void deleteUser(final Long id, final String username) throws MyRestPreconditionsException {
-		UserSecurityJPA jpa = userSecurityRepository.getOne(id);
-		if(jpa != null) {
-			if(jpa.getUsername().equals(username)){
-				userRepository.deleteById(id);
-			} else {
-				throw new MyRestPreconditionsException("Access violation !!!","You are trying to delete someone elses's user");
-			}
-		} else {
-			throw new MyRestPreconditionsException("Invalid id","Entity with that id does not exist in the system.");
-		}
+	public void delete(final Long id) throws MyRestPreconditionsException {
+		userRepository.deleteById(id);
 	}
 	
 	@Override
@@ -221,8 +210,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserJPA convertModelToJPA(UserDTO model) {
 		UserJPA jpa = new UserJPA();
-			
-		/*if(model.getId()==null){ */
+		
 		jpa.setEmail(model.getEmail());
 		jpa.setFirstName(model.getFirstName());
 		jpa.setLastName(model.getLastName());
@@ -242,18 +230,6 @@ public class UserServiceImpl implements UserService {
 		uhrJpa.setRoleJpa(roleRepository.getOne(1L));
 		usJpa.getUserHasRolesJpa().add(uhrJpa);
 		userHasRolesRepository.save(uhrJpa);
-		/*} else {
-			
-			if(RestPreconditions.checkString(model.getEmail())){
-				jpa.setEmail(model.getEmail());
-			}
-			if(RestPreconditions.checkString(model.getFirstName())){
-				jpa.setFirstName(model.getFirstName());
-			}
-			if(RestPreconditions.checkString(model.getLastName())){
-				jpa.setLastName(model.getLastName());
-			}
-		}*/
 		
 		return jpa;
 	}

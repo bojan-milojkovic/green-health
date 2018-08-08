@@ -23,12 +23,12 @@ public class HerbServiceImpl implements HerbService {
 	}
 	
 	@Override
-	public List<HerbDTO> getAllHerbs() {
+	public List<HerbDTO> getAll() {
 		return herbDao.findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
 	}
 	
 	@Override
-	public HerbDTO getHerbById(Long id) {
+	public HerbDTO getOneById(Long id) {
 		return convertJpaToModel(herbDao.getOne(id));
 	}
 
@@ -43,7 +43,7 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public void addHerb(HerbDTO model) throws MyRestPreconditionsException {
+	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
 		if(isPostDataPresent(model)) {
 			// check that herb name is unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
@@ -54,7 +54,7 @@ public class HerbServiceImpl implements HerbService {
 			herbDao.save(convertModelToJPA(model));
 		} else {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
-							"The following data is missing from the herb data form");
+							"The following data is missing from the herb form");
 			if(model.getDescription()==null){
 				ex.getErrors().add("herb description");
 			}
@@ -81,12 +81,12 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbDTO editHerb(Long id, HerbDTO model) throws MyRestPreconditionsException {
+	public HerbDTO edit(HerbDTO model, Long id) throws MyRestPreconditionsException {
 		
 		if(isPatchDataPresent(model)) {
 			model.setId(id);
 			HerbJPA jpa = convertModelToJPA(model);
-			if(jpa.getId()!=null){
+			if(jpa!=null){
 				herbDao.save(jpa);
 				return convertJpaToModel(jpa);
 			} else {
@@ -101,7 +101,7 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public void deleteHerb(Long id) throws MyRestPreconditionsException {
+	public void delete(final Long id) throws MyRestPreconditionsException {
 		if(herbDao.getOne(id)!=null){
 			herbDao.deleteById(id);
 		} else {
@@ -116,36 +116,45 @@ public class HerbServiceImpl implements HerbService {
 		
 		if(model.getId()==null){
 			jpa = new HerbJPA();
+			
+			jpa.setDescription(model.getDescription());
+			jpa.setGrowsAt(model.getGrowsAt());
+			jpa.setLatinName(model.getLatinName());
+			jpa.setSrbName(model.getSrbName());
+			jpa.setProperties(model.getProperties());
+			jpa.setWarnings(model.getWarnings());
+			jpa.setWhenToPick(model.getWhenToPick());
+			jpa.setWhereToBuy(model.getWhereToBuy());
 		} else {
 			jpa = herbDao.getOne(model.getId());
 			if(jpa==null){ // in case of trying to edit a non existing herb 
-				return new HerbJPA();
+				return null;
 			}
-		}
-		
-		if(RestPreconditions.checkString(model.getDescription())){
-			jpa.setDescription(model.getDescription());
-		}
-		if(RestPreconditions.checkString(model.getGrowsAt())){
-			jpa.setGrowsAt(model.getGrowsAt());
-		}
-		if(RestPreconditions.checkString(model.getLatinName())){
-			jpa.setLatinName(model.getLatinName());
-		}
-		if(RestPreconditions.checkString(model.getSrbName())){
-			jpa.setSrbName(model.getSrbName());
-		}
-		if(RestPreconditions.checkString(model.getProperties())){
-			jpa.setProperties(model.getProperties());
-		}
-		if(RestPreconditions.checkString(model.getWarnings())){
-			jpa.setWarnings(model.getWarnings());
-		}
-		if(RestPreconditions.checkString(model.getWhenToPick())){
-			jpa.setWhenToPick(model.getWhenToPick());
-		}
-		if(RestPreconditions.checkString(model.getWhereToBuy())){
-			jpa.setWhereToBuy(model.getWhereToBuy());
+			
+			if(RestPreconditions.checkString(model.getDescription())){
+				jpa.setDescription(model.getDescription());
+			}
+			if(RestPreconditions.checkString(model.getGrowsAt())){
+				jpa.setGrowsAt(model.getGrowsAt());
+			}
+			if(RestPreconditions.checkString(model.getLatinName())){
+				jpa.setLatinName(model.getLatinName());
+			}
+			if(RestPreconditions.checkString(model.getSrbName())){
+				jpa.setSrbName(model.getSrbName());
+			}
+			if(RestPreconditions.checkString(model.getProperties())){
+				jpa.setProperties(model.getProperties());
+			}
+			if(RestPreconditions.checkString(model.getWarnings())){
+				jpa.setWarnings(model.getWarnings());
+			}
+			if(RestPreconditions.checkString(model.getWhenToPick())){
+				jpa.setWhenToPick(model.getWhenToPick());
+			}
+			if(RestPreconditions.checkString(model.getWhereToBuy())){
+				jpa.setWhereToBuy(model.getWhereToBuy());
+			}
 		}
 		
 		return jpa;
@@ -170,8 +179,7 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public boolean isPostDataPresent(HerbDTO model) {
-		return model!=null && 
-				RestPreconditions.checkString(model.getDescription()) && 
+		return RestPreconditions.checkString(model.getDescription()) && 
 				RestPreconditions.checkString(model.getGrowsAt()) && 
 				RestPreconditions.checkString(model.getLatinName()) &&
 				RestPreconditions.checkString(model.getSrbName()) && 
@@ -183,15 +191,13 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public boolean isPatchDataPresent(HerbDTO model) {
-		return model!=null &&
-				(RestPreconditions.checkString(model.getDescription()) ||
+		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getGrowsAt()) ||
 				RestPreconditions.checkString(model.getLatinName()) ||
 				RestPreconditions.checkString(model.getSrbName()) ||
 				RestPreconditions.checkString(model.getProperties()) ||
 				RestPreconditions.checkString(model.getWarnings()) ||
 				RestPreconditions.checkString(model.getWhenToPick()) ||
-				RestPreconditions.checkString(model.getWhereToBuy())
-						);
+				RestPreconditions.checkString(model.getWhereToBuy());
 	}
 }

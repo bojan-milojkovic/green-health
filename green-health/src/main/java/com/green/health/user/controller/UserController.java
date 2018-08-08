@@ -40,16 +40,16 @@ public class UserController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserDTO getUserById(@PathVariable("id") Long id){
-		return userServiceImpl.getUserById(id);
+	public @ResponseBody UserDTO getUserById(@PathVariable("id") final Long id){
+		return userServiceImpl.getOneById(id);
 	}
 	
 	// .../gh/users/ue?username=Koala2&email=blatruc@gmail.com
 	@RequestMapping(value = "/ue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserDTO getUserByUsernameOrEmail(@RequestParam(value="username", required=false) String username,
-														  @RequestParam(value="email", required=false) String email) 
+	public @ResponseBody UserDTO getUserByUsernameOrEmail(@RequestParam(value="username", required=false) final String username,
+														  @RequestParam(value="email", required=false) final String email) 
 														  throws MyRestPreconditionsException{
 		return userServiceImpl.getUserByUsernameOrEmail(username, email);
 	}	
@@ -61,32 +61,55 @@ public class UserController {
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveNewUser(@RequestBody @Valid UserDTO model) throws MyRestPreconditionsException {
-		userServiceImpl.addUserToDb(model);
+		if(model != null){
+			userServiceImpl.addNew(model);
+		} else {
+			throw new MyRestPreconditionsException("User creation error",
+					"You are sending a request without the object");
+		}
 	}
 	
 	// .../gh/users/3
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public @ResponseBody UserDTO editUserById(@RequestBody @Valid UserDTO model, @PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
-		model.setUsername(principal.getName());
-		return userServiceImpl.editUser(model, id);
+	public @ResponseBody UserDTO editUserById(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		if(model!=null){
+			model.setUsername(principal.getName());
+			return userServiceImpl.edit(model, id);
+		} else {
+			throw new MyRestPreconditionsException("User edit error",
+					"You are sending a request without the object");
+		}
 	}
 	
 	// .../gh/users/3
 	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void deleteUserById(@PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
-		userServiceImpl.deleteUser(id, principal.getName());
+	public void deleteUserById(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		UserDTO model = userServiceImpl.getUserByUsernameOrEmail(principal.getName(), null);
+		if(model==null){
+			throw new MyRestPreconditionsException("Access violation !!!","Your user account no longer exists");
+		}
+		if(model.getId() != id){
+			throw new MyRestPreconditionsException("Access violation !!!","You are trying to delete someone elses's user");
+		}
+		
+		userServiceImpl.delete(id);
 	}
 	
 	// .../gh/users/cpw
 	@RequestMapping(value="/cpw/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void changePassword(@RequestBody @Valid MiniUserDTO model, @PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException {
-		model.setId(id);
-		userServiceImpl.changePassword(model, principal.getName());
+	public void changePassword(@RequestBody @Valid MiniUserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		if(model!=null && id!=null){
+			model.setId(id);
+			userServiceImpl.changePassword(model, principal.getName());
+		} else {
+			throw new MyRestPreconditionsException("User password edit error",
+					"You are sending a request without the object");
+		}
 	}
 }
