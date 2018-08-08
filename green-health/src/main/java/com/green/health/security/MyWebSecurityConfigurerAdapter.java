@@ -33,6 +33,13 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.POST, "/gh/users").permitAll()
 			.antMatchers(HttpMethod.PATCH, "/gh/users/*").hasRole("USER")
 			.antMatchers(HttpMethod.DELETE, "/gh/users/*").hasRole("USER")
+			
+			.antMatchers(HttpMethod.GET, "/gh/herb").permitAll()
+			.antMatchers(HttpMethod.GET, "/gh/herb/*").permitAll()
+			.antMatchers(HttpMethod.POST, "/gh/herb").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.PATCH, "/gh/herb/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.DELETE, "/gh/herb/*").hasRole("HERBALIST")
+			
 			.antMatchers(HttpMethod.POST, "/gh/roles").permitAll()
 			.antMatchers(HttpMethod.GET, "/gh/descipher").permitAll()
 			;
