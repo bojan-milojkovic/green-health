@@ -1,6 +1,5 @@
 package com.green.health.parents;
 
-import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -10,7 +9,6 @@ public class ImageParent {
 	protected String image;
 	
 	@JsonProperty(access = Access.READ_ONLY)
-	@Pattern(regexp="^(jpe?g)|(png)|(gif)$")
 	protected String imageFormat;
 
 	public String getImage() {
