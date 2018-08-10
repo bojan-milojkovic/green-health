@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.green.health.parents.ImageParent;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class MiniUser implements PojoParent{
+public class MiniUser extends ImageParent implements PojoParent{
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;
@@ -25,13 +26,6 @@ public class MiniUser implements PojoParent{
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Pattern(regexp="^[^ ;]{6,}$", message="Password cannot contain a white space or ; and must be at least 6 characters long")
 	private String newPassword;
-	
-	@JsonProperty(access = Access.READ_ONLY)
-	private String image;
-	
-	@JsonProperty(access = Access.READ_ONLY)
-	@Pattern(regexp="^(jpe?g)|(png)|(gif)$")
-	private String imageFormat;
 	
 	public String getName() {
 		return name;
