@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.green.health.user.entities.MiniUserDTO;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
@@ -103,7 +101,7 @@ public class UserController {
 	@RequestMapping(value="/cpw/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void changePassword(@RequestBody @Valid MiniUserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+	public void changePassword(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
 		if(model!=null && id!=null){
 			model.setId(id);
 			userServiceImpl.changePassword(model, principal.getName());

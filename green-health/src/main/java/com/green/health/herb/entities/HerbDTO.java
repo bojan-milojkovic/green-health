@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.green.health.parents.ImageParent;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class HerbDTO implements PojoParent{
+public class HerbDTO extends ImageParent implements PojoParent{
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;

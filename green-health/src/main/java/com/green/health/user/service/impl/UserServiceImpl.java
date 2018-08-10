@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
-
-import com.green.health.user.entities.MiniUserDTO;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.security.entities.UserHasRolesJPA;
@@ -166,7 +164,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public void changePassword(MiniUserDTO model, String username) throws MyRestPreconditionsException {
+	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
 		
 		{
 			MyRestPreconditionsException ex = 

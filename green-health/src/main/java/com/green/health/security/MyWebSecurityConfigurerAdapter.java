@@ -47,7 +47,6 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.DELETE, "/gh/illness/*").hasRole("HERBALIST")
 			
 			.antMatchers(HttpMethod.POST, "/gh/roles").permitAll()
-			.antMatchers(HttpMethod.GET, "/gh/descipher").permitAll()
 			;
 
 		// disable csrf
