@@ -9,14 +9,14 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class MiniUserDTO implements PojoParent{
+public class MiniUser implements PojoParent{
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;
 	
-	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="^[A-Za-z0-9._-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
-	private String username;
+	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^[A-Za-z0-9._-]{3,}$", message="Name can consist only of letters, digits, dot, dash and underscore")
+	private String name;
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Pattern(regexp="^[^ ;]{6,}$", message="Password cannot contain a white space or ; and must be at least 6 characters long")
@@ -26,12 +26,19 @@ public class MiniUserDTO implements PojoParent{
 	@Pattern(regexp="^[^ ;]{6,}$", message="Password cannot contain a white space or ; and must be at least 6 characters long")
 	private String newPassword;
 	
-	public String getUsername() {
-		return username;
+	@JsonProperty(access = Access.READ_ONLY)
+	private String image;
+	
+	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^(jpe?g)|(png)|(gif)$")
+	private String imageFormat;
+	
+	public String getName() {
+		return name;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setName(String username) {
+		this.name = username;
 	}
 
 	public String getPassword() {

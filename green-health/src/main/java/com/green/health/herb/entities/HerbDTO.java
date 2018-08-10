@@ -18,7 +18,7 @@ public class HerbDTO implements PojoParent{
 	private String srbName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ]+", message="Herb Latin name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[A-Za-z ]{3,}", message="Herb Latin name can consist only of at least 3 letters and whitespaces")
 	private String latinName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
