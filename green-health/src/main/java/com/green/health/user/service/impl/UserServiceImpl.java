@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
-import com.green.health.user.entities.MiniUser;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.security.entities.UserHasRolesJPA;
@@ -165,14 +164,14 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public void changePassword(MiniUser model, String username) throws MyRestPreconditionsException {
+	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
 		
 		{
 			MyRestPreconditionsException ex = 
 					new MyRestPreconditionsException("Change password error","request json is missing some elements.");
 	
 			if((model.getId()==null || (model.getId()!=null && model.getId()<0))) {
-				ex.getErrors().add("Invalid or missing user id");
+				ex.getErrors().add("Missing or invalid user id");
 			}
 			if(!RestPreconditions.checkString(model.getPassword())) {
 				ex.getErrors().add("Original password is mandatory");

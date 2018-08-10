@@ -26,6 +26,10 @@ public class UserDTO extends ImageParent implements PojoParent{
 	@Pattern(regexp="^[^ ;]{6,}$", message="Password cannot contain a white space or ; and must be at least 6 characters long")
 	private String password;
 	
+	@JsonProperty(access = Access.WRITE_ONLY)
+	@Pattern(regexp="^[^ ;]{6,}$", message="New password cannot contain a white space or ; and must be at least 6 characters long")
+	private String newPassword;
+	
 	@JsonProperty(access = Access.READ_WRITE)
 	@Pattern(regexp="^[A-Z][a-z]+$", message="First name must start with a capital letter, followed by small letters.")
 	private String firstName;
@@ -96,5 +100,13 @@ public class UserDTO extends ImageParent implements PojoParent{
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
 	}
 }
