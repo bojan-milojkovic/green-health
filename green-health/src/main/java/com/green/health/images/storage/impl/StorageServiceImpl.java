@@ -62,10 +62,12 @@ public class StorageServiceImpl implements StorageService {
 	@Override
 	public Resource readImage(final Long id, final String name) throws MyRestPreconditionsException{
 		
+		RestPreconditions.assertTrue(id!=null && id>0, "Uploading file for invalid user/herb id ("+id+")");
+		
 		String imgDir = buildDirPath(id);
 		
 		if(!(new File(imgDir)).isDirectory()){
-			throw new MyRestPreconditionsException("Image retreave error", "image directory is invalid");
+			return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
 		}
 		
 		try{
@@ -77,7 +79,7 @@ public class StorageServiceImpl implements StorageService {
             	return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
             }
 		} catch (Exception e){
-			throw new MyRestPreconditionsException("Image retreave error", "image directory is invalid");
+			throw new MyRestPreconditionsException("Resource retreave error", "image directory is invalid");
 		}
 	}
 	
