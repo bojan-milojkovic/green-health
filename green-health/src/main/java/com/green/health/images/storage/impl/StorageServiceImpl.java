@@ -1,22 +1,54 @@
 package com.green.health.images.storage.impl;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import javax.imageio.ImageIO;
 import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.green.health.images.storage.StorageService;
+import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Service
 public class StorageServiceImpl implements StorageService {
 
+	private String fileStorageLocation;
+	private ResourceLoader resourceLoader;
+	
+	@Autowired
+	public StorageServiceImpl(ResourceLoader resourceLoader) throws MyRestPreconditionsException {
+		this.resourceLoader = resourceLoader;
+		this.fileStorageLocation = System.getProperty("user.dir")+File.separator+"images"+File.separator;
+		
+		try {
+            Files.createDirectories(Paths.get(fileStorageLocation).toAbsolutePath().normalize());
+        } catch (Exception ex) {
+            throw new MyRestPreconditionsException("Image service initialization error", 
+            		"Could not create the directory where the uploaded files will be stored.");
+        }
+	}
+
 	@Override
-	public void saveImage(final MultipartFile mpf, Long id, boolean isUser) throws MyRestPreconditionsException {
+	public void saveImage(final MultipartFile mpf, Long id, boolean isUser) throws MyRestPreconditionsException {	
+		RestPreconditions.assertTrue(null != mpf, "You are attempting to upload a non-existing file.");
+		RestPreconditions.assertTrue(!mpf.isEmpty(), "You are attempting to upload an empty file.");
+		RestPreconditions.assertTrue(!mpf.getOriginalFilename().contains(".."), "Upload filename contains invalid path sequence");
+		RestPreconditions.assertTrue(mpf.getSize() < (3 * 1024 * 1024), "Max upload file size is 3MB");
+		RestPreconditions.assertTrue(id!=null && id>0, "Uploading file for invalid user/herb id ("+id+")");
+		
 		// compose dir structure :
 		String dir = buildDirPath(id);
 		
@@ -28,7 +60,7 @@ public class StorageServiceImpl implements StorageService {
 	}
 	
 	@Override
-	public String readImage(final Long id, final String name) throws MyRestPreconditionsException{
+	public Resource readImage(final Long id, final String name) throws MyRestPreconditionsException{
 		
 		String imgDir = buildDirPath(id);
 		
@@ -36,63 +68,57 @@ public class StorageServiceImpl implements StorageService {
 			throw new MyRestPreconditionsException("Image retreave error", "image directory is invalid");
 		}
 		
-		return imgDir + name;
-		
+		try{
+			Path filePath = Paths.get(imgDir + name).toAbsolutePath().normalize();
+			Resource resource = new UrlResource(filePath.toUri());
+            if(resource.exists()) {
+                return resource;
+            } else {
+            	return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
+            }
+		} catch (Exception e){
+			throw new MyRestPreconditionsException("Image retreave error", "image directory is invalid");
+		}
 	}
 	
 	// save file :
 	private void saveFileInDir(String dir, MultipartFile mpf, boolean isUser) throws MyRestPreconditionsException{
-		if (null != mpf && !mpf.isEmpty()) {
-			if(mpf.getSize() > 3 * 1024 * 1024){
-				throw new MyRestPreconditionsException("Image save error", "Max upload file size is 3MB");
+
+		String fileName = isUser ? "profile" : "herb";
+		String contentType = mpf.getContentType().split("/")[1];
+		
+		try {
+			// save original :
+			if(!isUser){ // herb has both regular size image and thumbnail ; user has only thumbnail :
+				Path targetLocation = Paths.get(dir + fileName+"."+contentType).toAbsolutePath().normalize();
+				Files.copy(mpf.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 			}
+			// save thumbnail :
+			Path targetLocation = Paths.get(dir + fileName+"_THUMBNAIL."+contentType).toAbsolutePath().normalize();
+			Files.copy(scaleImageInputstream(mpf, contentType, 100, 120), 
+					targetLocation, StandardCopyOption.REPLACE_EXISTING);
 			
-			String fileName = isUser ? "profile" : "herb";
-			String contentType = mpf.getContentType().split("/")[1];
-			
-			try {
-				// save original :
-				if(!isUser){ // only if it's herb. users only have thumbnails :
-					try (FileOutputStream fos = new FileOutputStream(dir + fileName + "." + contentType, false)) {
-					   fos.write(scaleImageInputstream(mpf, contentType, 800, 800));
-					}
-				}
-				
-				// save thumbnail :
-				try (FileOutputStream fos = new FileOutputStream(dir + fileName + "_THUMBNAIL" + "." + contentType, false)) {
-				   fos.write(scaleImageInputstream(mpf, contentType, 100, 120));
-				}
-			}catch (IllegalStateException | IOException e) {
-				e.printStackTrace();
-				throw new MyRestPreconditionsException("Image save error", "Failed to save image in "+dir);
-			}
-			
-		} else {
-			throw new MyRestPreconditionsException("Image save error", "File you are inputing is empty or null");
+		}catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new MyRestPreconditionsException("Image save error", "Failed to save image in "+dir);
 		}
 	}
 	
-	private byte[] scaleImageInputstream(final MultipartFile multipart,final String contentType,final int targetWidth,final int targetHeight) throws MyRestPreconditionsException {
-		String imageFormat = (contentType.contains("jpeg")) ? "jpg" : "png";
-        byte[] scaledImageInByte = null;
+	private InputStream scaleImageInputstream(final MultipartFile multipart,final String contentType,final int targetWidth,final int targetHeight) throws MyRestPreconditionsException {
 		try{
-			
-	        BufferedImage imBuff = ImageIO.read(multipart.getInputStream());
+	        BufferedImage originalImg = ImageIO.read(multipart.getInputStream());
 	        
-	        BufferedImage scaledImg = Scalr.resize(imBuff, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,
+	        BufferedImage scaledImg = Scalr.resize(originalImg, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,
 	                targetWidth, targetHeight, Scalr.OP_ANTIALIAS);
-	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	        ImageIO.write(scaledImg,imageFormat, baos);
-	        baos.flush();
 	        
-	        scaledImageInByte = baos.toByteArray();
-	        baos.close();
-
+	        ByteArrayOutputStream os = new ByteArrayOutputStream();
+	        ImageIO.write(scaledImg, contentType, os);
+	        os.flush();
+	        return new ByteArrayInputStream(os.toByteArray());
 		}
 		catch(Exception e){
-			
+			throw new MyRestPreconditionsException("Image scaling error","Ooops - something went wrong !");
 		}
-        return scaledImageInByte;
     }
 	
 	// directory verification
@@ -120,7 +146,7 @@ public class StorageServiceImpl implements StorageService {
 		
 		char[] folders = (""+id).toCharArray();
 		
-		String dir = System.getProperty("user.dir")+File.separator+"images"+File.separator;
+		String dir = fileStorageLocation;
 		
 		for(int i=folders.length-1 ; i>=0 ; i--){
 			dir += (folders[i]+File.separator);

@@ -1,12 +1,9 @@
 package com.green.health.images.storage.controller;
 
 import java.security.Principal;
-
-import javax.servlet.ServletContext;
 import javax.servlet.annotation.MultipartConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,30 +14,29 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.multipart.MultipartFile;
 import com.green.health.images.storage.StorageService;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @Controller
 @MultipartConfig(maxFileSize = 3*1024*1024, maxRequestSize = 4*1024*1024)
-public class ImageTestController implements ServletContextAware {
+public class ImageTestController {
 
 	private StorageService storageServiceImpl;
 	
 	private UserService userServiceImpl;
 
-	private ServletContext servletContext;
-
 	@Autowired
-	public ImageTestController(StorageService storageServiceImpl, UserService userServiceImpl,
-			ServletContext servletContext) {
+	public ImageTestController(StorageService storageServiceImpl, UserService userServiceImpl) {
 		this.storageServiceImpl = storageServiceImpl;
 		this.userServiceImpl = userServiceImpl;
-		this.servletContext = servletContext;
+		
+
 	}
 
 	
@@ -57,14 +53,19 @@ public class ImageTestController implements ServletContextAware {
 	@RequestMapping(value = "/image/test/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
-	    HttpHeaders headers = new HttpHeaders();
-	    Resource resource = new ServletContextResource(servletContext, storageServiceImpl.readImage(id, "profile_THUMBNAIL.png"));
-	    return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-	}
-
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
+	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
+	    Resource resource = storageServiceImpl.readImage(id, "profile_THUMBNAIL.png");
+	    
+	    String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (Exception ex) {
+        	contentType = "application/octet-stream";
+        }
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
 	}
 }
