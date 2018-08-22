@@ -2,10 +2,15 @@ package com.green.health.user.controller;
 
 import java.security.Principal;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,8 +20,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
+import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Controller
@@ -50,21 +58,41 @@ public class UserController {
 														  @RequestParam(value="email", required=false) final String email) 
 														  throws MyRestPreconditionsException{
 		return userServiceImpl.getUserByUsernameOrEmail(username, email);
-	}	
+	}
 	
-	
+	@RequestMapping(value = "/prfimg/{id}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
+	    Resource resource = userServiceImpl.readImage(id);
+	    
+	    String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (Exception ex) {
+        	contentType = "application/octet-stream";
+        }
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+	}
 	
 	// .../gh/users
 	// @Valid triggers the MyControllerAdvice when UserJPA is invalid
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public void saveNewUser(@RequestBody @Valid UserDTO model) throws MyRestPreconditionsException {
-		if(model != null){
-			userServiceImpl.addNew(model);
-		} else {
-			throw new MyRestPreconditionsException("User creation error",
-					"You are sending a request without the object");
-		}
+		userServiceImpl.addNew(model);
+	}
+	
+	// .../gh/users/prfimg
+	@RequestMapping(value = "/prfimg", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void uploadProfilePic(@RequestParam(value="file", required=true) MultipartFile file, Principal principal) throws MyRestPreconditionsException{
+		userServiceImpl.saveProfilePicture(file, principal.getName());
 	}
 	
 	// .../gh/users/3
@@ -72,13 +100,9 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody UserDTO editUserById(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
-		if(model!=null){
-			model.setUsername(principal.getName());
-			return userServiceImpl.edit(model, id);
-		} else {
-			throw new MyRestPreconditionsException("User edit error",
-					"You are sending a request without the object");
-		}
+		RestPreconditions.assertTrue(model!=null, "Edit user error !", "Edit user cannot be performed without the user object.");
+		model.setUsername(principal.getName());
+		return userServiceImpl.edit(model, id);
 	}
 	
 	// .../gh/users/3
@@ -87,12 +111,9 @@ public class UserController {
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteUserById(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
 		UserDTO model = userServiceImpl.getUserByUsernameOrEmail(principal.getName(), null);
-		if(model==null){
-			throw new MyRestPreconditionsException("Access violation !!!","Your user account no longer exists");
-		}
-		if(model.getId() != id){
-			throw new MyRestPreconditionsException("Access violation !!!","You are trying to delete someone elses's user");
-		}
+		
+		RestPreconditions.assertTrue(model!=null, "Delete user error", "Your user account no longer exists");
+		RestPreconditions.assertTrue(model.getId() != id, "Access violation !!!", "You are trying to delete someone elses's user");
 		
 		userServiceImpl.delete(id);
 	}
@@ -102,12 +123,9 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void changePassword(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
-		if(model!=null && id!=null){
-			model.setId(id);
-			userServiceImpl.changePassword(model, principal.getName());
-		} else {
-			throw new MyRestPreconditionsException("User password edit error",
-					"You are sending a request without the object");
-		}
+		RestPreconditions.assertTrue(model!=null, "User password edit error !!!", "You are sending a request without the object");
+		RestPreconditions.assertTrue(id!=null, "User password edit error !!!", "User id is mandatory.");
+		model.setId(id);
+		userServiceImpl.changePassword(model, principal.getName());
 	}
 }

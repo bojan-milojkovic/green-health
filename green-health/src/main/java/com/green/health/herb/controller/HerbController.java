@@ -1,9 +1,8 @@
 package com.green.health.herb.controller;
 
+import java.io.IOException;
 import java.util.List;
-
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.service.HerbService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
@@ -53,12 +54,39 @@ public class HerbController {
 		return model==null ? herbServiceImpl.getHerbBySrbName(name) : model;
 	}
 	
-	// .../gh/herb
-	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	
+// .../gh/herb
+	/*
+---------------------------acebdf13572468
+Content-Disposition: form-data; name="json"
+
+{"description":"Stabljika je visoka oko 50cm, razgranata i cetrovouglasta. Stabljika, lisne drske i nervi su modri ili su ljubicasto crvenkasti, narocito u prolece kad nana nice iz zemlje. Listovi su dugacki 3 do 9cm, jajasto kopljasti, tanki, s gornje strane tamnozeleni, a s donje bledji, pri dnu se suzavaju u drske dugacke do 1cm. Po obodu su nejednako zupcasti. Glavni nerv je vrlo istaknut.","growsAt":"Gaji se sirom sveta.","srbName":"nana","latinName":"mentha piperita","whenToPick":"Berbu nane za destilaciju etarskog ulja treba vrsiti po najlepsem vremenu. Suvise mlada nana daje ulje slabog kvaliteta s malo mentola, a mnogo mentona. Precvetala biljka daje manje ulja i losijeg kvaliteta.","properties":"prijatan, blag i neskodljiv lek za umirivanje, protiv gasova, nadimanja i grceva, protiv teskog varenja, kao stomahik, nana ulazi u sastav cajeva za lecenje zuci. Nanino ulje ima slaba anesteticka svojstva i prijatan miris koji osvezava, zbog cega se upotrebljava i protiv gadjenja i povracanja. Rastvor ulja u alkoholu koristi spolja protiv bolova od neuralgije, reumatizma i nazeba. Mentol, naime, drazi nerve u kozi, lako isparava i zbog toga hladi. Nana se ne sme kuvati, vec samo preliti kljucalom vodom da ne izvetre lekoviti sastojci","warnings":"Pitoma nana je potpuno neskodljiva"}
+---------------------------acebdf13572468
+Content-Disposition: form-data; name="file"; filename="mint.jpg"
+Content-Type: image/jpeg
+
+<@INCLUDE *C:\Users\Lazaruss\Desktop\mint.jpg*@>
+---------------------------acebdf13572468-- 
+	*/
+	@RequestMapping(value = "", method = RequestMethod.POST, headers="Content-Type=multipart/form-data")
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void addHerb(@RequestBody @Valid HerbDTO model) throws MyRestPreconditionsException {
-		herbServiceImpl.addNew(model);
+	public void addHerb (@RequestParam(value="json", required=true) final String json,
+			@RequestParam(value="file", required=true) final MultipartFile file) throws MyRestPreconditionsException {
+
+		HerbDTO model;
+		try {
+			model = (new ObjectMapper()).readValue(json, HerbDTO.class);
+			
+			model.setImage(file);
+			herbServiceImpl.addNew(model);
+		} catch (IOException e) {
+			MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
+			ex.getErrors().add(e.getMessage());
+			ex.getErrors().add(e.getLocalizedMessage());
+			e.printStackTrace();
+			throw ex;
+		}
 	}
 	
 	// .../gh/herb/3

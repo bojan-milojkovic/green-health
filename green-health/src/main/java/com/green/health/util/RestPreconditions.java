@@ -16,7 +16,17 @@ public class RestPreconditions {
 		}
 	}
 	
+	public static void assertTrue(boolean condition, String title, String message) throws MyRestPreconditionsException{
+		if(!condition) {
+			throw new MyRestPreconditionsException(title, message);
+		}
+	}
+	
 	public static boolean checkString(final String s){
 		return s!=null && !s.trim().isEmpty();
+	}
+	
+	public static boolean checkStringMatches(final String s, final String regExp){
+		return s!=null && s.matches(regExp);
 	}
 }

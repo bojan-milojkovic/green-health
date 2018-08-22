@@ -31,6 +31,8 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.GET, "/gh/users").hasRole("USER")
 			.antMatchers(HttpMethod.GET, "/gh/users/*").hasRole("USER")
 			.antMatchers(HttpMethod.POST, "/gh/users").permitAll()
+			.antMatchers(HttpMethod.GET, "/gh/users/prfimg/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/gh/users/prfimg").hasRole("USER")
 			.antMatchers(HttpMethod.PATCH, "/gh/users/*").hasRole("USER")
 			.antMatchers(HttpMethod.DELETE, "/gh/users/*").hasRole("USER")
 			

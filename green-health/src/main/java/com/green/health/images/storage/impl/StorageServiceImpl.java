@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,24 +63,29 @@ public class StorageServiceImpl implements StorageService {
 	@Override
 	public Resource readImage(final Long id, final String name) throws MyRestPreconditionsException{
 		
-		RestPreconditions.assertTrue(id!=null && id>0, "Uploading file for invalid user/herb id ("+id+")");
-		
 		String imgDir = buildDirPath(id);
 		
 		if(!(new File(imgDir)).isDirectory()){
 			return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
 		}
 		
-		try{
-			Path filePath = Paths.get(imgDir + name).toAbsolutePath().normalize();
-			Resource resource = new UrlResource(filePath.toUri());
-            if(resource.exists()) {
-                return resource;
-            } else {
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(imgDir))){
+			Path filePath = null;
+			
+			for (Path path : directoryStream) {
+            	if(path.toString().contains(name)){
+            		filePath = path;
+            		break;
+            	}
+            }
+			
+			if(filePath!=null){
+				return new UrlResource(filePath.toUri());
+			} else {
             	return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
             }
 		} catch (Exception e){
-			throw new MyRestPreconditionsException("Resource retreave error", "image directory is invalid");
+			throw new MyRestPreconditionsException("Resource retreave error", "Oops ! Something went wrong in retreaving the image.");
 		}
 	}
 	
@@ -88,6 +94,9 @@ public class StorageServiceImpl implements StorageService {
 
 		String fileName = isUser ? "profile" : "herb";
 		String contentType = mpf.getContentType().split("/")[1];
+		
+		// delete previous :
+		deletePreviousImage(dir, fileName);
 		
 		try {
 			// save original :
@@ -104,6 +113,19 @@ public class StorageServiceImpl implements StorageService {
 			e.printStackTrace();
 			throw new MyRestPreconditionsException("Image save error", "Failed to save image in "+dir);
 		}
+	}
+	
+	private void deletePreviousImage(String dir, String name){
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(dir))) {
+            for (Path path : directoryStream) {
+            	if(path.toString().contains(name)){
+            		Files.delete(path);
+            		break;
+            	}
+            }
+        } catch (IOException ex) {
+        	
+        }
 	}
 	
 	private InputStream scaleImageInputstream(final MultipartFile multipart,final String contentType,final int targetWidth,final int targetHeight) throws MyRestPreconditionsException {

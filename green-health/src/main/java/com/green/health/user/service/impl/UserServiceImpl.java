@@ -4,10 +4,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
+import com.green.health.images.storage.StorageService;
 import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.RoleRepository;
@@ -21,18 +25,27 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 @Service
 public class UserServiceImpl implements UserService {
 
-	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired
 	private RoleRepository roleRepository;
-	
-	@Autowired
+
 	private UserSecurityRepository userSecurityRepository;
 	
-	@Autowired
 	private UserHasRolesRepository userHasRolesRepository;
 	
+	private StorageService storageServiceImpl;
+	
+	@Autowired
+	public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+			UserSecurityRepository userSecurityRepository, UserHasRolesRepository userHasRolesRepository,
+			StorageService storageServiceImpl) {
+		this.userRepository = userRepository;
+		this.roleRepository = roleRepository;
+		this.userSecurityRepository = userSecurityRepository;
+		this.userHasRolesRepository = userHasRolesRepository;
+		this.storageServiceImpl = storageServiceImpl;
+	}
+
 	// get all users :
 	public List<UserDTO> getAll(){
 		return userRepository.findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
@@ -58,6 +71,16 @@ public class UserServiceImpl implements UserService {
 				RestPreconditions.checkString(model.getLastName());
 	}
 	
+	public void saveProfilePicture(MultipartFile file, final String username) throws MyRestPreconditionsException{
+		UserSecurityJPA usjpa = userSecurityRepository.findByUsername(username);
+		storageServiceImpl.saveImage(file, usjpa.getId(), true);
+	}
+	
+	public Resource readImage(Long id) throws MyRestPreconditionsException {
+		RestPreconditions.assertTrue(id!=null && id>0, "Retreaving image error","Invalid user id ("+id+")");
+		return storageServiceImpl.readImage(id, "profile_THUMBNAIL");
+	}
+	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
 			UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
@@ -78,6 +101,7 @@ public class UserServiceImpl implements UserService {
 	
 	// add new user to db :
 	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
+		RestPreconditions.assertTrue(model!=null, "Add user error", "Add new user cannot be done without the user object");
 		// check everything except id and registration is present in resource :
 		if(isPostDataPresent(model)) {
 			// check that username and email are unique :
@@ -187,22 +211,17 @@ public class UserServiceImpl implements UserService {
 
 		UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
 		
-		if(jpa.getId() == model.getId()) {
-			// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
-			if(BCrypt.checkpw(model.getPassword(), jpa.getPassword())) { 
-				// new password should be different
-				if(!BCrypt.checkpw(model.getNewPassword(), jpa.getPassword())) {
-					jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
-					userSecurityRepository.save(jpa);
-				} else {
-					throw new MyRestPreconditionsException("Change password error","Original password is the same as the new password");
-				}
-			} else {
-				throw new MyRestPreconditionsException("Change password error","Original password does not match with the input value");
-			}
-		} else {
-			throw new MyRestPreconditionsException("Access violation !!!","You are trying to change someone elses's password");
-		}
+		RestPreconditions.assertTrue(jpa.getId() == model.getId(), 
+				"Access violation !!!","You are trying to change someone elses's password");
+		// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
+		RestPreconditions.assertTrue(BCrypt.checkpw(model.getPassword(), jpa.getPassword()), 
+				"Change password error","Original password does not match with the stored value");
+		// new password should be different
+		RestPreconditions.assertTrue(!BCrypt.checkpw(model.getNewPassword(), jpa.getPassword()),
+				"Change password error","Original password is the same as the new password");
+		
+		jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
+		userSecurityRepository.save(jpa);
 	}
 
 	@Override

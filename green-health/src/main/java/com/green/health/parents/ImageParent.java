@@ -1,21 +1,22 @@
 package com.green.health.parents;
 
+import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 public class ImageParent {
 
 	@JsonProperty(access = Access.READ_ONLY)
-	protected String image;
+	protected MultipartFile image;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	protected String imageFormat;
 
-	public String getImage() {
+	public MultipartFile getImage() {
 		return image;
 	}
 
-	public void setImage(String image) {
+	public void setImage(MultipartFile image) {
 		this.image = image;
 	}
 

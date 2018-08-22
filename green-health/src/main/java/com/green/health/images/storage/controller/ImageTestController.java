@@ -38,7 +38,6 @@ public class ImageTestController {
 		
 
 	}
-
 	
 	@RequestMapping(value = "/image/test", method = RequestMethod.POST)
 	@PreAuthorize("hasRole('ROLE_USER')")
@@ -54,7 +53,7 @@ public class ImageTestController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-	    Resource resource = storageServiceImpl.readImage(id, "profile_THUMBNAIL.png");
+	    Resource resource = storageServiceImpl.readImage(id, "profile_THUMBNAIL.jpeg");
 	    
 	    String contentType = null;
         try {

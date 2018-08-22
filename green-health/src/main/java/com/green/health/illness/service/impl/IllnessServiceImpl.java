@@ -89,33 +89,24 @@ public class IllnessServiceImpl implements IllnessService {
 	@Override
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
 		
-		if(isPatchDataPresent(model)){
-			model.setId(id);
-			
-			IllnessJPA jpa = convertModelToJPA(model);
-			if(jpa!=null){
-				illnessDao.save(jpa);
-				return convertJpaToModel(jpa);
-			} else {
-				throw new MyRestPreconditionsException("Illness edit error", 
-						"Illness with id = "+id+" does not exist in our database.");
-			}
-		} else {
-			throw new MyRestPreconditionsException("You cannot edit this illness",
-					"There is no data in the illness edit form");
-		}
+		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 
+						"To edit the illness you must provide some editable data.");
+		model.setId(id);
+		
+		IllnessJPA jpa = convertModelToJPA(model);
+		RestPreconditions.assertTrue(jpa!=null, "Illness edit error", 
+				"Illness with id = "+id+" does not exist in our database.");
+		illnessDao.save(jpa);
+		return convertJpaToModel(jpa);
 	}
 	
 	// delete illness
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException{
 		IllnessJPA jpa = illnessDao.getOne(id);
-		if(jpa!=null){
-			illnessDao.delete(jpa);
-		} else {
-			throw new MyRestPreconditionsException("Illness deletion error",
+		RestPreconditions.assertTrue(jpa!=null, "Illness deletion error",
 					"Illness with id = "+id+" does not exist in our database.");
-		}
+		illnessDao.delete(jpa);
 	}
 	
 	@Override

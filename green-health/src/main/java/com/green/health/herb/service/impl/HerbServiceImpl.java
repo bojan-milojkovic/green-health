@@ -9,6 +9,7 @@ import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.service.HerbService;
+import com.green.health.images.storage.StorageService;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -16,10 +17,12 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class HerbServiceImpl implements HerbService {
 
 	private HerbRepository herbDao;
+	private StorageService storageServiceImpl;
 	
 	@Autowired
-	public HerbServiceImpl(HerbRepository herbDao){
+	public HerbServiceImpl(HerbRepository herbDao, StorageService storageServiceImpl){
 		this.herbDao = herbDao;
+		this.storageServiceImpl = storageServiceImpl;
 	}
 	
 	@Override
@@ -51,30 +54,38 @@ public class HerbServiceImpl implements HerbService {
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbBySrbName(model.getSrbName()),
 					"The herb with Serbian name "+model.getSrbName()+" is already in our database.");
 			
-			herbDao.save(convertModelToJPA(model));
+			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
+			
+			if(model.getImage()!=null){
+				// save image :
+				storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
+			}
 		} else {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
 							"The following data is missing from the herb form");
-			if(model.getDescription()==null){
+			if(!RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb description");
 			}
-			if(model.getGrowsAt()==null){
+			if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("where the herb grows");
 			}
-			if(model.getLatinName()==null){
+			if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
 				ex.getErrors().add("herb's latin name");
 			}
-			if(model.getProperties()==null){
+			if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb's use properties");
 			}
-			if(model.getSrbName()==null){
+			if(!RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}")){
 				ex.getErrors().add("herb's Serbian name");
 			}
-			if(model.getWarnings()==null){
+			if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb's use warnings");
 			}
-			if(model.getWhenToPick()==null){
+			if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("when to pick the herb");
+			}
+			if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("($[A-Za-z0-9 .,:'()-]{10,}^)|($^)")){
+				ex.getErrors().add("where to buy the herb");
 			}
 			throw ex;
 		}
@@ -83,31 +94,19 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public HerbDTO edit(HerbDTO model, Long id) throws MyRestPreconditionsException {
 		
-		if(isPatchDataPresent(model)) {
-			model.setId(id);
-			HerbJPA jpa = convertModelToJPA(model);
-			if(jpa!=null){
-				herbDao.save(jpa);
-				return convertJpaToModel(jpa);
-			} else {
-				throw new MyRestPreconditionsException("Herb edit error", 
-						"Herb with id = "+id+" does not exist in our database.");
-			}
-			
-		} else {
-			throw new MyRestPreconditionsException("Herb edit error",
-					"Your herb edit request is invalid - You must provide some editable data");
-		}
+		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", "Your herb edit request is invalid - You must provide some editable data");
+		model.setId(id);
+		HerbJPA jpa = convertModelToJPA(model);
+		RestPreconditions.assertTrue(jpa!=null, "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
+		herbDao.save(jpa);
+		return convertJpaToModel(jpa);
 	}
 
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
-		if(herbDao.getOne(id)!=null){
-			herbDao.deleteById(id);
-		} else {
-			throw new MyRestPreconditionsException("Herb delete error",
+		RestPreconditions.assertTrue(herbDao.getOne(id)!=null, "Herb delete error",
 					"Herb with id = "+ id + " does not exist in our database");
-		}
+		herbDao.deleteById(id);
 	}
 
 	@Override
@@ -179,13 +178,13 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public boolean isPostDataPresent(HerbDTO model) {
-		return RestPreconditions.checkString(model.getDescription()) && 
-				RestPreconditions.checkString(model.getGrowsAt()) && 
-				RestPreconditions.checkString(model.getLatinName()) &&
-				RestPreconditions.checkString(model.getSrbName()) && 
-				RestPreconditions.checkString(model.getProperties()) && 
-				RestPreconditions.checkString(model.getWarnings()) && 
-				RestPreconditions.checkString(model.getWhenToPick()) /*&& 
+		return RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}") && 
+				RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}") && 
+				RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}") &&
+				RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}") && 
+				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") && 
+				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") && 
+				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")/* && 
 				RestPreconditions.checkString(model.getWhereToBuy())*/;
 	}
 

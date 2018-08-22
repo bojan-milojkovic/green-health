@@ -1,6 +1,7 @@
 package com.green.health.config;
 
 import javax.servlet.HttpConstraintElement;
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
@@ -21,6 +22,10 @@ public class WebInitializer implements WebApplicationInitializer{
 		ServletRegistration.Dynamic apiSR = sc.addServlet("api-dispatcher", new DispatcherServlet(rootContext));
 		apiSR.setLoadOnStartup(1);
 		apiSR.addMapping("/");
+		
+		MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp", 
+				3 * 1024 * 1024, 6 * 1024 * 1024, 1 * 512 * 1024);        
+		apiSR.setMultipartConfig(multipartConfigElement);
 		
 		HttpConstraintElement forceHttpsConstraint = new HttpConstraintElement(
 				ServletSecurity.TransportGuarantee.CONFIDENTIAL);
