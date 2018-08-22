@@ -190,13 +190,13 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public boolean isPatchDataPresent(HerbDTO model) {
-		return RestPreconditions.checkString(model.getDescription()) ||
-				RestPreconditions.checkString(model.getGrowsAt()) ||
-				RestPreconditions.checkString(model.getLatinName()) ||
-				RestPreconditions.checkString(model.getSrbName()) ||
-				RestPreconditions.checkString(model.getProperties()) ||
-				RestPreconditions.checkString(model.getWarnings()) ||
-				RestPreconditions.checkString(model.getWhenToPick()) ||
-				RestPreconditions.checkString(model.getWhereToBuy());
+		return RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}") ||
+				RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}") ||
+				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				RestPreconditions.checkStringMatches(model.getWhereToBuy(),"[A-Za-z0-9 .,:'()-]{10,}");
 	}
 }
