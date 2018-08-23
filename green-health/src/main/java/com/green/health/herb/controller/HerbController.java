@@ -74,9 +74,8 @@ Content-Type: image/jpeg
 	public void addHerb (@RequestParam(value="json", required=true) final String json,
 			@RequestParam(value="file", required=true) final MultipartFile file) throws MyRestPreconditionsException {
 
-		HerbDTO model;
 		try {
-			model = (new ObjectMapper()).readValue(json, HerbDTO.class);
+			HerbDTO model = (new ObjectMapper()).readValue(json, HerbDTO.class);
 			
 			model.setImage(file);
 			herbServiceImpl.addNew(model);
