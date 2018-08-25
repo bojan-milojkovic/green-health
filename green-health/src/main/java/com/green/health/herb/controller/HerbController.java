@@ -19,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.service.HerbService;
+import com.green.health.images.storage.StorageService;
+import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Controller
@@ -26,10 +28,12 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class HerbController {
 	
 	private HerbService herbServiceImpl;
+	private StorageService storageServiceImpl;
 	
 	@Autowired
-	public HerbController(HerbService herbServiceImpl) {
+	public HerbController(HerbService herbServiceImpl, StorageService storageServiceImpl) {
 		this.herbServiceImpl = herbServiceImpl;
+		this.storageServiceImpl = storageServiceImpl;
 	}
 
 	// .../gh/herb
@@ -89,11 +93,38 @@ Content-Type: image/jpeg
 	}
 	
 	// .../gh/herb/3
-	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, headers="Content-Type!=multipart/form-data")
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody HerbDTO editHerb(@RequestBody @Valid HerbDTO model, @PathVariable("id") final Long id) throws MyRestPreconditionsException {
 		return herbServiceImpl.edit(model, id);
+	}
+	
+	@RequestMapping(value="/{id}", method = RequestMethod.POST, headers="Content-Type=multipart/form-data")
+	@PreAuthorize("hasRole('ROLE_HERBALIST')")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public @ResponseBody HerbDTO editHerb(@RequestParam(value="file", required=true) final MultipartFile file,
+										  @RequestParam(value="json", required=false) final String json,
+										  @PathVariable("id") final Long id) 
+												  throws MyRestPreconditionsException {
+		HerbDTO model;
+		if(RestPreconditions.checkString(json)){
+			try {
+				model = (new ObjectMapper()).readValue(json, HerbDTO.class);
+				
+				model.setImage(file);
+				return herbServiceImpl.edit(model, id);
+			} catch (IOException e) {
+				MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
+				ex.getErrors().add(e.getMessage());
+				ex.getErrors().add(e.getLocalizedMessage());
+				e.printStackTrace();
+				throw ex;
+			}
+		} else {
+			storageServiceImpl.saveImage(file, id, false);
+			return herbServiceImpl.getOneById(id);
+		}
 	}
 	
 	// .../gh/herb/3

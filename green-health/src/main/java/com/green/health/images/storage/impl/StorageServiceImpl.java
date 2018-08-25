@@ -41,6 +41,20 @@ public class StorageServiceImpl implements StorageService {
             		"Could not create the directory where the uploaded files will be stored.");
         }
 	}
+	
+	@Override
+	public void deleteImage(final Long id, boolean isUser) throws MyRestPreconditionsException {
+		String dirPath = buildDirPath(id);
+		
+		checkResultingDir(dirPath);
+		
+		if(isUser){
+			deletePreviousImage(dirPath, "profile_THUMBNAIL");
+		} else {
+			deletePreviousImage(dirPath, "herb_THUMBNAIL");
+			deletePreviousImage(dirPath, "herb");
+		}
+	}
 
 	@Override
 	public void saveImage(final MultipartFile mpf, Long id, boolean isUser) throws MyRestPreconditionsException {	

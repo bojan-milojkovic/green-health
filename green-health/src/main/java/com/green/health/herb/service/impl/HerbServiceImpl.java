@@ -84,7 +84,7 @@ public class HerbServiceImpl implements HerbService {
 			if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("when to pick the herb");
 			}
-			if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("($[A-Za-z0-9 .,:'()-]{10,}^)|($^)")){
+			if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([A-Za-z0-9 .,:'()-]{10,})|(^$)")){
 				ex.getErrors().add("where to buy the herb");
 			}
 			throw ex;
@@ -99,6 +99,13 @@ public class HerbServiceImpl implements HerbService {
 		HerbJPA jpa = convertModelToJPA(model);
 		RestPreconditions.assertTrue(jpa!=null, "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
 		herbDao.save(jpa);
+
+		if(model.getImage()!=null){
+			
+			// save image :
+			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
+		}
+		
 		return convertJpaToModel(jpa);
 	}
 
@@ -107,6 +114,8 @@ public class HerbServiceImpl implements HerbService {
 		RestPreconditions.assertTrue(herbDao.getOne(id)!=null, "Herb delete error",
 					"Herb with id = "+ id + " does not exist in our database");
 		herbDao.deleteById(id);
+		
+		storageServiceImpl.deleteImage(id, false);
 	}
 
 	@Override

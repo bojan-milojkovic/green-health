@@ -40,6 +40,7 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.GET, "/gh/herb/*").permitAll()
 			.antMatchers(HttpMethod.POST, "/gh/herb").hasRole("HERBALIST")
 			.antMatchers(HttpMethod.PATCH, "/gh/herb/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.POST, "/gh/herb/*").hasRole("HERBALIST")
 			.antMatchers(HttpMethod.DELETE, "/gh/herb/*").hasRole("HERBALIST")
 			
 			.antMatchers(HttpMethod.GET, "/gh/illness").permitAll()
