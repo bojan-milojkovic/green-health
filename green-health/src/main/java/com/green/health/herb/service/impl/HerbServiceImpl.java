@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
@@ -43,6 +44,16 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public HerbDTO getHerbByLatinName(String latinName) {
 		return convertJpaToModel(herbDao.getHerbByLatinName(latinName));
+	}
+	
+	@Override
+	public Resource getImage(Long id, boolean isThumbnail) throws MyRestPreconditionsException{
+		RestPreconditions.assertTrue(id!=null && id>0, "Retreaving image error","Invalid herb id ("+id+")");
+		if(isThumbnail){
+			return storageServiceImpl.readImage(id, "herb_THUMBNAIL");
+		} else {
+			return storageServiceImpl.readImage(id, "herb.");
+		}
 	}
 
 	@Override

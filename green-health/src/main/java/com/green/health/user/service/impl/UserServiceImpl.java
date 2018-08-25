@@ -185,6 +185,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
 		userRepository.deleteById(id);
+		storageServiceImpl.deleteImage(id, true);
 	}
 	
 	@Override

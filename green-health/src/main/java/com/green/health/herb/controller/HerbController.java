@@ -2,10 +2,13 @@ package com.green.health.herb.controller;
 
 import java.io.IOException;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,6 +59,24 @@ public class HerbController {
 	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name){
 		HerbDTO model = herbServiceImpl.getHerbByLatinName(name);
 		return model==null ? herbServiceImpl.getHerbBySrbName(name) : model;
+	}
+	
+	@RequestMapping(value = "/thumbnail/{id}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
+		Resource resource = herbServiceImpl.getImage(id, true);
+		
+		return RestPreconditions.getImage(resource, request);
+	}
+	
+	@RequestMapping(value = "/image/{id}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException{
+		Resource resource = herbServiceImpl.getImage(id, false);
+		
+		return RestPreconditions.getImage(resource, request);
 	}
 	
 	
