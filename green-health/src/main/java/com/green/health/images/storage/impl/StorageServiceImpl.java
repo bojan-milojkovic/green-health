@@ -11,9 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Pattern;
+
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -81,6 +82,7 @@ public class StorageServiceImpl implements StorageService {
 		RestPreconditions.assertTrue(!mpf.isEmpty(), "You are attempting to upload an empty file.");
 		RestPreconditions.assertTrue(!mpf.getOriginalFilename().contains(".."), "Upload filename contains invalid path sequence");
 		RestPreconditions.assertTrue(mpf.getSize() < (3 * 1024 * 1024), "Max upload file size is 3MB");
+		RestPreconditions.assertTrue(checkMpFileExtension(mpf.getOriginalFilename()), "You are only allowed to upload files with extensions jpg, jpeg, png and bmp");
 		RestPreconditions.assertTrue(id!=null && id>0, "Uploading file for invalid user/herb id ("+id+")");
 		
 		// compose dir structure :
@@ -126,7 +128,7 @@ public class StorageServiceImpl implements StorageService {
 	private void saveFileInDir(String dir, MultipartFile mpf, boolean isUser) throws MyRestPreconditionsException{
 
 		String fileName = isUser ? "profile" : "herb";
-		String contentType = mpf.getContentType().split("/")[1];
+		String contentType = mpf.getOriginalFilename().split("\\.")[1];
 		
 		// delete previous :
 		deletePreviousImage(dir, fileName);
@@ -159,6 +161,10 @@ public class StorageServiceImpl implements StorageService {
         } catch (IOException ex) {
         	
         }
+	}
+	
+	private boolean checkMpFileExtension(final String fileName){
+		return Pattern.compile("[.](jpg)|(JPG)|(png)|(PNG)|(bmp)|(BMP)|(jpeg)|(JPEG)$").matcher(fileName).find();
 	}
 	
 	private InputStream scaleImageInputstream(final MultipartFile multipart,final String contentType,final int targetWidth,final int targetHeight) throws MyRestPreconditionsException {
