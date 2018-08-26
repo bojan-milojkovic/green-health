@@ -67,7 +67,7 @@ public class HerbController {
 	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
 		Resource resource = herbServiceImpl.getImage(id, true);
 		
-		return RestPreconditions.getImage(resource, request);
+		return storageServiceImpl.getImage(resource, request);
 	}
 	
 	@RequestMapping(value = "/image/{id}", method = RequestMethod.GET)
@@ -76,7 +76,7 @@ public class HerbController {
 	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException{
 		Resource resource = herbServiceImpl.getImage(id, false);
 		
-		return RestPreconditions.getImage(resource, request);
+		return storageServiceImpl.getImage(resource, request);
 	}
 	
 	

@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.green.health.parents.ImageParent;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class HerbDTO extends ImageParent implements PojoParent{
+public class HerbDTO implements PojoParent{
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;
@@ -38,14 +37,16 @@ public class HerbDTO extends ImageParent implements PojoParent{
 	@JsonProperty(access = Access.READ_WRITE)
 	private String warnings;
 	
-	private MultipartFile file;
+	private MultipartFile image;
 	
-	public MultipartFile getFile() {
-		return file;
+	
+
+	public MultipartFile getImage() {
+		return image;
 	}
 
-	public void setFile(MultipartFile file) {
-		this.file = file;
+	public void setImage(MultipartFile image) {
+		this.image = image;
 	}
 
 	public Long getId() {

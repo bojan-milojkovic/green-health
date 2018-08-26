@@ -12,11 +12,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.green.health.images.storage.StorageService;
@@ -54,6 +59,20 @@ public class StorageServiceImpl implements StorageService {
 			deletePreviousImage(dirPath, "herb_THUMBNAIL");
 			deletePreviousImage(dirPath, "herb");
 		}
+	}
+	
+	public ResponseEntity<Resource> getImage(Resource resource, HttpServletRequest request){
+		String contentType = null;
+	    try {
+	        contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+	    } catch (Exception e) {
+	    	contentType = "application/octet-stream";
+	    }
+	    
+	    return ResponseEntity.ok()
+	            .contentType(MediaType.parseMediaType(contentType))
+	            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+	            .body(resource);
 	}
 
 	@Override

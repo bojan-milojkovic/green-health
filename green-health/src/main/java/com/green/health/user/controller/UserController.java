@@ -2,12 +2,10 @@ package com.green.health.user.controller;
 
 import java.security.Principal;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.green.health.images.storage.StorageService;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
@@ -31,9 +29,16 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 @RequestMapping(value="/users")
 public class UserController {
 
-	@Autowired
 	private UserService userServiceImpl;
 	
+	private StorageService storageServiceImpl;
+	
+	@Autowired
+	public UserController(UserService userServiceImpl, StorageService storageServiceImpl) {
+		this.userServiceImpl = userServiceImpl;
+		this.storageServiceImpl = storageServiceImpl;
+	}
+
 	// .../gh/users
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
@@ -66,17 +71,7 @@ public class UserController {
 	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
 	    Resource resource = userServiceImpl.readImage(id);
 	    
-	    String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (Exception ex) {
-        	contentType = "application/octet-stream";
-        }
-        
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+	    return storageServiceImpl.getImage(resource, request);
 	}
 	
 	// .../gh/users

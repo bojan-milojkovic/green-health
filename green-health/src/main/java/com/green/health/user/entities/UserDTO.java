@@ -9,11 +9,10 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.green.health.annotations.EmailPattern;
-import com.green.health.parents.ImageParent;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class UserDTO extends ImageParent implements PojoParent{
+public class UserDTO implements PojoParent{
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;
