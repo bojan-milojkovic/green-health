@@ -123,7 +123,7 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
 		RestPreconditions.assertTrue(herbDao.getOne(id)!=null, "Herb delete error",
-					"Herb with id = "+ id + " does not exist in our database");
+					"Herb with id = "+ id + " does not exist in our database.");
 		herbDao.deleteById(id);
 		
 		storageServiceImpl.deleteImage(id, false);

@@ -121,6 +121,7 @@ Content-Type: image/jpeg
 		return herbServiceImpl.edit(model, id);
 	}
 	
+	// .../gh/herb/3
 	@RequestMapping(value="/{id}", method = RequestMethod.POST, headers="Content-Type=multipart/form-data")
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
