@@ -40,7 +40,7 @@ public class IllnessController {
 	// .../gh/illness/id
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody IllnessDTO getIllnessById(@PathVariable("id") final Long id){
+	public @ResponseBody IllnessDTO getIllnessById(@PathVariable("id") final Long id) throws MyRestPreconditionsException{
 		return illnessServiceImpl.getOneById(id);
 	}
 	

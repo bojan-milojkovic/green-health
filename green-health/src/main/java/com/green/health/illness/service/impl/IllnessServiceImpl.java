@@ -30,8 +30,10 @@ public class IllnessServiceImpl implements IllnessService {
 
 	// get one by id
 	@Override
-	public IllnessDTO getOneById(final Long id){
-		return convertJpaToModel(illnessDao.getOne(id));
+	public IllnessDTO getOneById(final Long id) throws MyRestPreconditionsException{
+		checkId(id);
+		IllnessJPA jpa = (IllnessJPA) RestPreconditions.checkNotNull(illnessDao.getOne(id), "Cannot find illness with id = "+id);
+		return convertJpaToModel(jpa);
 	}
 	
 	// get one by name :

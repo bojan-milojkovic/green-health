@@ -52,8 +52,10 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	// get a specific user :
-	public UserDTO getOneById(final Long id){
-		return convertJpaToModel(userRepository.getOne(id));
+	public UserDTO getOneById(final Long id) throws MyRestPreconditionsException{
+		checkId(id);
+		UserJPA jpa = (UserJPA) RestPreconditions.checkNotNull(userRepository.getOne(id), "Cannot find the user with id = "+id);
+		return convertJpaToModel(jpa);
 	}
 	
 	public boolean isPostDataPresent(final UserDTO model) {
@@ -87,14 +89,24 @@ public class UserServiceImpl implements UserService {
 			if(jpa!=null){
 				return convertJpaToModel(jpa.getUserJpa());
 			}
+			
+			throw new MyRestPreconditionsException("Finding user by parameters failed",
+					"There is no user in our database with that username.");
 		}
 		if(RestPreconditions.checkString(email)){
 			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
 				throw new MyRestPreconditionsException("Finding user by parameters failed",
 						"You must provide a valid email address.");
 			}
-			return convertJpaToModel(userRepository.findByEmail(email));
+			UserJPA jpa = userRepository.findByEmail(email);
+			if(jpa!=null){
+				return convertJpaToModel(jpa);
+			}
+			
+			throw new MyRestPreconditionsException("Finding user by parameters failed",
+						"There is no user in our database with that email.");
 		}
+		
 		throw new MyRestPreconditionsException("Finding user by parameters failed",
 				"When searching a user, you must provide at least one parameter - username or email.");
 	}

@@ -83,12 +83,17 @@ public class HerbTest {
 		
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(jpa);
 		
-		HerbDTO model = mockHerbServiceImpl.getOneById(1L);
-		
-		assertEquals(model.getId(), jpa.getId());
-		assertEquals(model.getLatinName(), jpa.getLatinName());
-		assertEquals(model.getSrbName(), jpa.getSrbName());
-		assertEquals(model.getDescription(), jpa.getDescription());
+		HerbDTO model;
+		try {
+			model = mockHerbServiceImpl.getOneById(1L);
+			
+			assertEquals(model.getId(), jpa.getId());
+			assertEquals(model.getLatinName(), jpa.getLatinName());
+			assertEquals(model.getSrbName(), jpa.getSrbName());
+			assertEquals(model.getDescription(), jpa.getDescription());
+		} catch (MyRestPreconditionsException e) {
+			fail();
+		}
 	}
 	
 	@Test

@@ -1,5 +1,6 @@
 package com.green.health.util;
 
+import com.green.health.parents.PojoParent;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public class RestPreconditions {
@@ -28,5 +29,12 @@ public class RestPreconditions {
 	
 	public static boolean checkStringMatches(final String s, final String regExp){
 		return s!=null && s.matches(regExp);
+	}
+	
+	public static PojoParent checkNotNull(PojoParent object, String description) throws MyRestPreconditionsException {
+		if(object!=null){
+			return object;
+		}
+		throw new MyRestPreconditionsException("Cannot find the object specified", description);
 	}
 }

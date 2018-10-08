@@ -49,7 +49,7 @@ public class HerbController {
 	// .../gh/herb/id
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody HerbDTO getHerbById(@PathVariable("id") Long id){
+	public @ResponseBody HerbDTO getHerbById(@PathVariable("id") Long id) throws MyRestPreconditionsException{
 		return herbServiceImpl.getOneById(id);
 	}
 	
