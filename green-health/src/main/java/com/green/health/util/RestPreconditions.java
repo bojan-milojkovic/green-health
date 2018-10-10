@@ -1,6 +1,5 @@
 package com.green.health.util;
 
-import com.green.health.parents.PojoParent;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public class RestPreconditions {
@@ -31,7 +30,8 @@ public class RestPreconditions {
 		return s!=null && s.matches(regExp);
 	}
 	
-	public static PojoParent checkNotNull(PojoParent object, String description) throws MyRestPreconditionsException {
+	
+	public static <T> T checkNotNull(T object, String description) throws MyRestPreconditionsException {
 		if(object!=null){
 			return object;
 		}

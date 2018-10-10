@@ -152,6 +152,7 @@ public class UserServiceImpl implements UserService {
 	public UserDTO edit(UserDTO model, final Long id) throws MyRestPreconditionsException {
 		
 		// check that ids match :
+		checkId(id);
 		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
 		RestPreconditions.assertTrue(usJpa.getId()==id, "You cannot edit someone else's user account.");
 		
@@ -196,6 +197,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
+		checkId(id);
 		userRepository.deleteById(id);
 		storageServiceImpl.deleteImage(id, true);
 	}
