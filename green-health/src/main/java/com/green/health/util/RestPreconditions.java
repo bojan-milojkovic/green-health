@@ -37,4 +37,11 @@ public class RestPreconditions {
 		}
 		throw new MyRestPreconditionsException("Cannot find the object specified", description);
 	}
+	
+	public static <T> T checkNotNull(T object, String description, String details)throws MyRestPreconditionsException {
+		if(object!=null){
+			return object;
+		}
+		throw new MyRestPreconditionsException(description, details);
+	}
 }

@@ -32,20 +32,19 @@ public class IllnessServiceImpl implements IllnessService {
 	@Override
 	public IllnessDTO getOneById(final Long id) throws MyRestPreconditionsException{
 		checkId(id);
-		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id), "Cannot find illness with id = "+id);
+		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id), "Find illness by id error",
+				"Cannot find illness with id = "+id);
 		return convertJpaToModel(jpa);
 	}
 	
 	// get one by name :
 	@Override
-	public IllnessDTO getOneByName(final String name){
+	public IllnessDTO getOneByName(final String name) throws MyRestPreconditionsException{
 		IllnessJPA jpa = illnessDao.findByLatinName(name);
 		
 		if(jpa == null){
-			jpa = illnessDao.findBySrbName(name);
-			if(jpa==null){
-				return null;
-			}
+			jpa = RestPreconditions.checkNotNull(illnessDao.findBySrbName(name), "Find illness by name error",
+					"The the illness with the name "+name+" is not in our database.");
 		}
 		
 		return convertJpaToModel(jpa);
@@ -105,9 +104,8 @@ public class IllnessServiceImpl implements IllnessService {
 	// delete illness
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException{
-		IllnessJPA jpa = illnessDao.getOne(id);
-		RestPreconditions.assertTrue(jpa!=null, "Illness deletion error",
-					"Illness with id = "+id+" does not exist in our database.");
+		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id),"Illness delete error","Illness with id = "+id+" does not exist in our database.");
+
 		illnessDao.delete(jpa);
 	}
 	

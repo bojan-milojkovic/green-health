@@ -47,7 +47,7 @@ public class IllnessController {
 	// .../gh/illness?name=asma
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody IllnessDTO getIllnessByName(@RequestParam(value="name", required=true) final String name){
+	public @ResponseBody IllnessDTO getIllnessByName(@RequestParam(value="name", required=true) final String name) throws MyRestPreconditionsException{
 		return illnessServiceImpl.getOneByName(name);
 	}
 	
