@@ -204,7 +204,6 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
-		
 		{
 			MyRestPreconditionsException ex = 
 					new MyRestPreconditionsException("Change password error","request json is missing some elements.");
@@ -223,17 +222,21 @@ public class UserServiceImpl implements UserService {
 				throw ex;
 			}
 		}
-
-		UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
+		RestPreconditions.assertTrue(!model.getPassword().equals(model.getNewPassword()),
+				"Change password error","Old password and new password should be different.");
 		
+		//check that user exists
+		UserSecurityJPA jpa = RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
+				"Change password error : user you are changing the password for does not exist.");
+		// check that ids match
 		RestPreconditions.assertTrue(jpa.getId() == model.getId(), 
 				"Access violation !!!","You are trying to change someone elses's password");
 		// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
 		RestPreconditions.assertTrue(BCrypt.checkpw(model.getPassword(), jpa.getPassword()), 
-				"Change password error","Original password does not match with the stored value");
-		// new password should be different
+				"Change password error","Your entry for original password does not match with the DB value");
+		/*// new password should be different
 		RestPreconditions.assertTrue(!BCrypt.checkpw(model.getNewPassword(), jpa.getPassword()),
-				"Change password error","Original password is the same as the new password");
+				"Change password error","Stored password in DB is the same as the new password");*/
 		
 		jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 		userSecurityRepository.save(jpa);

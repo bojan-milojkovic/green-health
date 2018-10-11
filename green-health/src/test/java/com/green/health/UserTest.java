@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.RoleRepository;
 import com.green.health.security.repositories.UserSecurityRepository;
@@ -53,6 +55,7 @@ public class UserTest {
 			usjpa.setId((long)i);
 			usjpa.setUsername("username_"+i);
 			usjpa.setUserJpa(jpa);
+			usjpa.setPassword(BCrypt.hashpw("password_"+i, BCrypt.gensalt()));
 			jpa.setUserSecurityJpa(usjpa);
 			
 			list.add(jpa);
@@ -277,6 +280,74 @@ public class UserTest {
 			fail();
 		} catch (MyRestPreconditionsException e) {
 			assertEquals(e.getDetails(), "request json is missing some elements.");
+		}
+	}
+	
+	@Test
+	public void changingPasswordForNonExistingUser() {
+		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(null);
+		
+		UserDTO badPatchModel = new UserDTO();
+		badPatchModel.setId(1L);
+		badPatchModel.setPassword("old");
+		badPatchModel.setNewPassword("new");
+		
+		try {
+			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Change password error : user you are changing the password for does not exist.");
+		}
+	}
+	
+	@Test
+	public void tryingToChangeSomeoneElsesPasswordTest() {
+		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(3).getUserSecurityJpa());
+		
+		UserDTO badPatchModel = new UserDTO();
+		badPatchModel.setId(1L);
+		badPatchModel.setPassword("old");
+		badPatchModel.setNewPassword("new");
+		
+		try {
+			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "You are trying to change someone elses's password");
+		}
+	}
+	
+	@Test
+	public void tryToChangePasswordOriginalPasswordDoesNotMatch(){
+		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(3).getUserSecurityJpa());
+		
+		UserDTO badPatchModel = new UserDTO();
+		badPatchModel.setId(3L);
+		badPatchModel.setPassword("old");
+		badPatchModel.setNewPassword("new");
+		
+		try {
+			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Your entry for original password does not match with the DB value");
+		}
+	}
+	
+	@Test
+	public void tryToChangePasswordButNewValueIsSameAsOriginal() {
+		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(3).getUserSecurityJpa());
+		
+		UserDTO badPatchModel = new UserDTO();
+		badPatchModel.setId(3L);
+		badPatchModel.setPassword("password_3");
+		badPatchModel.setNewPassword("password_3");
+		
+		try {
+			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Old password and new password should be different.");
 		}
 	}
 }

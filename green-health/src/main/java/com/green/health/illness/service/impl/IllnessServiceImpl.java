@@ -32,7 +32,7 @@ public class IllnessServiceImpl implements IllnessService {
 	@Override
 	public IllnessDTO getOneById(final Long id) throws MyRestPreconditionsException{
 		checkId(id);
-		IllnessJPA jpa = (IllnessJPA) RestPreconditions.checkNotNull(illnessDao.getOne(id), "Cannot find illness with id = "+id);
+		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id), "Cannot find illness with id = "+id);
 		return convertJpaToModel(jpa);
 	}
 	

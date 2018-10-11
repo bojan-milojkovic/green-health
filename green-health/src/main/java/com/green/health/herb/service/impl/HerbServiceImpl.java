@@ -34,7 +34,7 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public HerbDTO getOneById(Long id) throws MyRestPreconditionsException {
 		checkId(id);
-		HerbJPA jpa = (HerbJPA) RestPreconditions.checkNotNull(herbDao.getOne(id), "Cannot find the herb with id = "+id);
+		HerbJPA jpa = RestPreconditions.checkNotNull(herbDao.getOne(id), "Cannot find the herb with id = "+id);
 		return convertJpaToModel(jpa);
 	}
 
