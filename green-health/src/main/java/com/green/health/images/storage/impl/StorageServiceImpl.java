@@ -60,6 +60,23 @@ public class StorageServiceImpl implements StorageService {
 			deletePreviousImage(dirPath, "herb_THUMBNAIL");
 			deletePreviousImage(dirPath, "herb");
 		}
+		
+		deleteEmptyDirectoryTreeLeaf(dirPath);
+	}
+	
+	private void deleteEmptyDirectoryTreeLeaf(String dirPath) throws MyRestPreconditionsException {
+		File dir = new File(dirPath);
+		// dirPath was already checked.
+		
+		// if directory is empty :
+		if(dir.list().length == 0) {
+			// delete empty dir and check :
+			RestPreconditions.assertTrue(dir.delete(),"Image Storage Service error : Failed to delete empty directory leaf "+dirPath);
+			// make new dir path :
+			String newDirPath = dirPath.split("[^0-9][0-9]+$")[0];
+			// recursive call - check if parent dir is empty too and delete it accordingly
+			deleteEmptyDirectoryTreeLeaf(newDirPath);
+		}
 	}
 	
 	public ResponseEntity<Resource> getImage(Resource resource, HttpServletRequest request){
@@ -150,7 +167,7 @@ public class StorageServiceImpl implements StorageService {
 		}
 	}
 	
-	private void deletePreviousImage(String dir, String name){
+	private void deletePreviousImage(String dir, String name) throws MyRestPreconditionsException{
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(dir))) {
             for (Path path : directoryStream) {
             	if(path.toString().contains(name)){
@@ -159,7 +176,7 @@ public class StorageServiceImpl implements StorageService {
             	}
             }
         } catch (IOException ex) {
-        	
+        	throw new MyRestPreconditionsException("Delete image error",ex.getMessage());
         }
 	}
 	
@@ -187,16 +204,21 @@ public class StorageServiceImpl implements StorageService {
 	// directory verification
 	private void checkResultingDir(String dir) throws MyRestPreconditionsException {
 		
-		if(!(new File(dir)).isDirectory()){
+		File newDir = new File(dir);
+		
+		//if(!(new File(dir)).isDirectory()){
+		if(!newDir.exists()){
 			// it does not exist yet ; make it :
-			File newDir = new File(dir);
 			newDir.mkdirs();
-			if(!newDir.isDirectory()){
-				throw new MyRestPreconditionsException("Directory creation error", "Invalid path to directory");
-			}
 		}
 		
-		if(!java.nio.file.Files.isWritable((new File(dir)).toPath())){
+		// check that it is a directory
+		if(!newDir.isDirectory()){
+			throw new MyRestPreconditionsException("Directory creation error", "Invalid path to directory");
+		}
+		
+		// check that it is writeable
+		if(!java.nio.file.Files.isWritable(newDir.toPath())){
 			throw new MyRestPreconditionsException("Directory creation exception", "File location is not writable");
 		}
 	}
