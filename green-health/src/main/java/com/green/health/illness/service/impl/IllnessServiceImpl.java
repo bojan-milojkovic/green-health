@@ -89,14 +89,14 @@ public class IllnessServiceImpl implements IllnessService {
 	// edit illness
 	@Override
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
+		checkId(id);
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 
 						"To edit the illness you must provide some editable data.");
 		model.setId(id);
 		
-		IllnessJPA jpa = convertModelToJPA(model);
-		RestPreconditions.assertTrue(jpa!=null, "Illness edit error", 
-				"Illness with id = "+id+" does not exist in our database.");
+		IllnessJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Illness edit error", 
+														"Illness with id = "+id+" does not exist in our database.");
 		illnessDao.save(jpa);
 		return convertJpaToModel(jpa);
 	}
@@ -104,6 +104,8 @@ public class IllnessServiceImpl implements IllnessService {
 	// delete illness
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException{
+		checkId(id);
+		
 		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id),"Illness delete error","Illness with id = "+id+" does not exist in our database.");
 
 		illnessDao.delete(jpa);

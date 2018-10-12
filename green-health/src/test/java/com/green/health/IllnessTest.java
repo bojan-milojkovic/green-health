@@ -142,4 +142,64 @@ public class IllnessTest {
 			assertEquals(e.getDetails(), "Illness with Serbian name Some serb name is already in our database.");
 		}
 	}
+	
+	@Test
+	public void editIllnessInvalidId() {
+		IllnessDTO badModel = new IllnessDTO();
+		
+		try {
+			mockIllnessServiceImpl.edit(badModel, -1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Id is invalid");
+		}
+	}
+	
+	@Test
+	public void editIllnessNoPatchData() {
+		IllnessDTO badModel = new IllnessDTO();
+		
+		try {
+			mockIllnessServiceImpl.edit(badModel, 1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "To edit the illness you must provide some editable data.");
+		}
+	}
+	
+	@Test
+	public void tryToEditNonExistingIllness() {
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(null);
+		IllnessDTO badModel = new IllnessDTO();
+		badModel.setLatinName("newLatinName");
+		
+		try {
+			mockIllnessServiceImpl.edit(badModel, 1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Illness with id = 1 does not exist in our database.");
+		}
+	}
+	
+	@Test
+	public void tryToDeleteInvalidIdTest() {
+		try {
+			mockIllnessServiceImpl.delete(-1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Id is invalid");
+		}
+	}
+	
+	@Test
+	public void tryToDeleteNonExistingIllnessTest() {
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(null);
+		
+		try {
+			mockIllnessServiceImpl.delete(1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDetails(), "Illness with id = 1 does not exist in our database.");
+		}
+	}
 }
