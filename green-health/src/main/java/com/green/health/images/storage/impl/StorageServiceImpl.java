@@ -202,24 +202,23 @@ public class StorageServiceImpl implements StorageService {
     }
 	
 	// directory verification
-	private void checkResultingDir(String dir) throws MyRestPreconditionsException {
+	private void checkResultingDir(String path) throws MyRestPreconditionsException {
 		
-		File newDir = new File(dir);
+		File dir = new File(path);
 		
-		//if(!(new File(dir)).isDirectory()){
-		if(!newDir.exists()){
-			// it does not exist yet ; make it :
-			newDir.mkdirs();
+		// if dir does not exist yet, make it :
+		if(!dir.exists()){
+			dir.mkdirs();
 		}
 		
 		// check that it is a directory
-		if(!newDir.isDirectory()){
+		if(!dir.isDirectory()){
 			throw new MyRestPreconditionsException("Directory creation error", "Invalid path to directory");
 		}
 		
 		// check that it is writeable
-		if(!java.nio.file.Files.isWritable(newDir.toPath())){
-			throw new MyRestPreconditionsException("Directory creation exception", "File location is not writable");
+		if(!java.nio.file.Files.isWritable(dir.toPath())){
+			throw new MyRestPreconditionsException("Directory creation error", "File location is not writable");
 		}
 	}
 
