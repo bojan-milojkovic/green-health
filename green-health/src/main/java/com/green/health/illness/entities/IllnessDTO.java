@@ -1,11 +1,14 @@
 package com.green.health.illness.entities;
 
+import java.util.List;
+
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.green.health.herb.entities.HerbDTO;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
@@ -30,7 +33,10 @@ public class IllnessDTO implements PojoParent {
 	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness symptoms can consist only of letters, digits, dot, comma, and whitespaces")
 	private String symptoms;
 	
+	@JsonProperty(access = Access.READ_WRITE)
+	private List<HerbDTO> herbs;
 	
+
 	public String getLatinName() {
 		return latinName;
 	}
@@ -70,5 +76,13 @@ public class IllnessDTO implements PojoParent {
 	@Override
 	public Long getId() {
 		return id;
+	}
+
+	public List<HerbDTO> getHerbs() {
+		return herbs;
+	}
+
+	public void setHerbs(List<HerbDTO> herbs) {
+		this.herbs = herbs;
 	}
 }

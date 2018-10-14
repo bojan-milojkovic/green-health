@@ -1,10 +1,13 @@
 package com.green.health.illness.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.green.health.herb.dao.HerbRepository;
+import com.green.health.herb.entities.HerbDTO;
+import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
@@ -16,10 +19,12 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class IllnessServiceImpl implements IllnessService {
 	
 	private IllnessRepository illnessDao;
+	private HerbRepository herbDao;
 	
 	@Autowired
-	public IllnessServiceImpl(IllnessRepository illnessDao) {
+	public IllnessServiceImpl(IllnessRepository illnessDao, HerbRepository herbDao) {
 		this.illnessDao = illnessDao;
+		this.herbDao = herbDao;
 	}
 
 	// get all
@@ -142,6 +147,27 @@ public class IllnessServiceImpl implements IllnessService {
 			}
 		}
 		
+		// add herbs :
+		if(model.getHerbs()!=null && !model.getHerbs().isEmpty()){
+			/*if(jpa.getHerbs()==null){
+				jpa.setHerbs(new ArrayList<HerbJPA>());
+			}*/
+			for(HerbDTO hmodel : model.getHerbs()){
+				HerbJPA hjpa = null;
+				
+				if(RestPreconditions.checkString(hmodel.getLatinName())){
+					hjpa = herbDao.getHerbByLatinName(hmodel.getLatinName());
+					
+				} else if(RestPreconditions.checkString(hmodel.getSrbName())) {
+					hjpa = herbDao.getHerbBySrbName(hmodel.getSrbName());
+				}
+				
+				if(hjpa!=null){
+					jpa.getHerbs().add(hjpa);
+				}
+			}
+		}
+		
 		return jpa;
 	}
 
@@ -154,6 +180,18 @@ public class IllnessServiceImpl implements IllnessService {
 		model.setLatinName(jpa.getLatinName());
 		model.setSrbName(jpa.getSrbName());
 		model.setSymptoms(jpa.getSymptoms());
+		
+		// add herbs :
+		if(jpa.getHerbs()!=null && !jpa.getHerbs().isEmpty()){
+			model.setHerbs(new ArrayList<HerbDTO>());
+			for(HerbJPA hjpa : jpa.getHerbs()){
+				HerbDTO hmodel = new HerbDTO();
+				hmodel.setId(hjpa.getId());
+				hmodel.setLatinName(hjpa.getLatinName());
+				hmodel.setSrbName(hjpa.getSrbName());
+				model.getHerbs().add(hmodel);
+			}
+		}
 		
 		return model;
 	}
@@ -171,7 +209,8 @@ public class IllnessServiceImpl implements IllnessService {
 		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getLatinName()) ||
 				RestPreconditions.checkString(model.getSrbName()) ||
-				RestPreconditions.checkString(model.getSymptoms());
+				RestPreconditions.checkString(model.getSymptoms()) ||
+				(model.getHerbs()!=null && !model.getHerbs().isEmpty());
 	}
 	
 }

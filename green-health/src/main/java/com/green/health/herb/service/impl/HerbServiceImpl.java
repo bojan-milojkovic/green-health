@@ -1,8 +1,8 @@
 package com.green.health.herb.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,9 @@ import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.service.HerbService;
+import com.green.health.illness.dao.IllnessRepository;
+import com.green.health.illness.entities.IllnessDTO;
+import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.images.storage.StorageService;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
@@ -19,11 +22,13 @@ public class HerbServiceImpl implements HerbService {
 
 	private HerbRepository herbDao;
 	private StorageService storageServiceImpl;
+	private IllnessRepository illnessDao;
 	
 	@Autowired
-	public HerbServiceImpl(HerbRepository herbDao, StorageService storageServiceImpl){
+	public HerbServiceImpl(HerbRepository herbDao, StorageService storageServiceImpl, IllnessRepository illnessDao){
 		this.herbDao = herbDao;
 		this.storageServiceImpl = storageServiceImpl;
+		this.illnessDao = illnessDao;
 	}
 	
 	@Override
@@ -66,7 +71,7 @@ public class HerbServiceImpl implements HerbService {
 					"The herb with Latin name "+model.getLatinName()+" is already in our database.");
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbBySrbName(model.getSrbName()),
 					"The herb with Serbian name "+model.getSrbName()+" is already in our database.");
-			
+
 			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
 			
 			if(model.getImage()!=null){
@@ -178,6 +183,28 @@ public class HerbServiceImpl implements HerbService {
 			}
 		}
 		
+		// link illnesses :
+		if(model.getIllnesses()!=null && !model.getIllnesses().isEmpty()){
+			/*if(jpa.getIllnesses()==null){
+				jpa.setIllnesses(new ArrayList<IllnessJPA>());
+			}*/
+			
+			for(IllnessDTO illness : model.getIllnesses()){
+				IllnessJPA ijpa = null;
+				
+				if(RestPreconditions.checkString(illness.getLatinName())){
+					ijpa = illnessDao.findByLatinName(illness.getLatinName());
+				
+				} else if(RestPreconditions.checkString(illness.getSrbName())){
+					ijpa = illnessDao.findBySrbName(illness.getSrbName());
+				}
+				
+				if(ijpa!=null){
+					jpa.getIllnesses().add(ijpa);
+				}
+			}
+		}
+		
 		return jpa;
 	}
 
@@ -195,6 +222,18 @@ public class HerbServiceImpl implements HerbService {
 		model.setWhereToBuy(jpa.getWhereToBuy());
 		model.setWarnings(jpa.getWarnings());
 		
+		if(jpa.getIllnesses()!=null && !jpa.getIllnesses().isEmpty()){
+			model.setIllnesses(new ArrayList<IllnessDTO>());
+			for(IllnessJPA ijpa : jpa.getIllnesses()){
+				// this is more memory-efficient than autowiring IllnessService
+				IllnessDTO imodel = new IllnessDTO();
+				imodel.setId(ijpa.getId());
+				imodel.setSrbName(ijpa.getSrbName());
+				imodel.setLatinName(ijpa.getLatinName());
+				model.getIllnesses().add(imodel);
+			}
+		}
+		
 		return model;
 	}
 
@@ -206,8 +245,8 @@ public class HerbServiceImpl implements HerbService {
 				RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}") && 
 				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") && 
 				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") && 
-				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")/* && 
-				RestPreconditions.checkString(model.getWhereToBuy())*/;
+				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")
+				;
 	}
 
 	@Override
@@ -219,6 +258,8 @@ public class HerbServiceImpl implements HerbService {
 				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") ||
 				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") ||
 				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getWhereToBuy(),"[A-Za-z0-9 .,:'()-]{10,}");
+				RestPreconditions.checkStringMatches(model.getWhereToBuy(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+				(model.getIllnesses()!=null && !model.getIllnesses().isEmpty())
+				;
 	}
 }

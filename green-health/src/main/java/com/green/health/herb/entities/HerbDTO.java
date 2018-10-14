@@ -1,10 +1,12 @@
 package com.green.health.herb.entities;
 
+import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
@@ -36,6 +38,9 @@ public class HerbDTO implements PojoParent{
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	private String warnings;
+	
+	@JsonProperty(access = Access.READ_WRITE)
+	private List<IllnessDTO> illnesses;
 	
 	private MultipartFile image;
 	
@@ -119,5 +124,13 @@ public class HerbDTO implements PojoParent{
 
 	public void setWarnings(String warnings) {
 		this.warnings = warnings;
+	}
+
+	public List<IllnessDTO> getIllnesses() {
+		return illnesses;
+	}
+
+	public void setIllnesses(List<IllnessDTO> illnesses) {
+		this.illnesses = illnesses;
 	}
 }

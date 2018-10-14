@@ -1,12 +1,16 @@
 package com.green.health.herb.entities;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.parents.PojoParent;
 
 @Entity
@@ -41,7 +45,8 @@ public class HerbJPA implements PojoParent{
 	@Column
 	private String properties;
 	
-	
+	@ManyToMany(mappedBy="herbs")
+	private List<IllnessJPA> illnesses = new ArrayList<IllnessJPA>();
 
 	public Long getId() {
 		return id;
@@ -113,5 +118,13 @@ public class HerbJPA implements PojoParent{
 
 	public void setWarnings(String warnings) {
 		this.warnings = warnings;
+	}
+
+	public List<IllnessJPA> getIllnesses() {
+		return illnesses;
+	}
+
+	public void setIllnesses(List<IllnessJPA> illnesses) {
+		this.illnesses = illnesses;
 	}
 }
