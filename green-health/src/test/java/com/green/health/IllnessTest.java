@@ -93,10 +93,10 @@ public class IllnessTest {
 		assertEquals(result.size(), list.size());
 		
 		for(int i=0 ; i<result.size() ; i++) {
-			assertEquals(result.get(i).getDescription(), list.get(i).getDescription());
-			assertEquals(result.get(i).getLatinName(), list.get(i).getLatinName());
-			assertEquals(result.get(i).getSrbName(), list.get(i).getSrbName());
-			assertEquals(result.get(i).getSymptoms(), list.get(i).getSymptoms());
+			assertEquals(list.get(i).getDescription(), result.get(i).getDescription());
+			assertEquals(list.get(i).getLatinName(), result.get(i).getLatinName());
+			assertEquals(list.get(i).getSrbName(), result.get(i).getSrbName());
+			assertEquals(list.get(i).getSymptoms(), result.get(i).getSymptoms());
 		}
 	}
 	
@@ -106,7 +106,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.getOneById(-1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Id is invalid");
+			assertEquals("Id is invalid", e.getDetails());
 		}
 	}
 	
@@ -118,7 +118,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.getOneById(1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Cannot find illness with id = 1");
+			assertEquals("Cannot find illness with id = 1", e.getDetails());
 		}
 	}
 	
@@ -131,7 +131,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.getOneByName("blatruc");
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "The the illness with the name blatruc is not in our database.");
+			assertEquals("The the illness with the name blatruc is not in our database.", e.getDetails());
 		}
 	}
 	
@@ -142,7 +142,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(patchModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "The following data is missing from the illness form");
+			assertEquals("The following data is missing from the illness form", e.getDetails());
 		}
 	}
 	
@@ -155,7 +155,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Illness with Latin name Some latin name is already in our database.");
+			assertEquals("Illness with Latin name Some latin name is already in our database.", e.getDetails());
 		}
 	}
 	
@@ -169,7 +169,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Illness with Serbian name Some serb name is already in our database.");
+			assertEquals("Illness with Serbian name Some serb name is already in our database.", e.getDetails());
 		}
 	}
 	
@@ -193,7 +193,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.edit(badModel, 1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "To edit the illness you must provide some editable data.");
+			assertEquals("To edit the illness you must provide some editable data.", e.getDetails());
 		}
 	}
 	
@@ -207,7 +207,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.edit(badModel, 1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Illness with id = 1 does not exist in our database.");
+			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
 		}
 	}
 	
@@ -224,7 +224,7 @@ public class IllnessTest {
 			fail();
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
-			assertEquals(e.getDetails(),"The latin name Latin name 2 is already assigned to another illness");
+			assertEquals("The latin name Latin name 2 is already assigned to another illness", e.getDetails());
 		}
 	}
 	
@@ -242,7 +242,7 @@ public class IllnessTest {
 			// patchModel already has the same herb-illness link
 			IllnessDTO result = mockIllnessServiceImpl.edit(patchModel, 1L);
 			list.get(1).setHerbs(new HashSet<HerbJPA>());
-			assertEquals(result.getHerbs().size(), 1);
+			assertEquals(1, result.getHerbs().size());
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}
@@ -268,7 +268,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.delete(-1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Id is invalid");
+			assertEquals("Id is invalid", e.getDetails());
 		}
 	}
 	
@@ -280,7 +280,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.delete(1L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Illness with id = 1 does not exist in our database.");
+			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
 		}
 	}
 	
@@ -297,7 +297,7 @@ public class IllnessTest {
 			
 			assertEquals(result.getSymptoms(), patchModel.getSymptoms());
 			assertTrue(!result.getHerbs().isEmpty());
-			assertEquals(result.getHerbs().get(0).getLatinName(), "herb latin name");
+			assertEquals("herb latin name", result.getHerbs().get(0).getLatinName());
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}

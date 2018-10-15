@@ -102,18 +102,16 @@ public class HerbTest {
 	
 	@Test
 	public void getHerbByIdTest(){
-		HerbJPA jpa = list.get(1);
-		
-		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(jpa);
+		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		
 		HerbDTO model;
 		try {
 			model = mockHerbServiceImpl.getOneById(1L);
 			
-			assertEquals(model.getId(), jpa.getId());
-			assertEquals(model.getLatinName(), jpa.getLatinName());
-			assertEquals(model.getSrbName(), jpa.getSrbName());
-			assertEquals(model.getDescription(), jpa.getDescription());
+			assertEquals(list.get(1).getId(), model.getId());
+			assertEquals(list.get(1).getLatinName(), model.getLatinName());
+			assertEquals(list.get(1).getSrbName(), model.getSrbName());
+			assertEquals(list.get(1).getDescription(), model.getDescription());
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}
@@ -121,30 +119,26 @@ public class HerbTest {
 	
 	@Test
 	public void getHerbByNameTest1(){
-		HerbJPA jpa = list.get(0);
-		
-		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(jpa);
+		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		HerbDTO model = mockHerbServiceImpl.getHerbByLatinName("bilosta");
 		
-		assertEquals(model.getId(), jpa.getId());
-		assertEquals(model.getLatinName(), jpa.getLatinName());
-		assertEquals(model.getSrbName(), jpa.getSrbName());
-		assertEquals(model.getDescription(), jpa.getDescription());
+		assertEquals(list.get(0).getId(), model.getId());
+		assertEquals(list.get(0).getLatinName(), model.getLatinName());
+		assertEquals(list.get(0).getSrbName(), model.getSrbName());
+		assertEquals(list.get(0).getDescription(), model.getDescription());
 	}
 	
 	@Test
 	public void getHerbByNameTest2(){
-		HerbJPA jpa = list.get(0);
-		
-		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(jpa);
+		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		HerbDTO model = mockHerbServiceImpl.getHerbBySrbName("bilosta");
 		
-		assertEquals(model.getId(), jpa.getId());
-		assertEquals(model.getLatinName(), jpa.getLatinName());
-		assertEquals(model.getSrbName(), jpa.getSrbName());
-		assertEquals(model.getDescription(), jpa.getDescription());
+		assertEquals(list.get(0).getId(), model.getId());
+		assertEquals(list.get(0).getLatinName(), model.getLatinName());
+		assertEquals(list.get(0).getSrbName(), model.getSrbName());
+		assertEquals(list.get(0).getDescription(), model.getDescription());
 	}
 	
 	
@@ -177,7 +171,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(patchModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(),"The following data is missing from the herb form");
+			assertEquals("The following data is missing from the herb form",e.getDetails());
 		}
 	}
 	
@@ -190,7 +184,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "The herb with Serbian name "+postModel.getSrbName()+" is already in our database.");
+			assertEquals("The herb with Serbian name "+postModel.getSrbName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
@@ -203,7 +197,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "The herb with Latin name "+postModel.getLatinName()+" is already in our database.");
+			assertEquals("The herb with Latin name "+postModel.getLatinName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
@@ -217,7 +211,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(invalidPatchModel, invalidPatchModel.getId());
 			fail();
 		} catch(MyRestPreconditionsException e){
-			assertEquals(e.getDetails(), "Your herb edit request is invalid - You must provide some editable data");
+			assertEquals("Your herb edit request is invalid - You must provide some editable data",e.getDetails());
 		}
 	}
 	
@@ -229,7 +223,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(patchModel, 1L);
 			fail();
 		} catch(MyRestPreconditionsException e){
-			assertEquals(e.getDetails(), "Herb with id = 1 does not exist in our database.");
+			assertEquals("Herb with id = 1 does not exist in our database.",e.getDetails());
 		}
 	}
 	
@@ -246,7 +240,7 @@ public class HerbTest {
 			fail();
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
-			assertEquals(e.getDetails(), "The latin name latinName-2 has already been assigned to another herb");
+			assertEquals("The latin name latinName-2 has already been assigned to another herb",e.getDetails());
 		}
 	}
 	
@@ -259,7 +253,7 @@ public class HerbTest {
 		
 		try {
 			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
-			assertEquals(result.getLatinName(), "new latin name");
+			assertEquals("new latin name",result.getLatinName());
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}
@@ -280,7 +274,7 @@ public class HerbTest {
 			// illnessDto is already in the patch model :
 			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
 			list.get(1).setIllnesses(new HashSet<IllnessJPA>());
-			assertEquals(result.getIllnesses().size(), 1);
+			assertEquals(1, result.getIllnesses().size());
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}
@@ -297,7 +291,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(patchModel, 2L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDescription(), "Link illness to herb error");
+			assertEquals("Link illness to herb error", e.getDescription());
 		}
 	}
 	
@@ -309,7 +303,7 @@ public class HerbTest {
 			mockHerbServiceImpl.delete(1L);
 			fail();
 		} catch (MyRestPreconditionsException e){
-			assertEquals(e.getDetails(), "Herb with id = 1 does not exist in our database.");
+			assertEquals("Herb with id = 1 does not exist in our database.", e.getDetails());
 		}
 	}
 	
@@ -321,7 +315,7 @@ public class HerbTest {
 		try {
 			doNothing().when(mockStorageServiceImpl).deleteImage(isA(Long.class), isA(boolean.class));
 			mockHerbServiceImpl.delete(1L);
-			assertEquals("","");
+			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
 			fail();
 		}
