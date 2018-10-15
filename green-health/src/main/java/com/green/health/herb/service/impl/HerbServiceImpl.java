@@ -193,9 +193,6 @@ public class HerbServiceImpl implements HerbService {
 		
 		// link illnesses :
 		if(model.getIllnesses()!=null && !model.getIllnesses().isEmpty()){
-			/*if(jpa.getIllnesses()==null){
-				jpa.setIllnesses(new ArrayList<IllnessJPA>());
-			}*/
 			
 			for(IllnessDTO illness : model.getIllnesses()){
 				IllnessJPA ijpa = null;
@@ -208,6 +205,7 @@ public class HerbServiceImpl implements HerbService {
 				}
 				
 				if(ijpa!=null){
+					// since illnesses is a HashSet there will be no duplicates
 					jpa.getIllnesses().add(ijpa);
 				}
 			}

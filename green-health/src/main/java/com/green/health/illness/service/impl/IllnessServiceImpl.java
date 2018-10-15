@@ -171,6 +171,7 @@ public class IllnessServiceImpl implements IllnessService {
 				}
 				
 				if(hjpa!=null){
+					// since herbs is a HashSet, there will be no duplicates
 					jpa.getHerbs().add(hjpa);
 				}
 			}

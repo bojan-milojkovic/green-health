@@ -1,7 +1,7 @@
 package com.green.health.illness.entities;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,7 +39,7 @@ public class IllnessJPA implements PojoParent {
 	@JoinTable(name = "herb_for_illness", 
 				joinColumns = @JoinColumn(name = "illness_id", referencedColumnName = "id"),
 				inverseJoinColumns = @JoinColumn(name = "herb_id", referencedColumnName = "id"))
-	private List<HerbJPA> herbs = new ArrayList<HerbJPA>();
+	private Set<HerbJPA> herbs = new HashSet<HerbJPA>();
 	
 	public void setId(Long id) {
 		this.id = id;
@@ -82,11 +82,11 @@ public class IllnessJPA implements PojoParent {
 		this.symptoms = symptoms;
 	}
 
-	public List<HerbJPA> getHerbs() {
+	public Set<HerbJPA> getHerbs() {
 		return herbs;
 	}
 
-	public void setHerbs(List<HerbJPA> herbs) {
+	public void setHerbs(Set<HerbJPA> herbs) {
 		this.herbs = herbs;
 	}
 }
