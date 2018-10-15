@@ -17,6 +17,9 @@ import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.service.impl.HerbServiceImpl;
+import com.green.health.illness.dao.IllnessRepository;
+import com.green.health.illness.entities.IllnessDTO;
+import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.images.storage.StorageService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -29,11 +32,16 @@ public class HerbTest {
 	@Mock
 	private StorageService mockStorageServiceImpl;
 	
+	@Mock
+	private IllnessRepository mockIllnessDao;
+	
 	@InjectMocks
 	private HerbServiceImpl mockHerbServiceImpl;
 	
 	private static List<HerbJPA> list = new ArrayList<HerbJPA>();
 	private static HerbDTO postModel, patchModel;
+	private static IllnessDTO illnessModel;
+	private static IllnessJPA illnessJpa;
 	
 	@BeforeClass
 	public static void init(){
@@ -59,6 +67,20 @@ public class HerbTest {
 		patchModel = new HerbDTO();
 		patchModel.setId(20L);
 		patchModel.setLatinName("new latin name");
+		
+		patchModel.setIllnesses(new ArrayList<IllnessDTO>());
+		illnessModel = new IllnessDTO();
+		illnessModel.setId(1L);
+		illnessModel.setLatinName("latin illness name");
+		illnessModel.setSrbName("serbian illness name");
+		patchModel.getIllnesses().add(illnessModel);
+		
+		illnessJpa = new IllnessJPA();
+		illnessJpa.setId(1L);
+		illnessJpa.setSrbName("serbian illness name");
+		illnessJpa.setLatinName("latin illness name");
+		illnessJpa.setDescription("illnessDescription");
+		illnessJpa.setSymptoms("illnessSympthoms");
 	}
 	
 	@Test
@@ -135,6 +157,7 @@ public class HerbTest {
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		
 		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(list.get(0));
+		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
 		try {
 			mockHerbServiceImpl.addNew(postModel);
@@ -214,6 +237,8 @@ public class HerbTest {
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
 		
+		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
+		
 		try {
 			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
 			assertEquals(result.getLatinName(), "new latin name");
@@ -247,4 +272,5 @@ public class HerbTest {
 			fail();
 		}
 	}
+	
 }

@@ -149,9 +149,7 @@ public class IllnessServiceImpl implements IllnessService {
 		
 		// add herbs :
 		if(model.getHerbs()!=null && !model.getHerbs().isEmpty()){
-			/*if(jpa.getHerbs()==null){
-				jpa.setHerbs(new ArrayList<HerbJPA>());
-			}*/
+
 			for(HerbDTO hmodel : model.getHerbs()){
 				HerbJPA hjpa = null;
 				

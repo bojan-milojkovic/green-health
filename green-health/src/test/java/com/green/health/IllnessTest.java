@@ -2,9 +2,10 @@ package com.green.health;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,6 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.green.health.herb.dao.HerbRepository;
+import com.green.health.herb.entities.HerbDTO;
+import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
@@ -25,11 +29,16 @@ public class IllnessTest {
 	@Mock
 	private IllnessRepository mockIllnessRepo;
 	
+	@Mock
+	private HerbRepository mockHerbRepo;
+	
 	@InjectMocks
 	private IllnessServiceImpl mockIllnessServiceImpl;
 	
 	private static List<IllnessJPA> list = new ArrayList<IllnessJPA>();
 	private static IllnessDTO postModel, patchModel;
+	private static HerbDTO herbDto;
+	private static HerbJPA herbJpa;
 	
 	@BeforeClass
 	public static void init() {
@@ -52,6 +61,26 @@ public class IllnessTest {
 		patchModel = new IllnessDTO();
 		patchModel.setId(1L);
 		patchModel.setSymptoms("cramps, skin rash");
+		
+		herbDto = new HerbDTO();
+		herbDto.setId(1L);
+		herbDto.setLatinName("herb latin name");
+		herbDto.setSrbName("herb srb name");
+		patchModel.setHerbs(new ArrayList<HerbDTO>());
+		patchModel.getHerbs().add(herbDto);
+		
+		patchModel.setHerbs(new ArrayList<HerbDTO>());
+		patchModel.getHerbs().add(herbDto);
+		
+		herbJpa = new HerbJPA();
+		herbJpa.setId(1L);
+		herbJpa.setDescription("some herb description");
+		herbJpa.setGrowsAt("sunny fields");
+		herbJpa.setLatinName("herb latin name");
+		herbJpa.setProperties("some properties");
+		herbJpa.setSrbName("herb srb name");
+		herbJpa.setWarnings("tasts bad");
+		herbJpa.setWhenToPick("summer");
 	}
 	
 	@Test
@@ -200,6 +229,25 @@ public class IllnessTest {
 			fail();
 		} catch (MyRestPreconditionsException e) {
 			assertEquals(e.getDetails(), "Illness with id = 1 does not exist in our database.");
+		}
+	}
+	
+	@Test
+	public void assignHerbToIllnessTest() {
+		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		
+		when(mockIllnessRepo.save(isA(IllnessJPA.class))).thenReturn(null);
+		
+		IllnessDTO result;
+		try {
+			result = mockIllnessServiceImpl.edit(patchModel, 1L);
+			
+			assertEquals(result.getSymptoms(), patchModel.getSymptoms());
+			assertTrue(!result.getHerbs().isEmpty());
+			assertEquals(result.getHerbs().get(0).getLatinName(), "herb latin name");
+		} catch (MyRestPreconditionsException e) {
+			fail();
 		}
 	}
 }
