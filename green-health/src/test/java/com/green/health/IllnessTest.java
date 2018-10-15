@@ -1,6 +1,7 @@
 package com.green.health;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -79,7 +80,7 @@ public class IllnessTest {
 		herbJpa.setLatinName("herb latin name");
 		herbJpa.setProperties("some properties");
 		herbJpa.setSrbName("herb srb name");
-		herbJpa.setWarnings("tasts bad");
+		herbJpa.setWarnings("tastes bad");
 		herbJpa.setWhenToPick("summer");
 	}
 	
@@ -212,9 +213,11 @@ public class IllnessTest {
 	
 	@Test
 	public void tryToEditIllnessByGivingItLatinNameOfAnotherIllnessTest() {
-		patchModel.setLatinName("Latin name 2");
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(list.get(2));
+		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
+		
+		patchModel.setLatinName("Latin name 2");
 		
 		try {
 			mockIllnessServiceImpl.edit(patchModel, 1L);
@@ -222,6 +225,40 @@ public class IllnessTest {
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
 			assertEquals(e.getDetails(),"The latin name Latin name 2 is already assigned to another illness");
+		}
+	}
+	
+	@Test
+	public void tryMakeDuplicateHerbLinkToOneIllnessTest() {
+		// add a herb-illness link to test illness
+		list.get(1).getHerbs().add(herbJpa);
+		
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
+		
+		when(mockIllnessRepo.save(Mockito.any(IllnessJPA.class))).thenReturn(null);
+		
+		try {
+			// patchModel already has the same herb-illness link
+			IllnessDTO result = mockIllnessServiceImpl.edit(patchModel, 1L);
+			list.get(1).setHerbs(new HashSet<HerbJPA>());
+			assertEquals(result.getHerbs().size(), 1);
+		} catch (MyRestPreconditionsException e) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void tryLinkNonExistentHerbToIllnessTest() {
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbRepo.getHerbBySrbName(Mockito.anyString())).thenReturn(null);
+		
+		try {
+			mockIllnessServiceImpl.edit(patchModel, 1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals("Link herb to illness error", e.getDescription());
 		}
 	}
 	

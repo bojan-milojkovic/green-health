@@ -5,6 +5,7 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -236,6 +237,7 @@ public class HerbTest {
 	public void editHerbLatinNameBelongsToAnotherHerbTest(){
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(2));
+		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
 		patchModel.setLatinName("latinName-2");
 		
@@ -264,6 +266,42 @@ public class HerbTest {
 	}
 	
 	@Test
+	public void tryMakeDuplicateHerbIllnessLink() {
+		
+		// illnessJpa is already in a list of links for that herb :
+		list.get(1).getIllnesses().add(illnessJpa);
+		
+		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
+		
+		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
+		
+		try {
+			// illnessDto is already in the patch model :
+			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
+			list.get(1).setIllnesses(new HashSet<IllnessJPA>());
+			assertEquals(result.getIllnesses().size(), 1);
+		} catch (MyRestPreconditionsException e) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void linkNonExitingIllnessWithHerbTest() {
+		patchModel.setLatinName(null);
+		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessDao.findBySrbName(Mockito.anyString())).thenReturn(null);
+		
+		try {
+			mockHerbServiceImpl.edit(patchModel, 2L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals(e.getDescription(), "Link illness to herb error");
+		}
+	}
+	
+	@Test
 	public void tryToDeleteNonExistingHerb(){
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(null);
 		
@@ -288,5 +326,4 @@ public class HerbTest {
 			fail();
 		}
 	}
-	
 }

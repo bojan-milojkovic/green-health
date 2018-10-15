@@ -103,7 +103,7 @@ public class IllnessServiceImpl implements IllnessService {
 		IllnessJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Illness edit error", 
 														"Illness with id = "+id+" does not exist in our database.");
 		
-		// check that if latin name is being changed, that is is not already taken :
+		// if latin name is being changed, check that it is is not already taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
 			IllnessJPA tmp = illnessDao.findByLatinName(model.getLatinName());
 			if(tmp!=null) {
@@ -127,7 +127,7 @@ public class IllnessServiceImpl implements IllnessService {
 	}
 	
 	@Override
-	public IllnessJPA convertModelToJPA(final IllnessDTO model) {
+	public IllnessJPA convertModelToJPA(final IllnessDTO model) throws MyRestPreconditionsException {
 		IllnessJPA jpa = null;
 		
 		if(model.getId()==null){
@@ -171,15 +171,18 @@ public class IllnessServiceImpl implements IllnessService {
 				}
 				
 				if(hjpa!=null){
-					// since herbs is a HashSet, there will be no duplicates
+					// since 'herbs' is a HashSet, there will be no duplicates
 					jpa.getHerbs().add(hjpa);
+				} else {
+					throw new MyRestPreconditionsException("Link herb to illness error","Cannot find herb with srb name = "
+								+hmodel.getSrbName()+" and latin name = "+hmodel.getLatinName());
 				}
 			}
 		}
 		
 		return jpa;
 	}
-
+	
 	@Override
 	public IllnessDTO convertJpaToModel(final IllnessJPA jpa) {
 		IllnessDTO model = new IllnessDTO();

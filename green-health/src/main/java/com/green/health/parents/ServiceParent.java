@@ -5,7 +5,7 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 
-	J convertModelToJPA(final M model);
+	J convertModelToJPA(final M model) throws MyRestPreconditionsException;
 	M convertJpaToModel(final J jpa);
 	
 	boolean isPostDataPresent(final M model);

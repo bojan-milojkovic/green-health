@@ -114,6 +114,7 @@ public class HerbServiceImpl implements HerbService {
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", "Your herb edit request is invalid - You must provide some editable data");
 		model.setId(id);
+		
 		HerbJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
 
 		// check that latin name is not taken :
@@ -145,7 +146,7 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbJPA convertModelToJPA(HerbDTO model) {
+	public HerbJPA convertModelToJPA(HerbDTO model) throws MyRestPreconditionsException {
 		HerbJPA jpa = null;
 		
 		if(model.getId()==null){
@@ -207,6 +208,9 @@ public class HerbServiceImpl implements HerbService {
 				if(ijpa!=null){
 					// since illnesses is a HashSet there will be no duplicates
 					jpa.getIllnesses().add(ijpa);
+				} else {
+					throw new MyRestPreconditionsException("Link illness to herb error","Cannot find illness with latin name = "
+							+illness.getLatinName()+" and serbian name = "+illness.getSrbName());
 				}
 			}
 		}
