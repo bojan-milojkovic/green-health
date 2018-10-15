@@ -211,6 +211,21 @@ public class IllnessTest {
 	}
 	
 	@Test
+	public void tryToEditIllnessByGivingItLatinNameOfAnotherIllnessTest() {
+		patchModel.setLatinName("Latin name 2");
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(list.get(2));
+		
+		try {
+			mockIllnessServiceImpl.edit(patchModel, 1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			patchModel.setLatinName(null);
+			assertEquals(e.getDetails(),"The latin name Latin name 2 is already assigned to another illness");
+		}
+	}
+	
+	@Test
 	public void tryToDeleteInvalidIdTest() {
 		try {
 			mockIllnessServiceImpl.delete(-1L);

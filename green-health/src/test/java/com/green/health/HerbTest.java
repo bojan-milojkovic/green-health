@@ -233,6 +233,22 @@ public class HerbTest {
 	}
 	
 	@Test
+	public void editHerbLatinNameBelongsToAnotherHerbTest(){
+		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(2));
+		
+		patchModel.setLatinName("latinName-2");
+		
+		try {
+			mockHerbServiceImpl.edit(patchModel, 1L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			patchModel.setLatinName(null);
+			assertEquals(e.getDetails(), "The latin name latinName-2 has already been assigned to another herb");
+		}
+	}
+	
+	@Test
 	public void successfulEdit(){
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);

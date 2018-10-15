@@ -102,6 +102,16 @@ public class IllnessServiceImpl implements IllnessService {
 		
 		IllnessJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Illness edit error", 
 														"Illness with id = "+id+" does not exist in our database.");
+		
+		// check that if latin name is being changed, that is is not already taken :
+		if(RestPreconditions.checkString(model.getLatinName())) {
+			IllnessJPA tmp = illnessDao.findByLatinName(model.getLatinName());
+			if(tmp!=null) {
+				RestPreconditions.assertTrue(tmp.getId()==jpa.getId(), "Illness edit error !", "The latin name "+model.getLatinName()+
+																   " is already assigned to another illness");
+			}
+		}
+		
 		illnessDao.save(jpa);
 		return convertJpaToModel(jpa);
 	}

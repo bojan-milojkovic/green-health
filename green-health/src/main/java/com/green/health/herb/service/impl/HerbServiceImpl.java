@@ -114,12 +114,20 @@ public class HerbServiceImpl implements HerbService {
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", "Your herb edit request is invalid - You must provide some editable data");
 		model.setId(id);
-		HerbJPA jpa = convertModelToJPA(model);
-		RestPreconditions.assertTrue(jpa!=null, "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
+		HerbJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
+
+		// check that latin name is not taken :
+		if(RestPreconditions.checkString(model.getLatinName())) {
+			HerbJPA tmp = herbDao.getHerbByLatinName(model.getLatinName());
+			if(tmp!=null) {
+				RestPreconditions.assertTrue(tmp.getId()==jpa.getId(), "Herb edit error !", 
+						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
+			}
+		}
+			
 		herbDao.save(jpa);
 
 		if(model.getImage()!=null){
-			
 			// save image :
 			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
 		}
