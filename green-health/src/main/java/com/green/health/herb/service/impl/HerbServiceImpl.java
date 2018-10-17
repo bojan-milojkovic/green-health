@@ -14,6 +14,7 @@ import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.images.storage.StorageService;
+import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -206,8 +207,8 @@ public class HerbServiceImpl implements HerbService {
 				}
 				
 				if(ijpa!=null){
-					// since illnesses is a HashSet there will be no duplicates
-					jpa.getIllnesses().add(ijpa);
+					// since 'links' is a HashSet there will be no duplicates :
+					jpa.getLinks().add(new LinkJPA(jpa, ijpa));
 				} else {
 					throw new MyRestPreconditionsException("Link illness to herb error","Cannot find illness with latin name = "
 							+illness.getLatinName()+" and serbian name = "+illness.getSrbName());
@@ -232,14 +233,14 @@ public class HerbServiceImpl implements HerbService {
 		model.setWhereToBuy(jpa.getWhereToBuy());
 		model.setWarnings(jpa.getWarnings());
 		
-		if(jpa.getIllnesses()!=null && !jpa.getIllnesses().isEmpty()){
+		if(jpa.getLinks()!=null && !jpa.getLinks().isEmpty()){
 			model.setIllnesses(new ArrayList<IllnessDTO>());
-			for(IllnessJPA ijpa : jpa.getIllnesses()){
+			for(LinkJPA ijpa : jpa.getLinks()){
 				// this is more memory-efficient than autowiring IllnessService
 				IllnessDTO imodel = new IllnessDTO();
-				imodel.setId(ijpa.getId());
-				imodel.setSrbName(ijpa.getSrbName());
-				imodel.setLatinName(ijpa.getLatinName());
+				imodel.setId(ijpa.getIllnesses().getId());
+				imodel.setSrbName(ijpa.getIllnesses().getSrbName());
+				imodel.setLatinName(ijpa.getIllnesses().getLatinName());
 				model.getIllnesses().add(imodel);
 			}
 		}

@@ -12,6 +12,7 @@ import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.illness.service.IllnessService;
+import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -171,8 +172,8 @@ public class IllnessServiceImpl implements IllnessService {
 				}
 				
 				if(hjpa!=null){
-					// since 'herbs' is a HashSet, there will be no duplicates
-					jpa.getHerbs().add(hjpa);
+					// since 'links' is a HashSet, there will be no duplicates
+					jpa.getLinks().add(new LinkJPA(hjpa, jpa));
 				} else {
 					throw new MyRestPreconditionsException("Link herb to illness error","Cannot find herb with srb name = "
 								+hmodel.getSrbName()+" and latin name = "+hmodel.getLatinName());
@@ -194,13 +195,13 @@ public class IllnessServiceImpl implements IllnessService {
 		model.setSymptoms(jpa.getSymptoms());
 		
 		// add herbs :
-		if(jpa.getHerbs()!=null && !jpa.getHerbs().isEmpty()){
+		if(jpa.getLinks()!=null && !jpa.getLinks().isEmpty()){
 			model.setHerbs(new ArrayList<HerbDTO>());
-			for(HerbJPA hjpa : jpa.getHerbs()){
+			for(LinkJPA ljpa : jpa.getLinks()){
 				HerbDTO hmodel = new HerbDTO();
-				hmodel.setId(hjpa.getId());
-				hmodel.setLatinName(hjpa.getLatinName());
-				hmodel.setSrbName(hjpa.getSrbName());
+				hmodel.setId(ljpa.getHerbs().getId());
+				hmodel.setLatinName(ljpa.getHerbs().getLatinName());
+				hmodel.setSrbName(ljpa.getHerbs().getSrbName());
 				model.getHerbs().add(hmodel);
 			}
 		}

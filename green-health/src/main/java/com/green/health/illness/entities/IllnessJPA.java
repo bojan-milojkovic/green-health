@@ -2,18 +2,18 @@ package com.green.health.illness.entities;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.JoinColumn;
-import com.green.health.herb.entities.HerbJPA;
 import com.green.health.parents.PojoParent;
+import com.green.health.ratings.entities.LinkJPA;
 
 @Entity
 @Table(name="illness")
@@ -35,11 +35,8 @@ public class IllnessJPA implements PojoParent {
 	@Column
 	private String symptoms;
 	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "herb_for_illness", 
-				joinColumns = @JoinColumn(name = "illness_id", referencedColumnName = "id"),
-				inverseJoinColumns = @JoinColumn(name = "herb_id", referencedColumnName = "id"))
-	private Set<HerbJPA> herbs = new HashSet<HerbJPA>();
+	@OneToMany(mappedBy="illnesses", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
+	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	public void setId(Long id) {
 		this.id = id;
@@ -82,11 +79,11 @@ public class IllnessJPA implements PojoParent {
 		this.symptoms = symptoms;
 	}
 
-	public Set<HerbJPA> getHerbs() {
-		return herbs;
+	public Set<LinkJPA> getLinks() {
+		return links;
 	}
 
-	public void setHerbs(Set<HerbJPA> herbs) {
-		this.herbs = herbs;
+	public void setLinks(Set<LinkJPA> links) {
+		this.links = links;
 	}
 }

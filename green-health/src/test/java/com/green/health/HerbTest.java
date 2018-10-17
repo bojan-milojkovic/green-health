@@ -22,6 +22,7 @@ import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.images.storage.StorageService;
+import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -263,7 +264,8 @@ public class HerbTest {
 	public void tryMakeDuplicateHerbIllnessLink() {
 		
 		// illnessJpa is already in a list of links for that herb :
-		list.get(1).getIllnesses().add(illnessJpa);
+		LinkJPA link = new LinkJPA(list.get(1),illnessJpa);
+		list.get(1).getLinks().add(link);
 		
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
@@ -273,7 +275,9 @@ public class HerbTest {
 		try {
 			// illnessDto is already in the patch model :
 			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
-			list.get(1).setIllnesses(new HashSet<IllnessJPA>());
+			
+			list.get(1).setLinks(new HashSet<LinkJPA>());
+			
 			assertEquals(1, result.getIllnesses().size());
 		} catch (MyRestPreconditionsException e) {
 			fail();
