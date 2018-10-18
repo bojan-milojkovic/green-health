@@ -32,6 +32,7 @@ public class IllnessController {
 	
 	// .../gh/illness
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody List<IllnessDTO> getAllIllnesses(){
 		return illnessServiceImpl.getAll();
@@ -39,6 +40,7 @@ public class IllnessController {
 	
 	// .../gh/illness/id
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody IllnessDTO getIllnessById(@PathVariable("id") final Long id) throws MyRestPreconditionsException{
 		return illnessServiceImpl.getOneById(id);
@@ -46,6 +48,7 @@ public class IllnessController {
 	
 	// .../gh/illness?name=asma
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody IllnessDTO getIllnessByName(@RequestParam(value="name", required=true) final String name) throws MyRestPreconditionsException{
 		return illnessServiceImpl.getOneByName(name);

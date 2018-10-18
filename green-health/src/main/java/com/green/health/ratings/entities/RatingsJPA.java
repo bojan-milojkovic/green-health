@@ -8,11 +8,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.green.health.parents.PojoParent;
 import com.green.health.user.entities.UserJPA;
 
 @Entity
 @Table(name="ratings")
-public class RatingsJPA {
+public class RatingsJPA implements PojoParent {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

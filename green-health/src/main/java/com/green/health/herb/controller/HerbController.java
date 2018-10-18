@@ -41,6 +41,7 @@ public class HerbController {
 
 	// .../gh/herb
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody List<HerbDTO> getAllHerbs(){
 		return herbServiceImpl.getAll();
@@ -48,6 +49,7 @@ public class HerbController {
 	
 	// .../gh/herb/id
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody HerbDTO getHerbById(@PathVariable("id") Long id) throws MyRestPreconditionsException{
 		return herbServiceImpl.getOneById(id);
@@ -55,6 +57,7 @@ public class HerbController {
 	
 	// .../gh/herb?name=maticnjak
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name){
 		HerbDTO model = herbServiceImpl.getHerbByLatinName(name);
