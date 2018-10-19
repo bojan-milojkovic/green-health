@@ -49,7 +49,7 @@ public class LinkJPA {
 	@Column(name="rating_fives")
 	private int ratingFives;
 	
-	@ManyToMany(cascade = CascadeType.DETACH)
+	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name="ratings",
 			inverseJoinColumns = @JoinColumn(name = "user_id"),
 			joinColumns = @JoinColumn(name="link_id"))
