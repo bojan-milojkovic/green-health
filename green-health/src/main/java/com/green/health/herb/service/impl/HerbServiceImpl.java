@@ -238,9 +238,9 @@ public class HerbServiceImpl implements HerbService {
 			for(LinkJPA ijpa : jpa.getLinks()){
 				// this is more memory-efficient than autowiring IllnessService
 				IllnessDTO imodel = new IllnessDTO();
-				imodel.setId(ijpa.getIllnesses().getId());
-				imodel.setSrbName(ijpa.getIllnesses().getSrbName());
-				imodel.setLatinName(ijpa.getIllnesses().getLatinName());
+				imodel.setId(ijpa.getIllness().getId());
+				imodel.setSrbName(ijpa.getIllness().getSrbName());
+				imodel.setLatinName(ijpa.getIllness().getLatinName());
 				model.getIllnesses().add(imodel);
 			}
 		}

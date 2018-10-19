@@ -4,17 +4,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.entities.IllnessJPA;
+import com.green.health.user.entities.UserJPA;
 
 @Entity
 @Table(name="herb_for_illness")
@@ -26,22 +28,38 @@ public class LinkJPA {
 	
 	@ManyToOne
 	@JoinColumn(name="herb_id")
-	private HerbJPA herbs;
+	private HerbJPA herb;
 	
 	@ManyToOne
 	@JoinColumn(name="illness_id")
-	private IllnessJPA illnesses;
-
-	@OneToMany(mappedBy="link", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
-	private Set<RatingsJPA> ratings = new HashSet<RatingsJPA>();
+	private IllnessJPA illness;
 	
-	public LinkJPA(){
-		
-	}
+	@Column(name="rating_ones")
+	private int ratingOnes;
+	
+	@Column(name="rating_twos")
+	private int ratingTwos;
+	
+	@Column(name="rating_threes")
+	private int ratingThrees;
+	
+	@Column(name="rating_fours")
+	private int ratingFours;
+
+	@Column(name="rating_fives")
+	private int ratingFives;
+	
+	@ManyToMany(cascade = CascadeType.DETACH)
+	@JoinTable(name="ratings",
+			inverseJoinColumns = @JoinColumn(name = "user_id"),
+			joinColumns = @JoinColumn(name="link_id"))
+	private Set<UserJPA> raters = new HashSet<UserJPA>();
+
+	public LinkJPA(){}
 	
 	public LinkJPA(HerbJPA herbs, IllnessJPA illnesses) {
-		this.herbs = herbs;
-		this.illnesses = illnesses;
+		this.herb = herbs;
+		this.illness = illnesses;
 	}
 
 	public Integer getId() {
@@ -52,36 +70,28 @@ public class LinkJPA {
 		this.id = id;
 	}
 
-	public HerbJPA getHerbs() {
-		return herbs;
+	public HerbJPA getHerb() {
+		return herb;
 	}
 
-	public void setHerbs(HerbJPA herbs) {
-		this.herbs = herbs;
+	public void setHerb(HerbJPA herbs) {
+		this.herb = herbs;
 	}
 
-	public IllnessJPA getIllnesses() {
-		return illnesses;
+	public IllnessJPA getIllness() {
+		return illness;
 	}
 
-	public void setIllnesses(IllnessJPA illnesses) {
-		this.illnesses = illnesses;
-	}
-
-	public Set<RatingsJPA> getRatings() {
-		return ratings;
-	}
-
-	public void setRatings(Set<RatingsJPA> ratings) {
-		this.ratings = ratings;
+	public void setIllness(IllnessJPA illnesses) {
+		this.illness = illnesses;
 	}
 	
 	@Override
 	public int hashCode() {
 		// standard hashCode for 2 interchangeable integers
 		int res = 17;
-	    res = res * 31 + (int)(Math.min(herbs.getId(), illnesses.getId()));
-	    res = res * 31 + (int)(Math.max(herbs.getId(), illnesses.getId()));
+	    res = res * 31 + (int)(Math.min(herb.getId(), illness.getId()));
+	    res = res * 31 + (int)(Math.max(herb.getId(), illness.getId()));
 	    return res;
 	}
 	
@@ -93,7 +103,60 @@ public class LinkJPA {
 	    if (obj == this)
 	        return true;
 	    // two objects are the same if they have the same herb and illness :
-	    return this.getHerbs().getId() == ((LinkJPA) obj).getHerbs().getId() &&
-	    		this.getIllnesses().getId() == ((LinkJPA) obj).getIllnesses().getId();
+	    return this.getHerb().getId() == ((LinkJPA) obj).getHerb().getId() &&
+	    		this.getIllness().getId() == ((LinkJPA) obj).getIllness().getId();
+	}
+	
+	public double calculateRating() {
+		return (ratingOnes + 2*ratingTwos + 3*ratingThrees + 4*ratingFours + 5*ratingFives)/
+				(ratingOnes + ratingTwos + ratingThrees + ratingFours + ratingFives);
+	}
+
+	public int getRatingOnes() {
+		return ratingOnes;
+	}
+
+	public void setRatingOnes(int ratingOnes) {
+		this.ratingOnes = ratingOnes;
+	}
+
+	public int getRatingTwos() {
+		return ratingTwos;
+	}
+
+	public void setRatingTwos(int ratingTwos) {
+		this.ratingTwos = ratingTwos;
+	}
+
+	public int getRatingThrees() {
+		return ratingThrees;
+	}
+
+	public void setRatingThrees(int ratingThrees) {
+		this.ratingThrees = ratingThrees;
+	}
+
+	public int getRatingFours() {
+		return ratingFours;
+	}
+
+	public void setRatingFours(int ratingFours) {
+		this.ratingFours = ratingFours;
+	}
+
+	public int getRatingFives() {
+		return ratingFives;
+	}
+
+	public void setRatingFives(int ratingFives) {
+		this.ratingFives = ratingFives;
+	}
+
+	public Set<UserJPA> getRaters() {
+		return raters;
+	}
+
+	public void setRaters(Set<UserJPA> raters) {
+		this.raters = raters;
 	}
 }

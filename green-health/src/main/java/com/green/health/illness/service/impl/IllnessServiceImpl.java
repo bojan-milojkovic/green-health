@@ -199,9 +199,9 @@ public class IllnessServiceImpl implements IllnessService {
 			model.setHerbs(new ArrayList<HerbDTO>());
 			for(LinkJPA ljpa : jpa.getLinks()){
 				HerbDTO hmodel = new HerbDTO();
-				hmodel.setId(ljpa.getHerbs().getId());
-				hmodel.setLatinName(ljpa.getHerbs().getLatinName());
-				hmodel.setSrbName(ljpa.getHerbs().getSrbName());
+				hmodel.setId(ljpa.getHerb().getId());
+				hmodel.setLatinName(ljpa.getHerb().getLatinName());
+				hmodel.setSrbName(ljpa.getHerb().getSrbName());
 				model.getHerbs().add(hmodel);
 			}
 		}
