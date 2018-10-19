@@ -51,8 +51,8 @@ public class LinkJPA {
 	
 	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name="ratings",
-			inverseJoinColumns = @JoinColumn(name = "user_id"),
-			joinColumns = @JoinColumn(name="link_id"))
+			joinColumns = @JoinColumn(name="link_id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id"))
 	private Set<UserJPA> raters = new HashSet<UserJPA>();
 
 	public LinkJPA(){}
