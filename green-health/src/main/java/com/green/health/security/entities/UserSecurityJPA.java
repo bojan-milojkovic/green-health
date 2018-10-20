@@ -2,17 +2,23 @@ package com.green.health.security.entities;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.user.entities.UserJPA;
 
 @Entity
@@ -51,6 +57,9 @@ public class UserSecurityJPA {
 	
 	@Column(name="last_update")
 	private LocalDateTime lastUpdate;
+	
+	@ManyToMany(mappedBy="raters")
+	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	public LocalDateTime getLastUpdate() {
 		return lastUpdate;
@@ -145,5 +154,13 @@ public class UserSecurityJPA {
 
 	public void setUserHasRolesJpa(List<UserHasRolesJPA> userHasRolesJpa) {
 		this.userHasRolesJpa = userHasRolesJpa;
+	}
+
+	public Set<LinkJPA> getLinks() {
+		return links;
+	}
+
+	public void setLinks(Set<LinkJPA> links) {
+		this.links = links;
 	}
 }

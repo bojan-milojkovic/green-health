@@ -1,8 +1,6 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,11 +8,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import com.green.health.parents.PojoParent;
-import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.security.entities.UserSecurityJPA;
 
 @Entity
@@ -40,9 +36,6 @@ public class UserJPA implements PojoParent {
 	
 	@OneToOne(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private UserSecurityJPA userSecurityJpa;
-	
-	@ManyToMany(mappedBy="raters")
-	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	public UserSecurityJPA getUserSecurityJpa() {
 		return userSecurityJpa;
@@ -81,13 +74,5 @@ public class UserJPA implements PojoParent {
 	}
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public Set<LinkJPA> getLinks() {
-		return links;
-	}
-
-	public void setLinks(Set<LinkJPA> links) {
-		this.links = links;
 	}
 }

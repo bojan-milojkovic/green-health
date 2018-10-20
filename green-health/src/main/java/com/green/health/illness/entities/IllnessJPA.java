@@ -35,7 +35,7 @@ public class IllnessJPA implements PojoParent {
 	@Column
 	private String symptoms;
 	
-	@OneToMany(mappedBy="illnesses", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	public void setId(Long id) {

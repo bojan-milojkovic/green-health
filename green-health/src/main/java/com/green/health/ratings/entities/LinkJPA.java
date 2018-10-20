@@ -2,7 +2,6 @@ package com.green.health.ratings.entities;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,15 +15,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.entities.IllnessJPA;
-import com.green.health.user.entities.UserJPA;
+import com.green.health.parents.PojoParent;
+import com.green.health.security.entities.UserSecurityJPA;
 
 @Entity
 @Table(name="herb_for_illness")
-public class LinkJPA {
+public class LinkJPA implements PojoParent{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 	
 	@ManyToOne
 	@JoinColumn(name="herb_id")
@@ -53,7 +53,7 @@ public class LinkJPA {
 	@JoinTable(name="ratings",
 			joinColumns = @JoinColumn(name="link_id"),
 			inverseJoinColumns = @JoinColumn(name = "user_id"))
-	private Set<UserJPA> raters = new HashSet<UserJPA>();
+	private Set<UserSecurityJPA> raters = new HashSet<UserSecurityJPA>();
 
 	public LinkJPA(){}
 	
@@ -62,11 +62,11 @@ public class LinkJPA {
 		this.illness = illnesses;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -108,8 +108,9 @@ public class LinkJPA {
 	}
 	
 	public double calculateRating() {
+		int total = ratingOnes + ratingTwos + ratingThrees + ratingFours + ratingFives;
 		return (ratingOnes + 2*ratingTwos + 3*ratingThrees + 4*ratingFours + 5*ratingFives)/
-				(ratingOnes + ratingTwos + ratingThrees + ratingFours + ratingFives);
+				(total!=0 ? total : 1);
 	}
 
 	public int getRatingOnes() {
@@ -152,11 +153,11 @@ public class LinkJPA {
 		this.ratingFives = ratingFives;
 	}
 
-	public Set<UserJPA> getRaters() {
+	public Set<UserSecurityJPA> getRaters() {
 		return raters;
 	}
 
-	public void setRaters(Set<UserJPA> raters) {
+	public void setRaters(Set<UserSecurityJPA> raters) {
 		this.raters = raters;
 	}
 }

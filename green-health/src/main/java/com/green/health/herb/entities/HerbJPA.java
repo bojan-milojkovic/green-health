@@ -46,7 +46,7 @@ public class HerbJPA implements PojoParent{
 	@Column
 	private String properties;
 	
-	@OneToMany(mappedBy="herbs", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 
 	public Long getId() {
