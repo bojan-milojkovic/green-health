@@ -34,7 +34,10 @@ public class RatingsServiceImpl implements RatingsService {
 	}
 	
 	private LinkJPA findOneByHerbAndIllness(Long herbId, Long illnessId) {
-		// ids are already checked :
+		// ids are already checked.
+		if(herbRepo.getOne(herbId)==null) {
+			return null;
+		}
 		for(LinkJPA jpa : herbRepo.getOne(herbId).getLinks()){
 			if(jpa.getIllness().getId() == illnessId){
 				return jpa;
@@ -119,7 +122,7 @@ public class RatingsServiceImpl implements RatingsService {
 	public RatingDTO getRatingForLink(Long herbId, Long illnessId) throws MyRestPreconditionsException {
 		if(checkId(herbId) && checkId(illnessId)){
 			LinkJPA jpa = RestPreconditions.checkNotNull(findOneByHerbAndIllness(herbId, illnessId),
-					"Retreaving ratings for herb0illness link failed !",
+					"Retreaving ratings for herb-illness link failed !",
 					"Cannot find link with herbId="+herbId+" and illnessId="+illnessId);
 			
 			return convertJpaToModel(jpa);
@@ -143,6 +146,9 @@ public class RatingsServiceImpl implements RatingsService {
 		MyRestPreconditionsException e = new MyRestPreconditionsException("Find herb-illness rating error !",
 				(ih ? "Herb" : "Illness")+" id invalid or no illness is linked to this herb");
 		if(checkId(id)){
+			if((ih && herbRepo.getOne(id)==null) || (!ih && illnessRepo.getOne(id)==null)) {
+				throw e;
+			}
 			Set<LinkJPA> result = ih ? herbRepo.getOne(id).getLinks() : illnessRepo.getOne(id).getLinks();
 			if(!(result!=null && !result.isEmpty())){
 				throw e;
