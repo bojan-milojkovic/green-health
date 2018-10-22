@@ -23,14 +23,11 @@ public class RatingsServiceImpl implements RatingsService {
 	private IllnessRepository illnessRepo;
 
 	@Autowired
-	public RatingsServiceImpl(IllnessRepository illnessRepo, UserSecurityRepository userSecurityRepo, HerbRepository herbRepo) {
+	public RatingsServiceImpl(UserSecurityRepository userSecurityRepo, HerbRepository herbRepo,
+			IllnessRepository illnessRepo) {
 		this.userSecurityRepo = userSecurityRepo;
 		this.herbRepo = herbRepo;
 		this.illnessRepo = illnessRepo;
-	}
-
-	private boolean isPostDataPresent(RatingDTO model){
-		return checkId(model.getHerbId()) && checkId(model.getIllnessId());
 	}
 	
 	private LinkJPA findOneByHerbAndIllness(Long herbId, Long illnessId) {
@@ -48,58 +45,46 @@ public class RatingsServiceImpl implements RatingsService {
 	
 	@Override
 	public void addNew(RatingDTO model) throws MyRestPreconditionsException {
-		if(isPostDataPresent(model)){
-			// check username :
-			UserSecurityJPA user = RestPreconditions.checkNotNull(userSecurityRepo.findByUsername(model.getUsername()), 
-					"Add new herb-illness rating error!", "Cannot find the user with username = "+model.getUsername());
-			
-			// get the link :
-			LinkJPA link = RestPreconditions.checkNotNull(
-					findOneByHerbAndIllness(model.getHerbId(), model.getIllnessId()),
-					"Add new herb-illness rating error!",
-					"Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId());
-			
-			// check that this user did not rate this link yet :
-			RestPreconditions.assertTrue(!user.getLinks().contains(link), 
-					"Add new herb-illness rating error!", 
-					"The user "+model.getUsername()+" has already rated this herb-illness link");
-			
-			switch(model.getNewRatings()){
-				case 1:
-					link.setRatingOnes(link.getRatingOnes()+1);
-					break;
-				case 2:
-					link.setRatingTwos(link.getRatingTwos()+1);
-					break;
-				case 3:
-					link.setRatingThrees(link.getRatingThrees()+1);
-					break;
-				case 4:
-					link.setRatingFours(link.getRatingFours()+1);
-					break;
-				default:
-					link.setRatingFives(link.getRatingFives()+1);
-					break;
-			};
-			
-			// mark that user has rated this link
-			user.getLinks().add(link);
-			link.getRaters().add(user);
-			
-			userSecurityRepo.save(user);
-		} else {
-			MyRestPreconditionsException e = new MyRestPreconditionsException("Add new herb-illness rating error!",
-					"Some of the necessary fields are missing or invalid");
-			
-			if(!checkId(model.getHerbId())){
-				e.getErrors().add("Herb id is missing or invalid");
-			}
-			if(!checkId(model.getIllnessId())){
-				e.getErrors().add("Illness id is missing or invalid");
-			}
-			
-			throw e;
-		}
+		// model's herb/illness ids are already checked by @Valid
+		
+		// check username (not necessary, but just in case)
+		UserSecurityJPA user = RestPreconditions.checkNotNull(userSecurityRepo.findByUsername(model.getUsername()), 
+				"Add new herb-illness rating error!", "Cannot find the user with username = "+model.getUsername());
+		
+		// get the link :
+		LinkJPA link = RestPreconditions.checkNotNull(
+				findOneByHerbAndIllness(model.getHerbId(), model.getIllnessId()),
+				"Add new herb-illness rating error!",
+				"Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId());
+		
+		// check that this user did not rate this link yet :
+		RestPreconditions.assertTrue(!user.getLinks().contains(link), 
+				"Add new herb-illness rating error!", 
+				"The user "+model.getUsername()+" has already rated this herb-illness link");
+		
+		switch(model.getNewRatings()){
+			case 1:
+				link.setRatingOnes(link.getRatingOnes()+1);
+				break;
+			case 2:
+				link.setRatingTwos(link.getRatingTwos()+1);
+				break;
+			case 3:
+				link.setRatingThrees(link.getRatingThrees()+1);
+				break;
+			case 4:
+				link.setRatingFours(link.getRatingFours()+1);
+				break;
+			default:
+				link.setRatingFives(link.getRatingFives()+1);
+				break;
+		};
+		
+		// mark that user has rated this link
+		user.getLinks().add(link);
+		link.getRaters().add(user);
+		
+		userSecurityRepo.save(user);
 	}
 
 	private RatingDTO convertJpaToModel(LinkJPA jpa) {

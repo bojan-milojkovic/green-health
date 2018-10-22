@@ -63,31 +63,6 @@ public class RatingsTests {
 	}
 	
 	@Test
-	public void addNewRatingHerbIdInvalidTest() {
-		model.setHerbId(-1L);
-		try {
-			mockRatingsServiceImpl.addNew(model);
-			fail();
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
-		}
-		model.setHerbId(2L);
-	}
-	
-	@Test
-	public void addNewRatingIllnessIdInvalidTest() {
-		model.setIllnessId(-1L);
-		
-		try {
-			mockRatingsServiceImpl.addNew(model);
-			fail();
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
-		}
-		model.setIllnessId(2L);
-	}
-	
-	@Test
 	public void addNewRatingUsernameInvalidTest() {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(null);
 		
@@ -110,6 +85,23 @@ public class RatingsTests {
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
 		}
+	}
+	
+	@Test
+	public void addNewRatingNoIllnessForThatLinkTest() {
+		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(userSecurity);
+		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(herb);
+		
+		herb.setLinks(new HashSet<LinkJPA>());
+		
+		try {
+			mockRatingsServiceImpl.addNew(model);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
+		}
+		
+		herb.getLinks().add(new LinkJPA(herb,illness));
 	}
 	
 	@Test
