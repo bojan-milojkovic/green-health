@@ -67,7 +67,7 @@ public class IllnessTest {
 		herbDto = new HerbDTO();
 		herbDto.setId(1L);
 		herbDto.setLatinName("herb latin name");
-		herbDto.setSrbName("herb srb name");
+		herbDto.setEngName("herb srb name");
 		patchModel.setHerbs(new ArrayList<HerbDTO>());
 		patchModel.getHerbs().add(herbDto);
 		
@@ -80,7 +80,7 @@ public class IllnessTest {
 		herbJpa.setGrowsAt("sunny fields");
 		herbJpa.setLatinName("herb latin name");
 		herbJpa.setProperties("some properties");
-		herbJpa.setSrbName("herb srb name");
+		herbJpa.setEngName("herb eng name");
 		herbJpa.setWarnings("tastes bad");
 		herbJpa.setWhenToPick("summer");
 	}
@@ -256,7 +256,7 @@ public class IllnessTest {
 	public void tryLinkNonExistentHerbToIllnessTest() {
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockHerbRepo.getHerbBySrbName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbRepo.getHerbByEngName(Mockito.anyString())).thenReturn(null);
 		
 		try {
 			mockIllnessServiceImpl.edit(patchModel, 1L);

@@ -45,8 +45,8 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbDTO getHerbBySrbName(String srbName) {
-		return convertJpaToModel(herbDao.getHerbBySrbName(srbName));
+	public HerbDTO getHerbByEngName(String EngName) {
+		return convertJpaToModel(herbDao.getHerbByEngName(EngName));
 	}
 
 	@Override
@@ -70,8 +70,8 @@ public class HerbServiceImpl implements HerbService {
 			// check that herb name is unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
 					"The herb with Latin name "+model.getLatinName()+" is already in our database.");
-			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbBySrbName(model.getSrbName()),
-					"The herb with Serbian name "+model.getSrbName()+" is already in our database.");
+			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getEngName()),
+					"The herb with Serbian name "+model.getEngName()+" is already in our database.");
 
 			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
 			
@@ -94,7 +94,7 @@ public class HerbServiceImpl implements HerbService {
 			if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb's use properties");
 			}
-			if(!RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}")){
+			if(!RestPreconditions.checkStringMatches(model.getEngName(),"[A-Za-z ]{3,}")){
 				ex.getErrors().add("herb's Serbian name");
 			}
 			if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
@@ -156,7 +156,7 @@ public class HerbServiceImpl implements HerbService {
 			jpa.setDescription(model.getDescription());
 			jpa.setGrowsAt(model.getGrowsAt());
 			jpa.setLatinName(model.getLatinName());
-			jpa.setSrbName(model.getSrbName());
+			jpa.setEngName(model.getEngName());
 			jpa.setProperties(model.getProperties());
 			jpa.setWarnings(model.getWarnings());
 			jpa.setWhenToPick(model.getWhenToPick());
@@ -176,8 +176,8 @@ public class HerbServiceImpl implements HerbService {
 			if(RestPreconditions.checkString(model.getLatinName())){
 				jpa.setLatinName(model.getLatinName());
 			}
-			if(RestPreconditions.checkString(model.getSrbName())){
-				jpa.setSrbName(model.getSrbName());
+			if(RestPreconditions.checkString(model.getEngName())){
+				jpa.setEngName(model.getEngName());
 			}
 			if(RestPreconditions.checkString(model.getProperties())){
 				jpa.setProperties(model.getProperties());
@@ -227,7 +227,7 @@ public class HerbServiceImpl implements HerbService {
 		model.setGrowsAt(jpa.getGrowsAt());
 		model.setId(jpa.getId());
 		model.setLatinName(jpa.getLatinName());
-		model.setSrbName(jpa.getSrbName());
+		model.setEngName(jpa.getEngName());
 		model.setProperties(jpa.getProperties());
 		model.setWhenToPick(jpa.getWhenToPick());
 		model.setWhereToBuy(jpa.getWhereToBuy());
@@ -250,26 +250,26 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public boolean isPostDataPresent(HerbDTO model) {
-		return RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}") && 
-				RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}") && 
-				RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}") &&
-				RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}") && 
-				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") && 
-				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") && 
-				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")
+		return RestPreconditions.checkString(model.getDescription()) && 
+				RestPreconditions.checkString(model.getGrowsAt()) && 
+				RestPreconditions.checkString(model.getLatinName()) &&
+				RestPreconditions.checkString(model.getEngName()) && 
+				RestPreconditions.checkString(model.getProperties()) && 
+				RestPreconditions.checkString(model.getWarnings()) && 
+				RestPreconditions.checkString(model.getWhenToPick())
 				;
 	}
 
 	@Override
 	public boolean isPatchDataPresent(HerbDTO model) {
-		return RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}") ||
-				RestPreconditions.checkStringMatches(model.getSrbName(),"[A-Za-z ]{3,}") ||
-				RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}") ||
-				RestPreconditions.checkStringMatches(model.getWhereToBuy(),"[A-Za-z0-9 .,:'()-]{10,}") ||
+		return RestPreconditions.checkString(model.getDescription()) ||
+				RestPreconditions.checkString(model.getGrowsAt()) ||
+				RestPreconditions.checkString(model.getLatinName()) ||
+				RestPreconditions.checkString(model.getEngName()) ||
+				RestPreconditions.checkString(model.getProperties()) ||
+				RestPreconditions.checkString(model.getWarnings()) ||
+				RestPreconditions.checkString(model.getWhenToPick()) ||
+				RestPreconditions.checkString(model.getWhereToBuy()) ||
 				(model.getIllnesses()!=null && !model.getIllnesses().isEmpty())
 				;
 	}

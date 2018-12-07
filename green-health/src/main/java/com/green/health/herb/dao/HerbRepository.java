@@ -9,8 +9,8 @@ import com.green.health.herb.entities.HerbJPA;
 @Repository
 public interface HerbRepository extends JpaRepository<HerbJPA, Long>{
 	
-	@Query("select h from HerbJPA h where h.srbName = :param")
-	public HerbJPA getHerbBySrbName(@Param("param") final String name);
+	@Query("select h from HerbJPA h where h.engName = :param")
+	public HerbJPA getHerbByEngName(@Param("param") final String name);
 
 	@Query("select h from HerbJPA h where h.latinName = :param")
 	public HerbJPA getHerbByLatinName(@Param("param") final String latinName);
