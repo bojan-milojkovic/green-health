@@ -51,7 +51,7 @@ public class HerbTest {
 			HerbJPA jpa = new HerbJPA();
 			jpa.setId(i);
 			jpa.setLatinName("latinName-"+i);
-			jpa.setSrbName("srbName-"+i);
+			jpa.setEngName("srbName-"+i);
 			jpa.setDescription("bilosta");
 			list.add(jpa);
 		}
@@ -59,7 +59,7 @@ public class HerbTest {
 		postModel = new HerbDTO();
 		postModel.setDescription("static description");
 		postModel.setLatinName("static latinName");
-		postModel.setSrbName("static srbName");
+		postModel.setEngName("static srbName");
 		postModel.setGrowsAt("static location");
 		postModel.setProperties("static properties");
 		postModel.setWarnings("static warnings");
@@ -96,7 +96,7 @@ public class HerbTest {
 		for(int i=0; i<3 ; i++){
 			assertEquals(list.get(i).getId(), result.get(i).getId());
 			assertEquals(list.get(i).getLatinName() , result.get(i).getLatinName() );
-			assertEquals(list.get(i).getSrbName(), result.get(i).getSrbName());
+			assertEquals(list.get(i).getEngName(), result.get(i).getEngName());
 			assertEquals(list.get(i).getDescription(), result.get(i).getDescription());
 		}
 	}
@@ -111,7 +111,7 @@ public class HerbTest {
 			
 			assertEquals(list.get(1).getId(), model.getId());
 			assertEquals(list.get(1).getLatinName(), model.getLatinName());
-			assertEquals(list.get(1).getSrbName(), model.getSrbName());
+			assertEquals(list.get(1).getEngName(), model.getEngName());
 			assertEquals(list.get(1).getDescription(), model.getDescription());
 		} catch (MyRestPreconditionsException e) {
 			fail();
@@ -126,19 +126,19 @@ public class HerbTest {
 		
 		assertEquals(list.get(0).getId(), model.getId());
 		assertEquals(list.get(0).getLatinName(), model.getLatinName());
-		assertEquals(list.get(0).getSrbName(), model.getSrbName());
+		assertEquals(list.get(0).getEngName(), model.getEngName());
 		assertEquals(list.get(0).getDescription(), model.getDescription());
 	}
 	
 	@Test
 	public void getHerbByNameTest2(){
-		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(list.get(0));
+		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
-		HerbDTO model = mockHerbServiceImpl.getHerbBySrbName("bilosta");
+		HerbDTO model = mockHerbServiceImpl.getHerbByEngName("bilosta");
 		
 		assertEquals(list.get(0).getId(), model.getId());
 		assertEquals(list.get(0).getLatinName(), model.getLatinName());
-		assertEquals(list.get(0).getSrbName(), model.getSrbName());
+		assertEquals(list.get(0).getEngName(), model.getEngName());
 		assertEquals(list.get(0).getDescription(), model.getDescription());
 	}
 	
@@ -166,7 +166,7 @@ public class HerbTest {
 	@Test
 	public void createHerbMissingPostData(){
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(null);
 
 		try {
 			mockHerbServiceImpl.addNew(patchModel);
@@ -179,20 +179,20 @@ public class HerbTest {
 	@Test
 	public void createHerbSrbNameAlreadyExists(){
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(list.get(0));
+		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
 			mockHerbServiceImpl.addNew(postModel);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The herb with Serbian name "+postModel.getSrbName()+" is already in our database.",e.getDetails());
+			assertEquals("The herb with Serbian name "+postModel.getEngName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
 	@Test
 	public void createHerbLatinNameAlreadyExists(){
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(0));
-		when(mockHerbDao.getHerbBySrbName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(null);
 		
 		try {
 			mockHerbServiceImpl.addNew(postModel);

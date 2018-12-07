@@ -96,7 +96,7 @@ public class RatingsServiceImpl implements RatingsService {
 		
 		model.setHerbId(jpa.getHerb().getId());
 		model.setHerbLatinName(jpa.getHerb().getLatinName());
-		model.setHerbLocalName(jpa.getHerb().getSrbName());
+		model.setHerbLocalName(jpa.getHerb().getEngName());
 		
 		model.setRatings(jpa.calculateRating());
 		

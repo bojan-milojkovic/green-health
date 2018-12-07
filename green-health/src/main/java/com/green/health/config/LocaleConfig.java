@@ -20,7 +20,7 @@ public class LocaleConfig implements WebMvcConfigurer {
 	@Bean("messageSource")
 	public MessageSource messageSource() {
 		ReloadableResourceBundleMessageSource messageSource=new ReloadableResourceBundleMessageSource();
-      	messageSource.setBasename("classpath:locale/messages");
+      	messageSource.setBasename("classpath:locale");
       	messageSource.setDefaultEncoding("UTF-8");
       	messageSource.setUseCodeAsDefaultMessage(true);
       	messageSource.setFallbackToSystemLocale(false);

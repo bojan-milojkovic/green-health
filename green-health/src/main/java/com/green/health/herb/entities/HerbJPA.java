@@ -22,8 +22,8 @@ public class HerbJPA implements PojoParent{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name="srb_name")
-	private String srbName;
+	@Column(name="eng_name")
+	private String engName;
 	
 	@Column(name="latin_name")
 	private String latinName;
@@ -48,6 +48,9 @@ public class HerbJPA implements PojoParent{
 	
 	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
+	
+	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
+	private Set<HerbLocaleJPA> herbLocales = new HashSet<HerbLocaleJPA>();
 
 	public Long getId() {
 		return id;
@@ -57,12 +60,12 @@ public class HerbJPA implements PojoParent{
 		this.id = id;
 	}
 
-	public String getSrbName() {
-		return srbName;
+	public String getEngName() {
+		return engName;
 	}
 
-	public void setSrbName(String srbName) {
-		this.srbName = srbName;
+	public void setEngName(String srbName) {
+		this.engName = srbName;
 	}
 
 	public String getLatinName() {
@@ -127,5 +130,13 @@ public class HerbJPA implements PojoParent{
 
 	public void setLinks(Set<LinkJPA> links) {
 		this.links = links;
+	}
+
+	public Set<HerbLocaleJPA> getHerbLocales() {
+		return herbLocales;
+	}
+
+	public void setHerbLocales(Set<HerbLocaleJPA> herbLocales) {
+		this.herbLocales = herbLocales;
 	}
 }
