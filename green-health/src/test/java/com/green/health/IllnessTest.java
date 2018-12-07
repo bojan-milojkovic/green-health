@@ -105,7 +105,7 @@ public class IllnessTest {
 	public void getIllnessInvalidIdTest() {
 		try {
 			mockIllnessServiceImpl.getOneById(-1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id is invalid", e.getDetails());
 		}
@@ -117,7 +117,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.getOneById(1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find illness with id = 1", e.getDetails());
 		}
@@ -130,7 +130,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.getOneByName("blatruc");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The the illness with the name blatruc is not in our database.", e.getDetails());
 		}
@@ -141,7 +141,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.addNew(patchModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The following data is missing from the illness form", e.getDetails());
 		}
@@ -154,7 +154,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with Latin name Some latin name is already in our database.", e.getDetails());
 		}
@@ -168,7 +168,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with Serbian name Some serb name is already in our database.", e.getDetails());
 		}
@@ -180,7 +180,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.edit(badModel, -1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals(e.getDetails(), "Id is invalid");
 		}
@@ -192,7 +192,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.edit(badModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("To edit the illness you must provide some editable data.", e.getDetails());
 		}
@@ -206,7 +206,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.edit(badModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
 		}
@@ -222,7 +222,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.edit(patchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
 			assertEquals("The latin name Latin name 2 is already assigned to another illness", e.getDetails());
@@ -248,7 +248,7 @@ public class IllnessTest {
 			
 			assertEquals(1, result.getHerbs().size());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -260,7 +260,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.edit(patchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Link herb to illness error", e.getDescription());
 		}
@@ -270,7 +270,7 @@ public class IllnessTest {
 	public void tryToDeleteInvalidIdTest() {
 		try {
 			mockIllnessServiceImpl.delete(-1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id is invalid", e.getDetails());
 		}
@@ -282,7 +282,7 @@ public class IllnessTest {
 		
 		try {
 			mockIllnessServiceImpl.delete(1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
 		}
@@ -303,7 +303,7 @@ public class IllnessTest {
 			assertTrue(!result.getHerbs().isEmpty());
 			assertEquals("herb latin name", result.getHerbs().get(0).getLatinName());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 }

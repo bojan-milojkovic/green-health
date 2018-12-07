@@ -68,7 +68,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.addNew(model);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find the user with username = "+model.getUsername(), e.getDetails());
 		}
@@ -81,7 +81,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.addNew(model);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
 		}
@@ -96,7 +96,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.addNew(model);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
 		}
@@ -111,7 +111,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.addNew(model);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The user "+model.getUsername()+" has already rated this herb-illness link", e.getDetails());
 		}
@@ -129,7 +129,7 @@ public class RatingsTests {
 			
 			assertEquals(1, userSecurity.getLinks().size());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -137,7 +137,7 @@ public class RatingsTests {
 	public void getOneRatingInvalidHerbIdTest() {
 		try {
 			mockRatingsServiceImpl.getRatingForLink(-1L, 2L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
 		}
@@ -147,7 +147,7 @@ public class RatingsTests {
 	public void getOneRatingInvalidIllnessIdTest() {
 		try {
 			mockRatingsServiceImpl.getRatingForLink(2L, -1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
 		}
@@ -159,7 +159,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingForLink(2L, 2L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId=2 and illnessId=2", e.getDetails());
 		}
@@ -173,7 +173,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingForLink(2L, 2L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId=2 and illnessId=2", e.getDetails());
 		}
@@ -192,7 +192,7 @@ public class RatingsTests {
 			assertTrue(2L==result.getHerbId());
 			assertTrue(2L==result.getIllnessId());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -201,7 +201,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(-1L, true);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -212,7 +212,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(-1L, false);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -224,7 +224,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, true);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -236,7 +236,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, false);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -250,7 +250,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, true);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -266,7 +266,7 @@ public class RatingsTests {
 		
 		try {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, false);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
 		}
@@ -285,7 +285,7 @@ public class RatingsTests {
 			assertTrue(result.size()==1);
 			assertTrue(2L==result.get(0).getHerbId());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -300,7 +300,7 @@ public class RatingsTests {
 			assertTrue(result.size()==1);
 			assertTrue(2L==result.get(0).getIllnessId());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 }

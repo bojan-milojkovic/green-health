@@ -7,19 +7,17 @@ public class MyRestPreconditionsException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 	
-	private String description;
 	private String details;
 	private List<String> errors;
 	
 	public MyRestPreconditionsException(String description, String details) {
-		super();
-		this.description = description;
+		super(description);
 		this.details = details;
 		errors = new ArrayList<String>();
 	}
 	
 	public String getDescription() {
-		return description;
+		return this.getMessage(); 
 	}
 	public String getDetails() {
 		return details;

@@ -24,7 +24,7 @@ public class ImageServiceTest {
 	public void deleteImageButDirPathInvalid(){
 		try {
 			mockStorageServiceImpl.deleteImage(-1L, true);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id used for directory structure traverse is invalid", e.getDetails());
 		}

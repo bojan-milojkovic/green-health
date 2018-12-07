@@ -114,7 +114,7 @@ public class HerbTest {
 			assertEquals(list.get(1).getSrbName(), model.getSrbName());
 			assertEquals(list.get(1).getDescription(), model.getDescription());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -159,7 +159,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -170,7 +170,7 @@ public class HerbTest {
 
 		try {
 			mockHerbServiceImpl.addNew(patchModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The following data is missing from the herb form",e.getDetails());
 		}
@@ -183,7 +183,7 @@ public class HerbTest {
 		
 		try {
 			mockHerbServiceImpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The herb with Serbian name "+postModel.getSrbName()+" is already in our database.",e.getDetails());
 		}
@@ -196,7 +196,7 @@ public class HerbTest {
 		
 		try {
 			mockHerbServiceImpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The herb with Latin name "+postModel.getLatinName()+" is already in our database.",e.getDetails());
 		}
@@ -210,7 +210,7 @@ public class HerbTest {
 		
 		try{
 			mockHerbServiceImpl.edit(invalidPatchModel, invalidPatchModel.getId());
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("Your herb edit request is invalid - You must provide some editable data",e.getDetails());
 		}
@@ -222,7 +222,7 @@ public class HerbTest {
 		
 		try{
 			mockHerbServiceImpl.edit(patchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("Herb with id = 1 does not exist in our database.",e.getDetails());
 		}
@@ -238,7 +238,7 @@ public class HerbTest {
 		
 		try {
 			mockHerbServiceImpl.edit(patchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
 			assertEquals("The latin name latinName-2 has already been assigned to another herb",e.getDetails());
@@ -256,7 +256,7 @@ public class HerbTest {
 			HerbDTO result = mockHerbServiceImpl.edit(patchModel, 1L);
 			assertEquals("new latin name",result.getLatinName());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -280,7 +280,7 @@ public class HerbTest {
 			
 			assertEquals(1, result.getIllnesses().size());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -293,7 +293,7 @@ public class HerbTest {
 		
 		try {
 			mockHerbServiceImpl.edit(patchModel, 2L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Link illness to herb error", e.getDescription());
 		}
@@ -305,7 +305,7 @@ public class HerbTest {
 		
 		try{
 			mockHerbServiceImpl.delete(1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e){
 			assertEquals("Herb with id = 1 does not exist in our database.", e.getDetails());
 		}
@@ -321,7 +321,7 @@ public class HerbTest {
 			mockHerbServiceImpl.delete(1L);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 }

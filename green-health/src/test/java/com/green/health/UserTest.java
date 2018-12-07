@@ -104,7 +104,7 @@ public class UserTest {
 			
 			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -117,7 +117,7 @@ public class UserTest {
 			
 			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -132,7 +132,7 @@ public class UserTest {
 		
 			assertEquals(list.get(0).getEmail(), result.getEmail());
 		} catch (MyRestPreconditionsException e) {
-			fail();
+			fail(e.getDescription());
 		}
 	}
 	
@@ -140,7 +140,7 @@ public class UserTest {
 	public void findUserByNegativeId(){
 		try {
 			mockUserServiceimpl.getOneById(-1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id is invalid", e.getDetails());
 		}
@@ -152,7 +152,7 @@ public class UserTest {
 		
 		try{
 			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg.com");
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("There is no user in our database with that email.", e.getDetails());
 		}
@@ -162,7 +162,7 @@ public class UserTest {
 	public void findUserByInvalidEmailTest(){
 		try{
 			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg");
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("You must provide a valid email address.", e.getDetails());
 		}
@@ -174,7 +174,7 @@ public class UserTest {
 		
 		try{
 			mockUserServiceimpl.getUserByUsernameOrEmail("invalid", null);
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("There is no user in our database with that username.", e.getDetails());
 		}
@@ -184,7 +184,7 @@ public class UserTest {
 	public void findUserWithoutEmailOrUsername(){
 		try{
 			mockUserServiceimpl.getUserByUsernameOrEmail(null,null);
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("When searching a user, you must provide at least one parameter - username or email.", e.getDetails());
 		}
@@ -194,7 +194,7 @@ public class UserTest {
 	public void addNewUserToDbNoPostDataPresentTest(){
 		try{
 			mockUserServiceimpl.addNew(patchModel);
-			fail();
+			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("The following data is missing from your registration form", e.getDetails());
 		}
@@ -206,7 +206,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Create user : the username blanked belongs to another user.", e.getDetails());
 		}
@@ -218,7 +218,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.addNew(postModel);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Create user : Email ja@gmail.com belongs to another user.", e.getDetails());
 		}
@@ -230,7 +230,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.edit(patchModel, 20L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("You cannot edit someone else's user account.", e.getDetails());
 		}
@@ -245,7 +245,7 @@ public class UserTest {
 		badPatchModel.setId(1L);
 		try {
 			mockUserServiceimpl.edit(badPatchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Your user edit request is invalid.", e.getDetails());
 		}
@@ -263,7 +263,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.edit(badPatchModel, 1L);
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Edit user : Email bla_2@truc.com belongs to another user.", e.getDetails());
 		}
@@ -277,7 +277,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("request json is missing some elements.", e.getDetails());
 		}
@@ -294,7 +294,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Change password error : user you are changing the password for does not exist.", e.getDetails());
 		}
@@ -311,7 +311,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("You are trying to change someone elses's password", e.getDetails());
 		}
@@ -328,7 +328,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Your entry for original password does not match with the DB value", e.getDetails());
 		}
@@ -345,7 +345,7 @@ public class UserTest {
 		
 		try {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
-			fail();
+			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Old password and new password should be different.", e.getDetails());
 		}
