@@ -134,7 +134,7 @@ public class HerbTest {
 	public void getHerbByNameTest2(){
 		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
-		HerbDTO model = mockHerbServiceImpl.getHerbByEngName("bilosta");
+		HerbDTO model = mockHerbServiceImpl.getHerbByLocalName("bilosta");
 		
 		assertEquals(list.get(0).getId(), model.getId());
 		assertEquals(list.get(0).getLatinName(), model.getLatinName());

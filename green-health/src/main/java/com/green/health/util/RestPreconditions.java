@@ -1,5 +1,9 @@
 package com.green.health.util;
 
+import java.util.Locale;
+
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public class RestPreconditions {
@@ -43,5 +47,9 @@ public class RestPreconditions {
 			return object;
 		}
 		throw new MyRestPreconditionsException(description, details);
+	}
+	
+	public static boolean checkLocaleIsEnglish() {
+		return LocaleContextHolder.getLocale()==null || Locale.ENGLISH.equals(LocaleContextHolder.getLocale());
 	}
 }

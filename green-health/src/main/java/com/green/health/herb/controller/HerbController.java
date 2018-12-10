@@ -61,7 +61,7 @@ public class HerbController {
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name){
 		HerbDTO model = herbServiceImpl.getHerbByLatinName(name);
-		return model==null ? herbServiceImpl.getHerbByEngName(name) : model;
+		return model==null ? herbServiceImpl.getHerbByLocalName(name) : model;
 	}
 	
 	@RequestMapping(value = "/thumbnail/{id}", method = RequestMethod.GET)
