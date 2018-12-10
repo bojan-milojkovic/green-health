@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+
+import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
@@ -22,12 +25,14 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class HerbServiceImpl implements HerbService {
 
 	private HerbRepository herbDao;
+	private HerbLocaleRepository herbLocaleDao;
 	private StorageService storageServiceImpl;
 	private IllnessRepository illnessDao;
 	
 	@Autowired
-	public HerbServiceImpl(HerbRepository herbDao, StorageService storageServiceImpl, IllnessRepository illnessDao){
+	public HerbServiceImpl(HerbRepository herbDao, HerbLocaleRepository herbLocaleDao, StorageService storageServiceImpl, IllnessRepository illnessDao){
 		this.herbDao = herbDao;
+		this.herbLocaleDao = herbLocaleDao;
 		this.storageServiceImpl = storageServiceImpl;
 		this.illnessDao = illnessDao;
 	}
@@ -45,8 +50,12 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbDTO getHerbByEngName(String EngName) {
-		return convertJpaToModel(herbDao.getHerbByEngName(EngName));
+	public HerbDTO getHerbByLocalName(String EngName) {
+		if(RestPreconditions.checkLocaleIsEnglish()) {
+			return convertJpaToModel(herbDao.getHerbByEngName(EngName));
+		} else {
+			return convertJpaToModel(herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), EngName).getHerb());
+		}
 	}
 
 	@Override
