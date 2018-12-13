@@ -189,6 +189,9 @@ public class HerbServiceImpl implements HerbService {
 				return null;
 			}
 		}
+		if(RestPreconditions.checkString(model.getLatinName())){
+			jpa.setLatinName(model.getLatinName());
+		}
 		// english
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			if(RestPreconditions.checkString(model.getDescription())){
@@ -197,9 +200,7 @@ public class HerbServiceImpl implements HerbService {
 			if(RestPreconditions.checkString(model.getGrowsAt())){
 				jpa.setGrowsAt(model.getGrowsAt());
 			}
-			if(RestPreconditions.checkString(model.getLatinName())){
-				jpa.setLatinName(model.getLatinName());
-			}
+			
 			if(RestPreconditions.checkString(model.getLocalName())){
 				jpa.setEngName(model.getLocalName());
 			}
@@ -216,6 +217,11 @@ public class HerbServiceImpl implements HerbService {
 				jpa.setWhereToBuy(model.getWhereToBuy());
 			}
 		} else {
+			// if it is a brand new herb :
+			if(jpa.getId()==null) {
+				//TODO: what now ?
+			}
+			
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa==null) {
 				hjpa = new HerbLocaleJPA();
@@ -228,6 +234,9 @@ public class HerbServiceImpl implements HerbService {
 			}
 			if(RestPreconditions.checkString(model.getGrowsAt())){
 				hjpa.setGrowsAt(model.getGrowsAt());
+			}
+			if(RestPreconditions.checkString(model.getLocalName())){
+				hjpa.setLocalName(model.getLocalName());
 			}
 			if(RestPreconditions.checkString(model.getProperties())){
 				hjpa.setProperties(model.getProperties());
@@ -290,7 +299,7 @@ public class HerbServiceImpl implements HerbService {
 			} else {
 				isEnglish = true;
 			}
-		} 
+		}
 		
 		if(isEnglish) {
 			model.setLocalName(jpa.getEngName());
