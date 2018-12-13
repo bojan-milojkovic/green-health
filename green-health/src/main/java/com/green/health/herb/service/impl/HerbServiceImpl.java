@@ -86,13 +86,13 @@ public class HerbServiceImpl implements HerbService {
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
 					"The herb with Latin name "+model.getLatinName()+" is already in our database.");
 			
-			if(!RestPreconditions.checkLocaleIsEnglish()) {
+			if(RestPreconditions.checkLocaleIsEnglish()) {
+				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
+					"We assert your locale as english. The herb with name "+model.getLocalName()+" is already in our database.");
+			} else {
 				RestPreconditions.checkSuchEntityAlreadyExists(
 						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
 					"The herb with local name "+model.getLocalName()+" is already in our database.");
-			} else {
-				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
-					"The herb with English name "+model.getLocalName()+" is already in our database.");
 			}
 			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
 			
