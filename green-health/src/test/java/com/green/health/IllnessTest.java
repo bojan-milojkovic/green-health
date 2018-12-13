@@ -67,7 +67,7 @@ public class IllnessTest {
 		herbDto = new HerbDTO();
 		herbDto.setId(1L);
 		herbDto.setLatinName("herb latin name");
-		herbDto.setEngName("herb srb name");
+		herbDto.setLocalName("herb srb name");
 		patchModel.setHerbs(new ArrayList<HerbDTO>());
 		patchModel.getHerbs().add(herbDto);
 		

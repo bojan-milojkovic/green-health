@@ -16,7 +16,7 @@ public class HerbDTO implements PojoParent{
 	private Long id;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	private String engName;
+	private String localName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	private String latinName;
@@ -62,12 +62,12 @@ public class HerbDTO implements PojoParent{
 		this.id = id;
 	}
 
-	public String getEngName() {
-		return engName;
+	public String getLocalName() {
+		return localName;
 	}
 
-	public void setEngName(String engName) {
-		this.engName = engName;
+	public void setLocalName(String engName) {
+		this.localName = engName;
 	}
 
 	public String getLatinName() {

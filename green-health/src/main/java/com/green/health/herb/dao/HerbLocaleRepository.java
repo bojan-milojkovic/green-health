@@ -11,4 +11,7 @@ public interface HerbLocaleRepository  extends JpaRepository<HerbLocaleJPA, Long
 	
 	@Query("select h from HerbLocaleJPA h where h.locale = :p1 and h.localName = :p2")
 	public HerbLocaleJPA findWhereLocaleAndLocalName(@Param("p1") final String locale, @Param("p2") final String localName);
+	
+	@Query("select h from HerbLocaleJPA h where h.locale = :p1 and h.herb.id = :p2")
+	public HerbLocaleJPA findWhereLocaleAndHerbId(@Param("p1") final String locale, @Param("p2") final Long herbId);
 }

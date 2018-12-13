@@ -51,6 +51,14 @@ public class HerbJPA implements PojoParent{
 	
 	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private Set<HerbLocaleJPA> herbLocales = new HashSet<HerbLocaleJPA>();
+	
+	public HerbLocaleJPA getForSpecificLocale(String locale) {
+		try {
+			return herbLocales.stream().filter(h -> h.getLocale().equals(locale)).findFirst().get();
+		} catch(Exception e) {
+			return null;
+		}
+	}
 
 	public Long getId() {
 		return id;
