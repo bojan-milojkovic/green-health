@@ -147,7 +147,17 @@ public class HerbServiceImpl implements HerbService {
 						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
 			}
 		}
-			
+		// check that new locale name is not taken:
+		if(model.getLocalName()!=null) {
+			if(RestPreconditions.checkLocaleIsEnglish()) {
+				HerbJPA jpa2 = herbDao.getHerbByEngName(model.getLocalName());
+				RestPreconditions.assertTrue(jpa2!=null && jpa2.getId()==id, "Herb edit error", "The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
+			} else {
+				HerbLocaleJPA hjpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName());
+				RestPreconditions.assertTrue(hjpa!=null && hjpa.getHerb().getId()==id, "Herb edit error", "The name '"+model.getLocalName()+"' belongs to another herb in our database.");
+			}
+		}
+		
 		herbDao.save(jpa);
 
 		if(model.getImage()!=null){
