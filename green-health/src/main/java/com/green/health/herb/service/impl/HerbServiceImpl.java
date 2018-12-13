@@ -217,10 +217,8 @@ public class HerbServiceImpl implements HerbService {
 				jpa.setWhereToBuy(model.getWhereToBuy());
 			}
 		} else {
-			// if it is a brand new herb :
-			if(jpa.getId()==null) {
-				//TODO: what now ?
-			}
+			
+			//TODO: if it is a brand new herb, email admin to fill in english info
 			
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa==null) {
