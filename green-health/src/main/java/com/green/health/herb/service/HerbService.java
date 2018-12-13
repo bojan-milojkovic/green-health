@@ -8,9 +8,9 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface HerbService extends ServiceParent<HerbJPA, HerbDTO>{
 	
-	HerbDTO getHerbByLocalName(String name);
+	HerbDTO getHerbByLocalName(String name) throws MyRestPreconditionsException;
 	
 	Resource getImage(Long id, boolean isThumbnail) throws MyRestPreconditionsException;
 	
-	HerbDTO getHerbByLatinName(String latinName);
+	HerbDTO getHerbByLatinName(String latinName) throws MyRestPreconditionsException;
 }

@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
 import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
+import com.green.health.herb.entities.HerbLocaleJPA;
 import com.green.health.herb.service.HerbService;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
@@ -50,17 +50,23 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbDTO getHerbByLocalName(String EngName) {
+	public HerbDTO getHerbByLocalName(String name) throws MyRestPreconditionsException {
+		HerbJPA jpa = null;
 		if(RestPreconditions.checkLocaleIsEnglish()) {
-			return convertJpaToModel(herbDao.getHerbByEngName(EngName));
+			jpa = herbDao.getHerbByEngName(name);
 		} else {
-			return convertJpaToModel(herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), EngName).getHerb());
+			jpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getHerb();
 		}
+		if(jpa!=null) {
+			return convertJpaToModel(jpa);
+		}
+		throw new MyRestPreconditionsException("No such herb in database","Cannot find the herb with name '"+name+"'. Try searching for an english name.");
 	}
 
 	@Override
-	public HerbDTO getHerbByLatinName(String latinName) {
-		return convertJpaToModel(herbDao.getHerbByLatinName(latinName));
+	public HerbDTO getHerbByLatinName(String latinName) throws MyRestPreconditionsException {
+		HerbJPA jpa = RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),"Cannot find the herb with latin name '"+latinName+"'");
+		return convertJpaToModel(jpa);
 	}
 	
 	@Override
@@ -79,9 +85,15 @@ public class HerbServiceImpl implements HerbService {
 			// check that herb name is unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
 					"The herb with Latin name "+model.getLatinName()+" is already in our database.");
-			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getEngName()),
-					"The herb with Serbian name "+model.getEngName()+" is already in our database.");
-
+			
+			if(!RestPreconditions.checkLocaleIsEnglish()) {
+				RestPreconditions.checkSuchEntityAlreadyExists(
+						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+					"The herb with local name "+model.getLocalName()+" is already in our database.");
+			} else {
+				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
+					"The herb with English name "+model.getLocalName()+" is already in our database.");
+			}
 			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
 			
 			if(model.getImage()!=null){
@@ -103,7 +115,7 @@ public class HerbServiceImpl implements HerbService {
 			if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb's use properties");
 			}
-			if(!RestPreconditions.checkStringMatches(model.getEngName(),"[A-Za-z ]{3,}")){
+			if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[A-Za-z ]{3,}")){
 				ex.getErrors().add("herb's Serbian name");
 			}
 			if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
@@ -165,7 +177,7 @@ public class HerbServiceImpl implements HerbService {
 			jpa.setDescription(model.getDescription());
 			jpa.setGrowsAt(model.getGrowsAt());
 			jpa.setLatinName(model.getLatinName());
-			jpa.setEngName(model.getEngName());
+			jpa.setEngName(model.getLocalName());
 			jpa.setProperties(model.getProperties());
 			jpa.setWarnings(model.getWarnings());
 			jpa.setWhenToPick(model.getWhenToPick());
@@ -185,8 +197,8 @@ public class HerbServiceImpl implements HerbService {
 			if(RestPreconditions.checkString(model.getLatinName())){
 				jpa.setLatinName(model.getLatinName());
 			}
-			if(RestPreconditions.checkString(model.getEngName())){
-				jpa.setEngName(model.getEngName());
+			if(RestPreconditions.checkString(model.getLocalName())){
+				jpa.setEngName(model.getLocalName());
 			}
 			if(RestPreconditions.checkString(model.getProperties())){
 				jpa.setProperties(model.getProperties());
@@ -229,18 +241,37 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public HerbDTO convertJpaToModel(HerbJPA jpa) {
+	public HerbDTO convertJpaToModel(HerbJPA jpa) {		
 		HerbDTO model = new HerbDTO();
 		
-		model.setDescription(jpa.getDescription());
-		model.setGrowsAt(jpa.getGrowsAt());
 		model.setId(jpa.getId());
 		model.setLatinName(jpa.getLatinName());
-		model.setEngName(jpa.getEngName());
-		model.setProperties(jpa.getProperties());
-		model.setWhenToPick(jpa.getWhenToPick());
-		model.setWhereToBuy(jpa.getWhereToBuy());
-		model.setWarnings(jpa.getWarnings());
+		
+		boolean isEnglish = RestPreconditions.checkLocaleIsEnglish();
+		if(!isEnglish) {
+			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
+			if(hjpa!=null) {
+				model.setLocalName(hjpa.getLocalName());
+				model.setDescription(hjpa.getDescription());
+				model.setGrowsAt(hjpa.getGrowsAt());
+				model.setProperties(hjpa.getProperties());
+				model.setWhenToPick(hjpa.getWhenToPick());
+				model.setWhereToBuy(hjpa.getWhereToBuy());
+				model.setWarnings(hjpa.getWarnings());
+			} else {
+				isEnglish = true;
+			}
+		} 
+		
+		if(isEnglish) {
+			model.setLocalName(jpa.getEngName());
+			model.setDescription(jpa.getDescription());
+			model.setGrowsAt(jpa.getGrowsAt());
+			model.setProperties(jpa.getProperties());
+			model.setWhenToPick(jpa.getWhenToPick());
+			model.setWhereToBuy(jpa.getWhereToBuy());
+			model.setWarnings(jpa.getWarnings());
+		}
 		
 		if(jpa.getLinks()!=null && !jpa.getLinks().isEmpty()){
 			model.setIllnesses(new ArrayList<IllnessDTO>());
@@ -262,7 +293,7 @@ public class HerbServiceImpl implements HerbService {
 		return RestPreconditions.checkString(model.getDescription()) && 
 				RestPreconditions.checkString(model.getGrowsAt()) && 
 				RestPreconditions.checkString(model.getLatinName()) &&
-				RestPreconditions.checkString(model.getEngName()) && 
+				RestPreconditions.checkString(model.getLocalName()) && 
 				RestPreconditions.checkString(model.getProperties()) && 
 				RestPreconditions.checkString(model.getWarnings()) && 
 				RestPreconditions.checkString(model.getWhenToPick())
@@ -274,7 +305,7 @@ public class HerbServiceImpl implements HerbService {
 		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getGrowsAt()) ||
 				RestPreconditions.checkString(model.getLatinName()) ||
-				RestPreconditions.checkString(model.getEngName()) ||
+				RestPreconditions.checkString(model.getLocalName()) ||
 				RestPreconditions.checkString(model.getProperties()) ||
 				RestPreconditions.checkString(model.getWarnings()) ||
 				RestPreconditions.checkString(model.getWhenToPick()) ||
