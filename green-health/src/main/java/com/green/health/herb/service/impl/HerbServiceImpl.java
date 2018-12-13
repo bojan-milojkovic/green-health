@@ -183,21 +183,14 @@ public class HerbServiceImpl implements HerbService {
 		
 		if(model.getId()==null){
 			jpa = new HerbJPA();
-			
-			jpa.setDescription(model.getDescription());
-			jpa.setGrowsAt(model.getGrowsAt());
-			jpa.setLatinName(model.getLatinName());
-			jpa.setEngName(model.getLocalName());
-			jpa.setProperties(model.getProperties());
-			jpa.setWarnings(model.getWarnings());
-			jpa.setWhenToPick(model.getWhenToPick());
-			jpa.setWhereToBuy(model.getWhereToBuy());
 		} else {
 			jpa = herbDao.getOne(model.getId());
 			if(jpa==null){ // in case of trying to edit a non existing herb 
 				return null;
 			}
-			
+		}
+		// english
+		if(RestPreconditions.checkLocaleIsEnglish()) {
 			if(RestPreconditions.checkString(model.getDescription())){
 				jpa.setDescription(model.getDescription());
 			}
@@ -215,6 +208,32 @@ public class HerbServiceImpl implements HerbService {
 			}
 			if(RestPreconditions.checkString(model.getWarnings())){
 				jpa.setWarnings(model.getWarnings());
+			}
+			if(RestPreconditions.checkString(model.getWhenToPick())){
+				jpa.setWhenToPick(model.getWhenToPick());
+			}
+			if(RestPreconditions.checkString(model.getWhereToBuy())){
+				jpa.setWhereToBuy(model.getWhereToBuy());
+			}
+		} else {
+			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
+			if(hjpa==null) {
+				hjpa = new HerbLocaleJPA();
+				hjpa.setLocale(LocaleContextHolder.getLocale().toString());
+				hjpa.setHerb(jpa);
+				jpa.getHerbLocales().add(hjpa);
+			}
+			if(RestPreconditions.checkString(model.getDescription())){
+				hjpa.setDescription(model.getDescription());
+			}
+			if(RestPreconditions.checkString(model.getGrowsAt())){
+				hjpa.setGrowsAt(model.getGrowsAt());
+			}
+			if(RestPreconditions.checkString(model.getProperties())){
+				hjpa.setProperties(model.getProperties());
+			}
+			if(RestPreconditions.checkString(model.getWarnings())){
+				hjpa.setWarnings(model.getWarnings());
 			}
 			if(RestPreconditions.checkString(model.getWhenToPick())){
 				jpa.setWhenToPick(model.getWhenToPick());
