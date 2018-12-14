@@ -94,11 +94,12 @@ public class HerbServiceImpl implements HerbService {
 						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
 					"The herb with local name "+model.getLocalName()+" is already in our database.");
 			}
-			HerbJPA jpa = herbDao.save(convertModelToJPA(model));
+
+			herbDao.save(convertModelToJPA(model));
 			
 			if(model.getImage()!=null){
 				// save image :
-				storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
+				storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
 			}
 		} else {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
@@ -136,12 +137,10 @@ public class HerbServiceImpl implements HerbService {
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", "Your herb edit request is invalid - You must provide some editable data");
 		model.setId(id);
-		
-		HerbJPA jpa = null;
 
 		// check that latin name is not taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
-			jpa = herbDao.getHerbByLatinName(model.getLatinName());
+			HerbJPA jpa = herbDao.getHerbByLatinName(model.getLatinName());
 			if(jpa!=null) {
 				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error !", 
 						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
@@ -150,7 +149,7 @@ public class HerbServiceImpl implements HerbService {
 		// check that new locale name is not taken:
 		if(model.getLocalName()!=null) {
 			if(RestPreconditions.checkLocaleIsEnglish()) {
-				jpa = herbDao.getHerbByEngName(model.getLocalName());
+				HerbJPA jpa = herbDao.getHerbByEngName(model.getLocalName());
 				if(jpa!=null) {
 					RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error", 
 							"The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
@@ -164,15 +163,13 @@ public class HerbServiceImpl implements HerbService {
 				}
 			}
 		}
-		
-		herbDao.save(convertModelToJPA(model));
 
 		if(model.getImage()!=null){
 			// save image :
-			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
+			storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
 		}
 		
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(herbDao.save(convertModelToJPA(model)));
 	}
 
 	@Override
