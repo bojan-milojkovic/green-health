@@ -45,8 +45,7 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public HerbDTO getOneById(Long id) throws MyRestPreconditionsException {
 		checkId(id);
-		HerbJPA jpa = RestPreconditions.checkNotNull(herbDao.getOne(id), "Cannot find the herb with id = "+id);
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getOne(id), "Cannot find the herb with id = "+id));
 	}
 
 	@Override
@@ -55,18 +54,18 @@ public class HerbServiceImpl implements HerbService {
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			jpa = herbDao.getHerbByEngName(name);
 		} else {
+			// 'if' ensures that LocaleContextHolder.getLocale() is not null
 			jpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getHerb();
 		}
 		if(jpa!=null) {
 			return convertJpaToModel(jpa);
 		}
-		throw new MyRestPreconditionsException("No such herb in database","Cannot find the herb with name '"+name+"'. Try searching for an english name.");
+		throw new MyRestPreconditionsException("No such herb in database","Cannot find the herb with name '"+name+"'.");
 	}
 
 	@Override
 	public HerbDTO getHerbByLatinName(String latinName) throws MyRestPreconditionsException {
-		HerbJPA jpa = RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),"Cannot find the herb with latin name '"+latinName+"'");
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),"Cannot find the herb with latin name '"+latinName+"'"));
 	}
 	
 	@Override
@@ -91,6 +90,7 @@ public class HerbServiceImpl implements HerbService {
 					"We assert your locale as english. The herb with name "+model.getLocalName()+" is already in our database.");
 			} else {
 				RestPreconditions.checkSuchEntityAlreadyExists(
+						// 'if' ensures that LocaleContextHolder.getLocale() is not null
 						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
 					"The herb with local name "+model.getLocalName()+" is already in our database.");
 			}
@@ -116,7 +116,7 @@ public class HerbServiceImpl implements HerbService {
 				ex.getErrors().add("herb's use properties");
 			}
 			if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[A-Za-z ]{3,}")){
-				ex.getErrors().add("herb's Serbian name");
+				ex.getErrors().add("herb's local name");
 			}
 			if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
 				ex.getErrors().add("herb's use warnings");
@@ -151,10 +151,13 @@ public class HerbServiceImpl implements HerbService {
 		if(model.getLocalName()!=null) {
 			if(RestPreconditions.checkLocaleIsEnglish()) {
 				HerbJPA jpa2 = herbDao.getHerbByEngName(model.getLocalName());
-				RestPreconditions.assertTrue(jpa2!=null && jpa2.getId()==id, "Herb edit error", "The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				RestPreconditions.assertTrue(jpa2!=null && jpa2.getId()!=id, "Herb edit error", 
+						"The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
 			} else {
+				// 'if' ensures that LocaleContextHolder.getLocale() is not null
 				HerbLocaleJPA hjpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName());
-				RestPreconditions.assertTrue(hjpa!=null && hjpa.getHerb().getId()==id, "Herb edit error", "The name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				RestPreconditions.assertTrue(hjpa!=null && hjpa.getHerb().getId()!=id, "Herb edit error", 
+						"The name '"+model.getLocalName()+"' belongs to another herb in our database.");
 			}
 		}
 		
@@ -220,6 +223,7 @@ public class HerbServiceImpl implements HerbService {
 			
 			//TODO: if it is a brand new herb, email admin to fill in english info
 			
+			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa==null) {
 				hjpa = new HerbLocaleJPA();
@@ -285,6 +289,7 @@ public class HerbServiceImpl implements HerbService {
 		
 		boolean isEnglish = RestPreconditions.checkLocaleIsEnglish();
 		if(!isEnglish) {
+			// 'if' ensures that LocaleContextHolder.getLocale() is not null
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa!=null) {
 				model.setLocalName(hjpa.getLocalName());
