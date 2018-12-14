@@ -54,7 +54,7 @@ public class HerbJPA implements PojoParent{
 	
 	public HerbLocaleJPA getForSpecificLocale(String locale) {
 		try {
-			return herbLocales.stream().filter(h -> h.getLocale().equals(locale)).findFirst().get();
+			return getHerbLocales().stream().filter(h -> h.getLocale().equals(locale)).findFirst().get();
 		} catch(Exception e) {
 			return null;
 		}
