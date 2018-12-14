@@ -167,8 +167,8 @@ public class IllnessServiceImpl implements IllnessService {
 				if(RestPreconditions.checkString(hmodel.getLatinName())){
 					hjpa = herbDao.getHerbByLatinName(hmodel.getLatinName());
 					
-				} else if(RestPreconditions.checkString(hmodel.getEngName())) {
-					hjpa = herbDao.getHerbByEngName(hmodel.getEngName());
+				} else if(RestPreconditions.checkString(hmodel.getLocalName())) {
+					hjpa = herbDao.getHerbByEngName(hmodel.getLocalName());
 				}
 				
 				if(hjpa!=null){
@@ -176,7 +176,7 @@ public class IllnessServiceImpl implements IllnessService {
 					jpa.getLinks().add(new LinkJPA(hjpa, jpa));
 				} else {
 					throw new MyRestPreconditionsException("Link herb to illness error","Cannot find herb with srb name = "
-								+hmodel.getEngName()+" and latin name = "+hmodel.getLatinName());
+								+hmodel.getLocalName()+" and latin name = "+hmodel.getLatinName());
 				}
 			}
 		}
@@ -201,7 +201,7 @@ public class IllnessServiceImpl implements IllnessService {
 				HerbDTO hmodel = new HerbDTO();
 				hmodel.setId(ljpa.getHerb().getId());
 				hmodel.setLatinName(ljpa.getHerb().getLatinName());
-				hmodel.setEngName(ljpa.getHerb().getEngName());
+				hmodel.setLocalName(ljpa.getHerb().getEngName());
 				model.getHerbs().add(hmodel);
 			}
 		}

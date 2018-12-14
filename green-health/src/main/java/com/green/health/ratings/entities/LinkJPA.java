@@ -97,14 +97,14 @@ public class LinkJPA implements PojoParent{
 	
 	@Override
 	public boolean equals(Object obj) {
-	    if (obj == null) return false;
-	    if (!(obj instanceof LinkJPA))
-	        return false;
-	    if (obj == this)
-	        return true;
-	    // two objects are the same if they have the same herb and illness :
-	    return this.getHerb().getId() == ((LinkJPA) obj).getHerb().getId() &&
-	    		this.getIllness().getId() == ((LinkJPA) obj).getIllness().getId();
+	    if (obj != null && obj instanceof LinkJPA) {
+		    if (obj == this)
+		        return true;
+		    // two objects are the same if they have the same herb and illness :
+		    return this.getHerb().getId() == ((LinkJPA) obj).getHerb().getId() &&
+		    		this.getIllness().getId() == ((LinkJPA) obj).getIllness().getId();
+	    }
+	    return false;
 	}
 	
 	public double calculateRating() {
