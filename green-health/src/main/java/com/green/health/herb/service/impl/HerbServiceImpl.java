@@ -137,31 +137,35 @@ public class HerbServiceImpl implements HerbService {
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", "Your herb edit request is invalid - You must provide some editable data");
 		model.setId(id);
 		
-		HerbJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Herb edit error", "Herb with id = "+id+" does not exist in our database.");
+		HerbJPA jpa = null;
 
 		// check that latin name is not taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
-			HerbJPA tmp = herbDao.getHerbByLatinName(model.getLatinName());
-			if(tmp!=null) {
-				RestPreconditions.assertTrue(tmp.getId()==jpa.getId(), "Herb edit error !", 
+			jpa = herbDao.getHerbByLatinName(model.getLatinName());
+			if(jpa!=null) {
+				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error !", 
 						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
 			}
 		}
 		// check that new locale name is not taken:
 		if(model.getLocalName()!=null) {
 			if(RestPreconditions.checkLocaleIsEnglish()) {
-				HerbJPA jpa2 = herbDao.getHerbByEngName(model.getLocalName());
-				RestPreconditions.assertTrue(jpa2!=null && jpa2.getId()!=id, "Herb edit error", 
-						"The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				jpa = herbDao.getHerbByEngName(model.getLocalName());
+				if(jpa!=null) {
+					RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error", 
+							"The English name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				}
 			} else {
 				// 'if' ensures that LocaleContextHolder.getLocale() is not null
 				HerbLocaleJPA hjpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName());
-				RestPreconditions.assertTrue(hjpa!=null && hjpa.getHerb().getId()!=id, "Herb edit error", 
-						"The name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				if(hjpa!=null) {
+					RestPreconditions.assertTrue(hjpa.getHerb().getId()==id, "Herb edit error", 
+							"The name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				}
 			}
 		}
 		
-		herbDao.save(jpa);
+		herbDao.save(convertModelToJPA(model));
 
 		if(model.getImage()!=null){
 			// save image :
@@ -187,10 +191,8 @@ public class HerbServiceImpl implements HerbService {
 		if(model.getId()==null){
 			jpa = new HerbJPA();
 		} else {
-			jpa = herbDao.getOne(model.getId());
-			if(jpa==null){ // in case of trying to edit a non existing herb 
-				return null;
-			}
+			jpa = RestPreconditions.checkNotNull(herbDao.getOne(model.getId()), 
+					"Herb edit error", "Herb with id = "+model.getId()+" does not exist in our database.");
 		}
 		if(RestPreconditions.checkString(model.getLatinName())){
 			jpa.setLatinName(model.getLatinName());
