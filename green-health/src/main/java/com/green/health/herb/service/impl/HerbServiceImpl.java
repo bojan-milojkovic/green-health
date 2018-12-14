@@ -95,12 +95,12 @@ public class HerbServiceImpl implements HerbService {
 					"The herb with local name "+model.getLocalName()+" is already in our database.");
 			}
 
-			herbDao.save(convertModelToJPA(model));
-			
 			if(model.getImage()!=null){
 				// save image :
 				storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
 			}
+			
+			herbDao.save(convertModelToJPA(model));
 		} else {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
 							"The following data is missing from the herb form");
