@@ -57,6 +57,7 @@ public class HerbTest {
 	
 	@BeforeClass
 	public static void init(){
+		LocaleContextHolder.setDefaultLocale(Locale.ENGLISH);
 		for(long i=0 ; i<3 ; i++){
 			HerbJPA jpa = new HerbJPA();
 			jpa.setId(i);
@@ -95,8 +96,11 @@ public class HerbTest {
 		illnessJpa.setSymptoms("illnessSympthoms");
 		
 		hjpa = new HerbLocaleJPA();
-		hjpa.setDescription("static description");
-		hjpa.setLocalName("bilosta");
+		hjpa.setLocale(Locale.FRANCE.toString());
+		hjpa.setDescription("francuski opis");
+		hjpa.setLocalName("francusko ime");
+		hjpa.setHerb(list.get(1));
+		list.get(1).getHerbLocales().add(hjpa);
 	}
 	
 	@Test
@@ -149,7 +153,6 @@ public class HerbTest {
 	
 	@Test
 	public void getHerbByNameTest2() {
-		LocaleContextHolder.setDefaultLocale(Locale.ENGLISH);
 		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
@@ -163,6 +166,23 @@ public class HerbTest {
 		}
 	}
 	
+	@Test
+	public void getHerbByNotEnglishName() {
+		LocaleContextHolder.setLocale(Locale.FRANCE);
+		
+		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(hjpa);
+		
+		try {
+			HerbDTO model = mockHerbServiceImpl.getHerbByLocalName("francusko ime");
+			assertEquals(hjpa.getLocalName(), model.getLocalName());
+			assertEquals(hjpa.getDescription(), model.getDescription());
+		} catch (MyRestPreconditionsException e) {
+			fail("Herb by not-english name test failed");
+		}
+		
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
 	
 	
 	
@@ -170,7 +190,6 @@ public class HerbTest {
 	
 	@Test
 	public void createNewHerbTest(){
-		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		
 		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(list.get(0));
@@ -198,7 +217,7 @@ public class HerbTest {
 	}
 	
 	@Test
-	public void createHerbSrbNameAlreadyExists(){
+	public void createHerbEnglishNameAlreadyExists(){
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
@@ -206,7 +225,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The herb with Serbian name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
+			assertEquals("We assert your locale as english. The herb with name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
@@ -224,6 +243,42 @@ public class HerbTest {
 	}
 	
 	@Test
+	public void createHerbWithFranchData() {
+		LocaleContextHolder.setLocale(Locale.FRANCE);
+		
+		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
+		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbLocaleDao.save(Mockito.any(HerbLocaleJPA.class))).thenReturn(null);
+		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(null);
+		
+		try {
+			mockHerbServiceImpl.addNew(postModel);
+		} catch (MyRestPreconditionsException e) {
+			fail("failed to create Franch herb.");
+		}
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
+	@Test
+	public void createHerbWithFranchDataAndFrenchNameAlreadyExists() {
+		LocaleContextHolder.setLocale(Locale.FRENCH);
+		
+		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
+		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(hjpa);
+		
+		postModel.setLocalName(hjpa.getLocalName());
+		
+		try {
+			mockHerbServiceImpl.addNew(postModel);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals("The herb with local name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
+		}
+		
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
+	@Test
 	public void editHerbNoPatchDataPresent(){
 		
 		HerbDTO invalidPatchModel = new HerbDTO();
@@ -238,7 +293,7 @@ public class HerbTest {
 	}
 	
 	@Test
-	public void tryingToEditANonExistingHerb(){
+	public void tryingToEditANonExistingHerbTest(){
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try{
@@ -267,9 +322,28 @@ public class HerbTest {
 	}
 	
 	@Test
+	public void editHerbLocalNameBelongsToAnotherHerbTest(){
+		LocaleContextHolder.setLocale(Locale.FRANCE);
+		
+		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(2));
+		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(2));
+		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(hjpa);
+
+		patchModel.setLocalName(hjpa.getLocalName());
+		
+		try {
+			mockHerbServiceImpl.edit(patchModel, 2L);
+			fail();
+		} catch (MyRestPreconditionsException e) {
+			assertEquals("The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.",e.getDetails());
+		}
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
+	@Test
 	public void successfulEdit(){
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
-		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
+		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(list.get(1));
 		
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
@@ -291,7 +365,7 @@ public class HerbTest {
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
-		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
+		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(list.get(1));
 		
 		try {
 			// illnessDto is already in the patch model :
