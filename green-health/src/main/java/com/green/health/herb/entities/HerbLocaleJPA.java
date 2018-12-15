@@ -25,7 +25,7 @@ public class HerbLocaleJPA implements PojoParent {
 	@Column
 	private String locale;
 	
-	@Column
+	@Column(name="local_name")
 	private String localName;
 	
 	@Column
