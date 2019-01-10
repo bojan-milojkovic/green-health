@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
+import com.green.health.illness.dao.IllnessLocaleRepository;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
+import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.illness.service.IllnessService;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.RestPreconditions;
@@ -20,12 +23,14 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class IllnessServiceImpl implements IllnessService {
 	
 	private IllnessRepository illnessDao;
+	private IllnessLocaleRepository illnessLocaleDao;
 	private HerbRepository herbDao;
 	
 	@Autowired
-	public IllnessServiceImpl(IllnessRepository illnessDao, HerbRepository herbDao) {
+	public IllnessServiceImpl(IllnessRepository illnessDao, HerbRepository herbDao, IllnessLocaleRepository illnessLocaleDao) {
 		this.illnessDao = illnessDao;
 		this.herbDao = herbDao;
+		this.illnessLocaleDao = illnessLocaleDao;
 	}
 
 	// get all
@@ -45,15 +50,24 @@ public class IllnessServiceImpl implements IllnessService {
 	
 	// get one by name :
 	@Override
-	public IllnessDTO getOneByName(final String name) throws MyRestPreconditionsException{
-		IllnessJPA jpa = illnessDao.findByLatinName(name);
+	public IllnessDTO getOneByLocalName(final String name) throws MyRestPreconditionsException{
+		IllnessJPA jpa = null;
 		
-		if(jpa == null){
-			jpa = RestPreconditions.checkNotNull(illnessDao.findBySrbName(name), "Find illness by name error",
-					"The the illness with the name "+name+" is not in our database.");
+		if(RestPreconditions.checkLocaleIsEnglish()) {
+			jpa = illnessDao.findByEngName(name);
+		} else {
+			jpa = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getIllness();
+		}
+		if(jpa==null) {
+			throw new MyRestPreconditionsException("No such illness in database","Cannot find the illness with name '"+name+"'.");
 		}
 		
 		return convertJpaToModel(jpa);
+	}
+	
+	@Override
+	public IllnessDTO getOneByLatinName(final String name) throws MyRestPreconditionsException{
+		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.findByLatinName(name),"Cannot find the illness with latin name '"+name+"'"));
 	}
 	
 	// add new illness
@@ -64,8 +78,16 @@ public class IllnessServiceImpl implements IllnessService {
 			// check names :
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
 					"Illness with Latin name "+model.getLatinName()+" is already in our database.");
-			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findBySrbName(model.getSrbName()),
-					"Illness with Serbian name "+model.getSrbName()+" is already in our database.");
+			
+			if(RestPreconditions.checkLocaleIsEnglish()) {
+				RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
+						"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
+			}else {
+				RestPreconditions.checkSuchEntityAlreadyExists(
+						// 'if' ensures that LocaleContextHolder.getLocale() is not null
+						illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+						"The herb with local name "+model.getLocalName()+" is already in our database.");
+			}
 			
 			illnessDao.save(convertModelToJPA(model));
 		} else {
@@ -80,8 +102,8 @@ public class IllnessServiceImpl implements IllnessService {
 				ex.getErrors().add("illness Latin name");			
 			}
 			
-			if(RestPreconditions.checkString(model.getSrbName())){
-				ex.getErrors().add("illness Serbian name");
+			if(RestPreconditions.checkString(model.getLocalName())){
+				ex.getErrors().add("illness local name");
 			}
 			
 			if(RestPreconditions.checkString(model.getSymptoms())){
@@ -98,33 +120,44 @@ public class IllnessServiceImpl implements IllnessService {
 		checkId(id);
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 
-						"To edit the illness you must provide some editable data.");
+						"Your illness edit request is invalid - You must provide some editable data.");
 		model.setId(id);
 		
-		IllnessJPA jpa = RestPreconditions.checkNotNull(convertModelToJPA(model), "Illness edit error", 
-														"Illness with id = "+id+" does not exist in our database.");
-		
-		// if latin name is being changed, check that it is is not already taken :
+		// check Latin name is not already taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
 			IllnessJPA tmp = illnessDao.findByLatinName(model.getLatinName());
 			if(tmp!=null) {
-				RestPreconditions.assertTrue(tmp.getId()==jpa.getId(), "Illness edit error !", "The latin name "+model.getLatinName()+
-																   " is already assigned to another illness");
+				RestPreconditions.assertTrue(tmp.getId()==id, "Illness edit error", 
+						"The Latin name '"+model.getLatinName()+"' has already been assigned to another illness.");
 			}
 		}
 		
-		illnessDao.save(jpa);
-		return convertJpaToModel(jpa);
+		// check local name is not already taken :
+		if(model.getLocalName()!=null) {
+			IllnessJPA tmp = null;
+			if(RestPreconditions.checkLocaleIsEnglish()) {
+				tmp = illnessDao.findByEngName(model.getLocalName());
+			} else {
+				tmp = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()).getIllness();
+			}
+			if(tmp!=null) {
+				RestPreconditions.assertTrue(tmp.getId()==id, "Herb edit error", 
+						"The local name '"+model.getLocalName()+"' belongs to another herb in our database.");
+			}
+		}
+		
+		return convertJpaToModel(illnessDao.save(convertModelToJPA(model)));
 	}
 	
 	// delete illness
+	//TODO : put this in ServiceParent
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException{
 		checkId(id);
 		
-		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id),"Illness delete error","Illness with id = "+id+" does not exist in our database.");
-
-		illnessDao.delete(jpa);
+		RestPreconditions.checkNotNull(illnessDao.getOne(id),"Illness delete error",
+				"Illness with id = "+id+" does not exist in our database.");
+		illnessDao.deleteById(id);
 	}
 	
 	@Override
@@ -133,32 +166,50 @@ public class IllnessServiceImpl implements IllnessService {
 		
 		if(model.getId()==null){
 			jpa = new IllnessJPA();
-			
-			jpa.setDescription(model.getDescription());
-			jpa.setLatinName(model.getLatinName());
-			jpa.setSrbName(model.getSrbName());
-			jpa.setSymptoms(model.getSymptoms());
 		} else {
-			jpa = illnessDao.getOne(model.getId());
-			if(jpa == null){
-				return null;
-			}
-			
+			jpa = RestPreconditions.checkNotNull(illnessDao.getOne(model.getId()),
+					"illness edit error", "Illness with id = "+model.getId()+" does not exist in our database.");
+		}
+		
+		if(RestPreconditions.checkString(model.getLatinName())){
+			jpa.setLatinName(model.getLatinName());
+		}
+		
+		if(RestPreconditions.checkLocaleIsEnglish()) {
 			if(RestPreconditions.checkString(model.getDescription())){
 				jpa.setDescription(model.getDescription());
-			}
-			if(RestPreconditions.checkString(model.getLatinName())){
-				jpa.setLatinName(model.getLatinName());
-			}
-			if(RestPreconditions.checkString(model.getSrbName())){
-				jpa.setSrbName(model.getSrbName());
 			}
 			if(RestPreconditions.checkString(model.getSymptoms())){
 				jpa.setSymptoms(model.getSymptoms());
 			}
+			if(RestPreconditions.checkString(model.getLocalName())){
+				jpa.setEngName(model.getLocalName());
+			}
+		} else {
+			
+			if(model.getId()==null) {
+				//TODO: if it is a brand new herb, email admin to fill in english info
+			}
+			
+			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
+			IllnessLocaleJPA ijpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
+			if(ijpa == null) {
+				ijpa = new IllnessLocaleJPA();
+				ijpa.setLocale(LocaleContextHolder.getLocale().toString());
+				//TODO: localName must be in model for hashCode for illnessLocales hashset
+				ijpa.setLocalName(model.getLocalName());
+				ijpa.setIllness(jpa);
+				jpa.getIllnessLocales().put(LocaleContextHolder.getLocale().toString(), ijpa);
+			}
+			if(RestPreconditions.checkString(model.getDescription())){
+				ijpa.setDescription(model.getDescription());
+			}
+			if(RestPreconditions.checkString(model.getSymptoms())){
+				ijpa.setSymptoms(model.getSymptoms());
+			}
 		}
 		
-		// add herbs :
+		// link herbs :
 		if(model.getHerbs()!=null && !model.getHerbs().isEmpty()){
 
 			for(HerbDTO hmodel : model.getHerbs()){
@@ -189,19 +240,34 @@ public class IllnessServiceImpl implements IllnessService {
 		IllnessDTO model = new IllnessDTO();
 		
 		model.setId(jpa.getId());
-		model.setDescription(jpa.getDescription());
 		model.setLatinName(jpa.getLatinName());
-		model.setSrbName(jpa.getSrbName());
-		model.setSymptoms(jpa.getSymptoms());
+		
+		boolean isEnglish = RestPreconditions.checkLocaleIsEnglish();
+		if(!isEnglish) {
+			IllnessLocaleJPA ijpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
+			if(ijpa!=null) {
+				model.setLocalName(ijpa.getLocalName());
+				model.setSymptoms(ijpa.getSymptoms());
+				model.setDescription(ijpa.getDescription());
+			} else {
+				isEnglish = true;
+			}
+		}
+		if(isEnglish) {
+			model.setDescription(jpa.getDescription());
+			model.setLocalName(jpa.getEngName());
+			model.setSymptoms(jpa.getSymptoms());
+		}
 		
 		// add herbs :
 		if(jpa.getLinks()!=null && !jpa.getLinks().isEmpty()){
 			model.setHerbs(new ArrayList<HerbDTO>());
 			for(LinkJPA ljpa : jpa.getLinks()){
+				// this is more memory efficient than autowiring herbservice
 				HerbDTO hmodel = new HerbDTO();
 				hmodel.setId(ljpa.getHerb().getId());
 				hmodel.setLatinName(ljpa.getHerb().getLatinName());
-				hmodel.setLocalName(ljpa.getHerb().getEngName());
+				hmodel.setLocalName(ljpa.getHerb().getEngName());  //TODO local(e) name
 				model.getHerbs().add(hmodel);
 			}
 		}
@@ -213,7 +279,7 @@ public class IllnessServiceImpl implements IllnessService {
 	public boolean isPostDataPresent(final IllnessDTO model) {
 		return RestPreconditions.checkString(model.getDescription()) &&
 				RestPreconditions.checkString(model.getLatinName()) &&
-				RestPreconditions.checkString(model.getSrbName()) &&
+				RestPreconditions.checkString(model.getLocalName()) &&
 				RestPreconditions.checkString(model.getSymptoms());
 	}
 
@@ -221,7 +287,7 @@ public class IllnessServiceImpl implements IllnessService {
 	public boolean isPatchDataPresent(final IllnessDTO model) {
 		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getLatinName()) ||
-				RestPreconditions.checkString(model.getSrbName()) ||
+				RestPreconditions.checkString(model.getLocalName()) ||
 				RestPreconditions.checkString(model.getSymptoms()) ||
 				(model.getHerbs()!=null && !model.getHerbs().isEmpty());
 	}

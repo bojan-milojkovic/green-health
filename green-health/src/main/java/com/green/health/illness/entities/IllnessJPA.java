@@ -1,6 +1,8 @@
 package com.green.health.illness.entities;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -27,7 +29,7 @@ public class IllnessJPA implements PojoParent {
 	private String latinName;
 	
 	@Column(name="srb_name")
-	private String srbName;
+	private String engName;
 	
 	@Column
 	private String description;
@@ -38,6 +40,9 @@ public class IllnessJPA implements PojoParent {
 	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
+	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
+	private Map<String,IllnessLocaleJPA> illnessLocales = new HashMap<String, IllnessLocaleJPA>();
+	
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -45,6 +50,14 @@ public class IllnessJPA implements PojoParent {
 	@Override
 	public Long getId() {
 		return id;
+	}
+	
+	public Map<String, IllnessLocaleJPA> getIllnessLocales() {
+		return illnessLocales;
+	}
+
+	public void setIllnessLocales(Map<String, IllnessLocaleJPA> illnessLocales) {
+		this.illnessLocales = illnessLocales;
 	}
 
 	public String getLatinName() {
@@ -55,12 +68,12 @@ public class IllnessJPA implements PojoParent {
 		this.latinName = latinName;
 	}
 
-	public String getSrbName() {
-		return srbName;
+	public String getEngName() {
+		return engName;
 	}
 
-	public void setSrbName(String srbName) {
-		this.srbName = srbName;
+	public void setEngName(String srbName) {
+		this.engName = srbName;
 	}
 
 	public String getDescription() {
@@ -85,5 +98,9 @@ public class IllnessJPA implements PojoParent {
 
 	public void setLinks(Set<LinkJPA> links) {
 		this.links = links;
+	}
+	
+	public IllnessLocaleJPA getForSpecificLocale(final String locale) {
+		return getIllnessLocales().get(locale);
 	}
 }

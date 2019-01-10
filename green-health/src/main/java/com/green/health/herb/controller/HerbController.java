@@ -60,8 +60,11 @@ public class HerbController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name) throws MyRestPreconditionsException{
-		HerbDTO model = herbServiceImpl.getHerbByLatinName(name);
-		return model==null ? herbServiceImpl.getHerbByLocalName(name) : model;
+		try {
+			return herbServiceImpl.getHerbByLatinName(name);
+		}catch (Exception e){
+			return herbServiceImpl.getHerbByLocalName(name);
+		}
 	}
 	
 	@RequestMapping(value = "/thumbnail/{id}", method = RequestMethod.GET)

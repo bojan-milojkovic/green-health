@@ -7,6 +7,7 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface IllnessService  extends ServiceParent<IllnessJPA, IllnessDTO>{
 
-	IllnessDTO getOneByName(final String name) throws MyRestPreconditionsException;
+	IllnessDTO getOneByLocalName(String name) throws MyRestPreconditionsException;
 	
+	IllnessDTO getOneByLatinName(String name) throws MyRestPreconditionsException;
 }

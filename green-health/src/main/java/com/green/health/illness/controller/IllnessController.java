@@ -51,7 +51,11 @@ public class IllnessController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody IllnessDTO getIllnessByName(@RequestParam(value="name", required=true) final String name) throws MyRestPreconditionsException{
-		return illnessServiceImpl.getOneByName(name);
+		try {
+			return illnessServiceImpl.getOneByLatinName(name);
+		} catch(Exception e) {
+			return illnessServiceImpl.getOneByLocalName(name);
+		}
 	}
 	
 	// .../gh/illness

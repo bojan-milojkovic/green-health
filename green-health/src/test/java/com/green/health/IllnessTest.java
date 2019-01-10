@@ -49,7 +49,7 @@ public class IllnessTest {
 			jpa.setId((long)i);
 			jpa.setDescription("illness_"+i);
 			jpa.setLatinName("Latin name "+i);
-			jpa.setSrbName("Srb name "+i);
+			jpa.setEngName("Eng name "+i);
 			jpa.setSymptoms("sympthom1, sympthom 2");
 			list.add(jpa);
 		}
@@ -57,7 +57,7 @@ public class IllnessTest {
 		postModel = new IllnessDTO();
 		postModel.setDescription("Some description");
 		postModel.setLatinName("Some latin name");
-		postModel.setSrbName("Some serb name");
+		postModel.setLocalName("Some illness name");
 		postModel.setSymptoms("vomiting, feaver, headache");
 		
 		patchModel = new IllnessDTO();

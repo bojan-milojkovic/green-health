@@ -23,7 +23,7 @@ public class IllnessDTO implements PojoParent {
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	@Pattern(regexp="[A-Za-z ] {3,}+", message="Illness Serbian name can consist only of at least 3 letters and whitespaces")
-	private String srbName;
+	private String localName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness description can consist only of letters, digits, dot, comma, and whitespaces")
@@ -45,12 +45,12 @@ public class IllnessDTO implements PojoParent {
 		this.latinName = latinName;
 	}
 
-	public String getSrbName() {
-		return srbName;
+	public String getLocalName() {
+		return localName;
 	}
 
-	public void setSrbName(String srbName) {
-		this.srbName = srbName;
+	public void setLocalName(String localName) {
+		this.localName = localName;
 	}
 
 	public String getDescription() {

@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
+import com.green.health.herb.entities.HerbLocaleJPA;
 import com.green.health.illness.dao.IllnessRepository;
+import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.ratings.entities.RatingDTO;
 import com.green.health.ratings.service.RatingsService;
@@ -92,11 +95,25 @@ public class RatingsServiceImpl implements RatingsService {
 		
 		model.setIllnessId(jpa.getIllness().getId());
 		model.setIllnessLatinName(jpa.getIllness().getLatinName());
-		model.setIllnessLocalName(jpa.getIllness().getSrbName());
+		model.setIllnessLocalName(jpa.getIllness().getEngName());
 		
 		model.setHerbId(jpa.getHerb().getId());
 		model.setHerbLatinName(jpa.getHerb().getLatinName());
 		model.setHerbLocalName(jpa.getHerb().getEngName());
+		// if locale is not English, set local names :
+		if(!RestPreconditions.checkLocaleIsEnglish()){
+			String locale = LocaleContextHolder.getLocale().toString();
+			
+			IllnessLocaleJPA itmp = jpa.getIllness().getForSpecificLocale(locale);
+			if(itmp!=null) {
+				model.setIllnessLocalName(itmp.getLocalName());
+			}
+			
+			HerbLocaleJPA htmp = jpa.getHerb().getForSpecificLocale(locale);
+			if(htmp!=null) {
+				model.setHerbLocalName(htmp.getLocalName());
+			}
+		}
 		
 		model.setRatings(jpa.calculateRating());
 		

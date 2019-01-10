@@ -70,7 +70,7 @@ public class HerbTest {
 		postModel = new HerbDTO();
 		postModel.setDescription("static description");
 		postModel.setLatinName("static latinName");
-		postModel.setLocalName("static srbName");
+		postModel.setLocalName("static localName");
 		postModel.setGrowsAt("static location");
 		postModel.setProperties("static properties");
 		postModel.setWarnings("static warnings");
@@ -85,12 +85,12 @@ public class HerbTest {
 		illnessModel = new IllnessDTO();
 		illnessModel.setId(1L);
 		illnessModel.setLatinName("latin illness name");
-		illnessModel.setSrbName("serbian illness name");
+		illnessModel.setLocalName("serbian illness name");
 		patchModel.getIllnesses().add(illnessModel);
 		
 		illnessJpa = new IllnessJPA();
 		illnessJpa.setId(1L);
-		illnessJpa.setSrbName("serbian illness name");
+		illnessJpa.setEngName("serbian illness name");
 		illnessJpa.setLatinName("latin illness name");
 		illnessJpa.setDescription("illnessDescription");
 		illnessJpa.setSymptoms("illnessSympthoms");
@@ -100,7 +100,7 @@ public class HerbTest {
 		hjpa.setDescription("francuski opis");
 		hjpa.setLocalName("francusko ime");
 		hjpa.setHerb(list.get(1));
-		list.get(1).getHerbLocales().add(hjpa);
+		list.get(1).getHerbLocales().put(Locale.FRANCE.toString(), hjpa);
 	}
 	
 	@Test
@@ -225,7 +225,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("We assert your locale as english. The herb with name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
+			assertEquals("We assert your locale as English. The herb with name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
@@ -335,7 +335,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(patchModel, 2L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.",e.getDetails());
+			assertEquals("The local name '"+patchModel.getLocalName()+"' belongs to another herb in our database.",e.getDetails());
 		}
 		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
@@ -384,7 +384,7 @@ public class HerbTest {
 		patchModel.setLatinName(null);
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessDao.findBySrbName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessDao.findByEngName(Mockito.anyString())).thenReturn(null);
 		
 		try {
 			mockHerbServiceImpl.edit(patchModel, 2L);
