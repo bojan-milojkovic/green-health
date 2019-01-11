@@ -17,3 +17,7 @@ CREATE TABLE `greenhealth`.`herb_locale` (
     REFERENCES `greenhealth`.`herb` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE);
+    
+create index idx1 on greenhealth.herb_locale (locale, local_name);
+
+create index idx2 on greenhealth.herb_locale (herb_id, locale);

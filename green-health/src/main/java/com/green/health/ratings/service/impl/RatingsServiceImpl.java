@@ -100,6 +100,7 @@ public class RatingsServiceImpl implements RatingsService {
 		model.setHerbId(jpa.getHerb().getId());
 		model.setHerbLatinName(jpa.getHerb().getLatinName());
 		model.setHerbLocalName(jpa.getHerb().getEngName());
+
 		// if locale is not English, set local names :
 		if(!RestPreconditions.checkLocaleIsEnglish()){
 			String locale = LocaleContextHolder.getLocale().toString();
@@ -114,7 +115,6 @@ public class RatingsServiceImpl implements RatingsService {
 				model.setHerbLocalName(htmp.getLocalName());
 			}
 		}
-		
 		model.setRatings(jpa.calculateRating());
 		
 		return model;

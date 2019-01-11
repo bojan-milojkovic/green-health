@@ -71,6 +71,7 @@ public class HerbTest {
 		postModel.setDescription("static description");
 		postModel.setLatinName("static latinName");
 		postModel.setLocalName("static localName");
+
 		postModel.setGrowsAt("static location");
 		postModel.setProperties("static properties");
 		postModel.setWarnings("static warnings");
@@ -233,7 +234,7 @@ public class HerbTest {
 	public void createHerbLatinNameAlreadyExists(){
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(list.get(0));
 		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(null);
-		
+
 		try {
 			mockHerbServiceImpl.addNew(postModel);
 			fail("Exception expected");
