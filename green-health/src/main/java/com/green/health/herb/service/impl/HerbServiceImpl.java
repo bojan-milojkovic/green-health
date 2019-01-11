@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
+import com.green.health.herb.entities.HerbInterface;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.entities.HerbLocaleJPA;
 import com.green.health.herb.service.HerbService;
@@ -180,6 +181,30 @@ public class HerbServiceImpl implements HerbService {
 		
 		storageServiceImpl.deleteImage(id, false);
 	}
+	
+	private void useSettersInConvertToJPA(HerbInterface model, HerbInterface jpa){
+		if(RestPreconditions.checkString(model.getDescription())){
+			jpa.setDescription(model.getDescription());
+		}
+		if(RestPreconditions.checkString(model.getGrowsAt())){
+			jpa.setGrowsAt(model.getGrowsAt());
+		}
+		if(RestPreconditions.checkString(model.getLocalName())){
+			jpa.setLocalName(model.getLocalName());
+		}
+		if(RestPreconditions.checkString(model.getProperties())){
+			jpa.setProperties(model.getProperties());
+		}
+		if(RestPreconditions.checkString(model.getWarnings())){
+			jpa.setWarnings(model.getWarnings());
+		}
+		if(RestPreconditions.checkString(model.getWhenToPick())){
+			jpa.setWhenToPick(model.getWhenToPick());
+		}
+		if(RestPreconditions.checkString(model.getWhereToBuy())){
+			jpa.setWhereToBuy(model.getWhereToBuy());
+		}
+	}
 
 	@Override
 	public HerbJPA convertModelToJPA(HerbDTO model) throws MyRestPreconditionsException {
@@ -196,27 +221,7 @@ public class HerbServiceImpl implements HerbService {
 		}
 		// english
 		if(RestPreconditions.checkLocaleIsEnglish()) {
-			if(RestPreconditions.checkString(model.getDescription())){
-				jpa.setDescription(model.getDescription());
-			}
-			if(RestPreconditions.checkString(model.getGrowsAt())){
-				jpa.setGrowsAt(model.getGrowsAt());
-			}
-			if(RestPreconditions.checkString(model.getLocalName())){
-				jpa.setEngName(model.getLocalName());
-			}
-			if(RestPreconditions.checkString(model.getProperties())){
-				jpa.setProperties(model.getProperties());
-			}
-			if(RestPreconditions.checkString(model.getWarnings())){
-				jpa.setWarnings(model.getWarnings());
-			}
-			if(RestPreconditions.checkString(model.getWhenToPick())){
-				jpa.setWhenToPick(model.getWhenToPick());
-			}
-			if(RestPreconditions.checkString(model.getWhereToBuy())){
-				jpa.setWhereToBuy(model.getWhereToBuy());
-			}
+			useSettersInConvertToJPA(model, jpa);
 		} else {
 			
 			if(model.getId()==null) {
@@ -231,27 +236,8 @@ public class HerbServiceImpl implements HerbService {
 				hjpa.setHerb(jpa);
 				jpa.getHerbLocales().add(hjpa);
 			}
-			if(RestPreconditions.checkString(model.getLocalName())){
-				hjpa.setLocalName(model.getLocalName());
-			}
-			if(RestPreconditions.checkString(model.getDescription())){
-				hjpa.setDescription(model.getDescription());
-			}
-			if(RestPreconditions.checkString(model.getGrowsAt())){
-				hjpa.setGrowsAt(model.getGrowsAt());
-			}
-			if(RestPreconditions.checkString(model.getProperties())){
-				hjpa.setProperties(model.getProperties());
-			}
-			if(RestPreconditions.checkString(model.getWarnings())){
-				hjpa.setWarnings(model.getWarnings());
-			}
-			if(RestPreconditions.checkString(model.getWhenToPick())){
-				jpa.setWhenToPick(model.getWhenToPick());
-			}
-			if(RestPreconditions.checkString(model.getWhereToBuy())){
-				jpa.setWhereToBuy(model.getWhereToBuy());
-			}
+
+			useSettersInConvertToJPA(model, hjpa);
 		}
 		
 		// link illnesses :
@@ -279,6 +265,16 @@ public class HerbServiceImpl implements HerbService {
 		
 		return jpa;
 	}
+	
+	private void useSettersInConvertToModel(HerbInterface model, HerbInterface jpa){
+		model.setLocalName(jpa.getLocalName());
+		model.setDescription(jpa.getDescription());
+		model.setGrowsAt(jpa.getGrowsAt());
+		model.setProperties(jpa.getProperties());
+		model.setWhenToPick(jpa.getWhenToPick());
+		model.setWhereToBuy(jpa.getWhereToBuy());
+		model.setWarnings(jpa.getWarnings());
+	}
 
 	@Override
 	public HerbDTO convertJpaToModel(HerbJPA jpa) {		
@@ -292,26 +288,14 @@ public class HerbServiceImpl implements HerbService {
 			// 'if' ensures that LocaleContextHolder.getLocale() is not null
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa!=null) {
-				model.setLocalName(hjpa.getLocalName());
-				model.setDescription(hjpa.getDescription());
-				model.setGrowsAt(hjpa.getGrowsAt());
-				model.setProperties(hjpa.getProperties());
-				model.setWhenToPick(hjpa.getWhenToPick());
-				model.setWhereToBuy(hjpa.getWhereToBuy());
-				model.setWarnings(hjpa.getWarnings());
+				useSettersInConvertToModel(model, hjpa);
 			} else {
 				isEnglish = true;
 			}
 		}
 		
 		if(isEnglish) {
-			model.setLocalName(jpa.getEngName());
-			model.setDescription(jpa.getDescription());
-			model.setGrowsAt(jpa.getGrowsAt());
-			model.setProperties(jpa.getProperties());
-			model.setWhenToPick(jpa.getWhenToPick());
-			model.setWhereToBuy(jpa.getWhereToBuy());
-			model.setWarnings(jpa.getWarnings());
+			useSettersInConvertToModel(model, jpa);
 		}
 		
 		if(jpa.getLinks()!=null && !jpa.getLinks().isEmpty()){

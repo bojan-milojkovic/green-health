@@ -10,7 +10,7 @@ import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class HerbDTO implements PojoParent{
+public class HerbDTO implements PojoParent, HerbInterface{
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;

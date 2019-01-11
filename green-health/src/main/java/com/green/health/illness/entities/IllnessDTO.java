@@ -12,7 +12,7 @@ import com.green.health.herb.entities.HerbDTO;
 import com.green.health.parents.PojoParent;
 
 @JsonInclude(Include.NON_NULL)
-public class IllnessDTO implements PojoParent {
+public class IllnessDTO implements PojoParent, IllnessInterface {
 
 	@JsonProperty(access = Access.READ_WRITE)
 	private Long id;

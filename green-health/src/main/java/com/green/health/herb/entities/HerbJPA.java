@@ -16,7 +16,7 @@ import com.green.health.ratings.entities.LinkJPA;
 
 @Entity
 @Table(name="herb")
-public class HerbJPA implements PojoParent{
+public class HerbJPA implements PojoParent, HerbInterface{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -146,5 +146,15 @@ public class HerbJPA implements PojoParent{
 
 	public void setHerbLocales(Set<HerbLocaleJPA> herbLocales) {
 		this.herbLocales = herbLocales;
+	}
+
+	@Override
+	public String getLocalName() {
+		return engName;
+	}
+
+	@Override
+	public void setLocalName(String engName) {
+		this.engName = engName;
 	}
 }

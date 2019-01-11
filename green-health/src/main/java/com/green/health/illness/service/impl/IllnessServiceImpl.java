@@ -12,6 +12,7 @@ import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.dao.IllnessLocaleRepository;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
+import com.green.health.illness.entities.IllnessInterface;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.illness.service.IllnessService;
@@ -160,6 +161,18 @@ public class IllnessServiceImpl implements IllnessService {
 		illnessDao.deleteById(id);
 	}
 	
+	private void useSettersInConvertToJPA(IllnessInterface model, IllnessInterface jpa){
+		if(RestPreconditions.checkString(model.getDescription())){
+			jpa.setDescription(model.getDescription());
+		}
+		if(RestPreconditions.checkString(model.getSymptoms())){
+			jpa.setSymptoms(model.getSymptoms());
+		}
+		if(RestPreconditions.checkString(model.getLocalName())){
+			jpa.setLocalName(model.getLocalName());
+		}
+	}
+	
 	@Override
 	public IllnessJPA convertModelToJPA(final IllnessDTO model) throws MyRestPreconditionsException {
 		IllnessJPA jpa = null;
@@ -176,15 +189,7 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
-			if(RestPreconditions.checkString(model.getDescription())){
-				jpa.setDescription(model.getDescription());
-			}
-			if(RestPreconditions.checkString(model.getSymptoms())){
-				jpa.setSymptoms(model.getSymptoms());
-			}
-			if(RestPreconditions.checkString(model.getLocalName())){
-				jpa.setEngName(model.getLocalName());
-			}
+			useSettersInConvertToJPA(model, jpa);
 		} else {
 			
 			if(model.getId()==null) {
@@ -199,15 +204,8 @@ public class IllnessServiceImpl implements IllnessService {
 				ijpa.setIllness(jpa);
 				jpa.getIllnessLocales().add(ijpa);
 			}
-			if(RestPreconditions.checkString(model.getDescription())){
-				ijpa.setDescription(model.getDescription());
-			}
-			if(RestPreconditions.checkString(model.getSymptoms())){
-				ijpa.setSymptoms(model.getSymptoms());
-			}
-			if(RestPreconditions.checkString(model.getLocalName())){
-				jpa.setEngName(model.getLocalName());
-			}
+			
+			useSettersInConvertToJPA(model, ijpa);
 		}
 		
 		// link herbs :
@@ -236,6 +234,12 @@ public class IllnessServiceImpl implements IllnessService {
 		return jpa;
 	}
 	
+	private void useSettersInConvertToModel(IllnessInterface model, IllnessInterface jpa){
+		model.setLocalName(jpa.getLocalName());
+		model.setSymptoms(jpa.getSymptoms());
+		model.setDescription(jpa.getDescription());
+	}
+	
 	@Override
 	public IllnessDTO convertJpaToModel(final IllnessJPA jpa) {
 		IllnessDTO model = new IllnessDTO();
@@ -247,17 +251,13 @@ public class IllnessServiceImpl implements IllnessService {
 		if(!isEnglish) {
 			IllnessLocaleJPA ijpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(ijpa!=null) {
-				model.setLocalName(ijpa.getLocalName());
-				model.setSymptoms(ijpa.getSymptoms());
-				model.setDescription(ijpa.getDescription());
+				useSettersInConvertToModel(model, ijpa);
 			} else {
 				isEnglish = true;
 			}
 		}
 		if(isEnglish) {
-			model.setDescription(jpa.getDescription());
-			model.setLocalName(jpa.getEngName());
-			model.setSymptoms(jpa.getSymptoms());
+			useSettersInConvertToModel(model, jpa);
 		}
 		
 		// add herbs :

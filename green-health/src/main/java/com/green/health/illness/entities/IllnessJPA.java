@@ -16,7 +16,7 @@ import com.green.health.ratings.entities.LinkJPA;
 
 @Entity
 @Table(name="illness")
-public class IllnessJPA implements PojoParent {
+public class IllnessJPA implements PojoParent, IllnessInterface {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,5 +103,15 @@ public class IllnessJPA implements PojoParent {
 
 	public void setLinks(Set<LinkJPA> links) {
 		this.links = links;
+	}
+
+	@Override
+	public String getLocalName() {
+		return engName;
+	}
+
+	@Override
+	public void setLocalName(String localName) {
+		this.engName = localName;
 	}
 }

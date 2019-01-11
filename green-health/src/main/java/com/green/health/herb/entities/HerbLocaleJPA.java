@@ -12,7 +12,7 @@ import com.green.health.parents.PojoParent;
 
 @Entity
 @Table(name="herb_locale")
-public class HerbLocaleJPA implements PojoParent {
+public class HerbLocaleJPA implements PojoParent, HerbInterface{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

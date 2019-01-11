@@ -13,7 +13,7 @@ import com.green.health.parents.PojoParent;
 
 @Entity
 @Table(name="illness_locale")
-public class IllnessLocaleJPA implements PojoParent {
+public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
