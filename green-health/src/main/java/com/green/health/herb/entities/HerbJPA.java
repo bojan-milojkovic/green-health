@@ -1,8 +1,6 @@
 package com.green.health.herb.entities;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -52,10 +50,14 @@ public class HerbJPA implements PojoParent{
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
-	private Map<String, HerbLocaleJPA> herbLocales = new HashMap<String ,HerbLocaleJPA>();
+	private Set<HerbLocaleJPA> herbLocales = new HashSet<HerbLocaleJPA>();
 	
 	public HerbLocaleJPA getForSpecificLocale(String locale) {
-		return herbLocales.get(locale);
+		try {
+			return herbLocales.stream().filter(l -> l.getLocale().equals(locale)).findFirst().get();
+		} catch(Exception e) {
+			return null;
+		}
 	}
 
 	public Long getId() {
@@ -138,11 +140,11 @@ public class HerbJPA implements PojoParent{
 		this.links = links;
 	}
 
-	public Map<String, HerbLocaleJPA> getHerbLocales() {
+	public Set<HerbLocaleJPA> getHerbLocales() {
 		return herbLocales;
 	}
 
-	public void setHerbLocales(Map<String, HerbLocaleJPA> herbLocales) {
+	public void setHerbLocales(Set<HerbLocaleJPA> herbLocales) {
 		this.herbLocales = herbLocales;
 	}
 }

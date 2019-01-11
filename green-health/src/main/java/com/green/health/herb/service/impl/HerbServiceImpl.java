@@ -228,10 +228,11 @@ public class HerbServiceImpl implements HerbService {
 			if(hjpa==null) {
 				hjpa = new HerbLocaleJPA();
 				hjpa.setLocale(LocaleContextHolder.getLocale().toString());
-				//TODO : local name must be in model for hashCode in herbLocales
-				hjpa.setLocalName(model.getLocalName());
 				hjpa.setHerb(jpa);
-				jpa.getHerbLocales().put(LocaleContextHolder.getLocale().toString(), hjpa);
+				jpa.getHerbLocales().add(hjpa);
+			}
+			if(RestPreconditions.checkString(model.getLocalName())){
+				hjpa.setLocalName(model.getLocalName());
 			}
 			if(RestPreconditions.checkString(model.getDescription())){
 				hjpa.setDescription(model.getDescription());

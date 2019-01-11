@@ -100,7 +100,7 @@ public class HerbTest {
 		hjpa.setDescription("francuski opis");
 		hjpa.setLocalName("francusko ime");
 		hjpa.setHerb(list.get(1));
-		list.get(1).getHerbLocales().put(Locale.FRANCE.toString(), hjpa);
+		list.get(1).getHerbLocales().add(hjpa);
 	}
 	
 	@Test

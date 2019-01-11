@@ -135,4 +135,28 @@ public class HerbLocaleJPA implements PojoParent {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	@Override
+	public boolean equals( Object o ) {
+		if( o != null && o instanceof HerbLocaleJPA) {
+			if(o==this) {
+        		return true;
+        	}
+			return this.locale.equals(((HerbLocaleJPA)o).getLocale()) && 
+					this.herb.getId() == ((HerbLocaleJPA)o).getHerb().getId();
+		}
+		
+		return false;
+	}
+	
+	@Override
+    public int hashCode() {
+		// FNV hashing algorithm :
+		long hash = 0xCBF29CE484222325L;
+		for (String s : new String[] {this.locale, this.herb.getLatinName()}) {
+			hash ^= s.hashCode();
+			hash *= 0x100000001B3L;
+		}
+		return (int)hash;
+    }
 }

@@ -196,16 +196,17 @@ public class IllnessServiceImpl implements IllnessService {
 			if(ijpa == null) {
 				ijpa = new IllnessLocaleJPA();
 				ijpa.setLocale(LocaleContextHolder.getLocale().toString());
-				//TODO: localName must be in model for hashCode for illnessLocales hashset
-				ijpa.setLocalName(model.getLocalName());
 				ijpa.setIllness(jpa);
-				jpa.getIllnessLocales().put(LocaleContextHolder.getLocale().toString(), ijpa);
+				jpa.getIllnessLocales().add(ijpa);
 			}
 			if(RestPreconditions.checkString(model.getDescription())){
 				ijpa.setDescription(model.getDescription());
 			}
 			if(RestPreconditions.checkString(model.getSymptoms())){
 				ijpa.setSymptoms(model.getSymptoms());
+			}
+			if(RestPreconditions.checkString(model.getLocalName())){
+				jpa.setEngName(model.getLocalName());
 			}
 		}
 		

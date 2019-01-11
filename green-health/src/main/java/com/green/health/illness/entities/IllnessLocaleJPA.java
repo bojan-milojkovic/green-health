@@ -83,7 +83,7 @@ public class IllnessLocaleJPA implements PojoParent {
 		this.symptoms = symptoms;
 	}
 	
-	/*@Override
+	@Override
 	public boolean equals( Object o ) {
 		if( o != null && o instanceof IllnessLocaleJPA) {
 			if(o==this) {
@@ -100,10 +100,10 @@ public class IllnessLocaleJPA implements PojoParent {
     public int hashCode() {
 		// FNV hashing algorithm :
 		long hash = 0xCBF29CE484222325L;
-		for (String s : new String[] {this.locale, this.localName}) {
+		for (String s : new String[] {this.locale, this.illness.getLatinName()}) {
 			hash ^= s.hashCode();
 			hash *= 0x100000001B3L;
 		}
 		return (int)hash;
-    }*/
+    }
 }
