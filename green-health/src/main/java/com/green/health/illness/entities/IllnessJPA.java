@@ -25,7 +25,7 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	@Column(name="latin_name")
 	private String latinName;
 	
-	@Column(name="srb_name")
+	@Column(name="eng_name")
 	private String engName;
 	
 	@Column

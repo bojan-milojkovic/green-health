@@ -3,6 +3,8 @@ package com.green.health;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -15,12 +17,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.entities.HerbJPA;
+import com.green.health.illness.dao.IllnessLocaleRepository;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.entities.IllnessJPA;
+import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.illness.service.impl.IllnessServiceImpl;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
@@ -34,6 +40,9 @@ public class IllnessTest {
 	@Mock
 	private HerbRepository mockHerbRepo;
 	
+	@Mock
+	private IllnessLocaleRepository mockIllnessLocaleRepo;
+	
 	@InjectMocks
 	private IllnessServiceImpl mockIllnessServiceImpl;
 	
@@ -41,9 +50,11 @@ public class IllnessTest {
 	private static IllnessDTO postModel, patchModel;
 	private static HerbDTO herbDto;
 	private static HerbJPA herbJpa;
+	private static IllnessLocaleJPA ijpa;
 	
 	@BeforeClass
 	public static void init() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
 		for(int i=0 ; i<4 ; i++){
 			IllnessJPA jpa = new IllnessJPA();
 			jpa.setId((long)i);
@@ -83,6 +94,14 @@ public class IllnessTest {
 		herbJpa.setEngName("herb eng name");
 		herbJpa.setWarnings("tastes bad");
 		herbJpa.setWhenToPick("summer");
+		
+		ijpa = new IllnessLocaleJPA();
+		ijpa.setId(1L);
+		ijpa.setLocale(Locale.FRANCE.toString());
+		ijpa.setDescription("French description");
+		ijpa.setLocalName("French name");
+		ijpa.setIllness(list.get(1));
+		list.get(1).getIllnessLocales().add(ijpa);
 	}
 	
 	@Test
@@ -96,7 +115,7 @@ public class IllnessTest {
 		for(int i=0 ; i<result.size() ; i++) {
 			assertEquals(list.get(i).getDescription(), result.get(i).getDescription());
 			assertEquals(list.get(i).getLatinName(), result.get(i).getLatinName());
-			assertEquals(list.get(i).getSrbName(), result.get(i).getSrbName());
+			assertEquals(list.get(i).getLocalName(), result.get(i).getLocalName());
 			assertEquals(list.get(i).getSymptoms(), result.get(i).getSymptoms());
 		}
 	}
@@ -124,15 +143,14 @@ public class IllnessTest {
 	}
 	
 	@Test
-	public void getIllnessByInvalidNameTest() {
+	public void getIllnessByInvalidLatinNameTest() {
 		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessRepo.findBySrbName(Mockito.anyString())).thenReturn(null);
 		
 		try {
-			mockIllnessServiceImpl.getOneByName("blatruc");
+			mockIllnessServiceImpl.getOneByLatinName("blatruc");
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The the illness with the name blatruc is not in our database.", e.getDetails());
+			assertEquals("Cannot find the illness with latin name 'blatruc'", e.getDetails());
 		}
 	}
 	
@@ -161,18 +179,37 @@ public class IllnessTest {
 	}
 	
 	@Test
-	public void addIllnessSrbNameTakenTest() {
-		
+	public void addIllnessEngNameTakenTest() {
 		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessRepo.findBySrbName(Mockito.anyString())).thenReturn(list.get(0));
+		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness with Serbian name Some serb name is already in our database.", e.getDetails());
+			assertEquals("We assert your locale as English. The herb with name "+postModel.getLocalName()+
+					" is already in our database.", e.getDetails());
 		}
 	}
+	
+	@Test
+	public void addIllnessLocalNameTakenTest(){
+		LocaleContextHolder.setLocale(Locale.FRENCH);
+		postModel.setLocalName("French name");
+		
+		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessLocaleRepo.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(ijpa);
+		
+		try{
+			mockIllnessServiceImpl.addNew(postModel);
+		} catch (MyRestPreconditionsException e){
+			assertEquals("The herb with local name "+postModel.getLocalName()+" is already in our database.", e.getDetails());
+		}
+		postModel.setLocalName("Some illness name");
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
 	
 	@Test
 	public void editIllnessInvalidId() {
@@ -194,7 +231,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.edit(badModel, 1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("To edit the illness you must provide some editable data.", e.getDetails());
+			assertEquals("Your illness edit request is invalid - You must provide some editable data.", e.getDetails());
 		}
 	}
 	
@@ -225,7 +262,7 @@ public class IllnessTest {
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
-			assertEquals("The latin name Latin name 2 is already assigned to another illness", e.getDetails());
+			assertEquals("The Latin name 'Latin name 2' has already been assigned to another illness.", e.getDetails());
 		}
 	}
 	
@@ -238,7 +275,7 @@ public class IllnessTest {
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
 		
-		when(mockIllnessRepo.save(Mockito.any(IllnessJPA.class))).thenReturn(null);
+		when(mockIllnessRepo.save(Mockito.any(IllnessJPA.class))).thenReturn(list.get(1));
 		
 		try {
 			// patchModel already has the same herb-illness link
@@ -293,7 +330,7 @@ public class IllnessTest {
 		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		
-		when(mockIllnessRepo.save(isA(IllnessJPA.class))).thenReturn(null);
+		when(mockIllnessRepo.save(isA(IllnessJPA.class))).thenReturn(list.get(1));
 		
 		IllnessDTO result;
 		try {
