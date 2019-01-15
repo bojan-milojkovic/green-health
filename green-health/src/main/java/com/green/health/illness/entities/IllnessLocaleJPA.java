@@ -26,7 +26,7 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 	@Column
 	private String locale;
 	
-	@Column
+	@Column(name="local_name")
 	private String localName;
 	
 	@Column
