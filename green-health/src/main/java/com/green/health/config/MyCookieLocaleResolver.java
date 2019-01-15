@@ -42,24 +42,12 @@ public class MyCookieLocaleResolver extends CookieLocaleResolver {
 
 	@Override
 	public LocaleContext resolveLocaleContext(final HttpServletRequest request) {
-	    try {
-	    	if(request.getCookies() != null){
-	    		return new LocaleContext() {
-		            @Override
-		            public Locale getLocale() {
-		                return resolveLocale(request);
-		            }
-		        };
-	    	}
-	        return super.resolveLocaleContext(request);
-	    } catch (Exception exception) {
-	        return new LocaleContext() {
-	            @Override
-	            public Locale getLocale() {
-	                return Locale.forLanguageTag("en-US");
-	            }
-	        };
-	    }
+		return new LocaleContext() {
+            @Override
+            public Locale getLocale() {
+                return resolveLocale(request);
+            }
+        };
 	}
 
 }
