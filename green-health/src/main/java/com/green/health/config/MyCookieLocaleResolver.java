@@ -15,17 +15,20 @@ public class MyCookieLocaleResolver extends CookieLocaleResolver {
 	    	if(request.getCookies() != null){
 		    	for(Cookie c1 : request.getCookies()){
 		    		if("localeInfo".equals(c1.getName())){
-		    			String value = c1.getValue().split("(")[0]; // sr-RS(*)
-		    			if (value.matches("[a-z]{2}-[A-Z]{2}(-.+)?")){ // sr-RS  and  no-NO-x-lvariant-NY
+		    			String value = c1.getValue(); // sr-RS(*)
+		    			if(value.contains("(")){
+		    				value = value.split("(")[0];
+		    			}
+		    			if (value.matches("[a-z]{2}[_-][A-Z]{2}([_-].+)?")){ // sr-RS  and  no-NO-x-lvariant-NY
 		    				return new Locale.Builder()
-		    						.setLanguage(value.split("-")[0])
-		    						.setRegion(value.split("-")[1])
+		    						.setLanguage(value.split("[_-]")[0])
+		    						.setRegion(value.split("[_-]")[1])
 		    						.build();
 		    			}
-		    			if(value.matches("[a-z]{2}-Latn-[A-Z]{2}")){// sr-Latn-RS
+		    			if(value.matches("[a-z]{2}[_-]Latn[_-][A-Z]{2}")){// sr-Latn-RS
 		    				return new Locale.Builder()
-		    						.setLanguage(value.split("-")[0])
-		    						.setRegion(value.split("-")[2])
+		    						.setLanguage(value.split("[_-]")[0])
+		    						.setRegion(value.split("[_-]")[2])
 		    						.build();
 		    			}
 		    		} 
@@ -40,6 +43,14 @@ public class MyCookieLocaleResolver extends CookieLocaleResolver {
 	@Override
 	public LocaleContext resolveLocaleContext(final HttpServletRequest request) {
 	    try {
+	    	if(request.getCookies() != null){
+	    		return new LocaleContext() {
+		            @Override
+		            public Locale getLocale() {
+		                return resolveLocale(request);
+		            }
+		        };
+	    	}
 	        return super.resolveLocaleContext(request);
 	    } catch (Exception exception) {
 	        return new LocaleContext() {
