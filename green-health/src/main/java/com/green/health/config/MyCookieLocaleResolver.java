@@ -15,17 +15,17 @@ public class MyCookieLocaleResolver extends CookieLocaleResolver {
 	    	if(request.getCookies() != null){
 		    	for(Cookie c1 : request.getCookies()){
 		    		if("localeInfo".equals(c1.getName())){
-		    			String value = c1.getValue();
-		    			if (value.matches("[a-z]{2}-[A-Z]{2}[^a-zA-Z]+")){
-		    				return new Locale.Builder()
-		    						.setLanguage(value.split("-")[0])
-		    						.setRegion(value.split("-")[1].split("[^a-zA-Z]+")[0])
-		    						.build();
-		    			}
-		    			if(value.matches("[a-z]{2}-[A-Z]{2}") || value.matches("[a-z]{2}-[A-Z]{2}.+")){
+		    			String value = c1.getValue().split("(")[0]; // sr-RS(*)
+		    			if (value.matches("[a-z]{2}-[A-Z]{2}(-.+)?")){ // sr-RS  and  no-NO-x-lvariant-NY
 		    				return new Locale.Builder()
 		    						.setLanguage(value.split("-")[0])
 		    						.setRegion(value.split("-")[1])
+		    						.build();
+		    			}
+		    			if(value.matches("[a-z]{2}-Latn-[A-Z]{2}")){// sr-Latn-RS
+		    				return new Locale.Builder()
+		    						.setLanguage(value.split("-")[0])
+		    						.setRegion(value.split("-")[2])
 		    						.build();
 		    			}
 		    		} 
