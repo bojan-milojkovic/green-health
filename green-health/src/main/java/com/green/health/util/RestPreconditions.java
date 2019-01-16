@@ -52,4 +52,10 @@ public class RestPreconditions {
 	public static boolean checkLocaleIsEnglish() {
 		return LocaleContextHolder.getLocale()==null || Locale.ENGLISH.equals(LocaleContextHolder.getLocale());
 	}
+	
+	public static String assertLocaleInString() {
+		return "We assert your language as " + 
+				(LocaleContextHolder.getLocale()==null ? "English" :
+					LocaleContextHolder.getLocale().getDisplayLanguage()) +" ; ";
+	}
 }

@@ -134,7 +134,7 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		// check local name is not already taken :
-		if(model.getLocalName()!=null) {
+		if(RestPreconditions.checkString(model.getLocalName())) {
 			IllnessJPA tmp = null;
 			if(RestPreconditions.checkLocaleIsEnglish()) {
 				tmp = illnessDao.findByEngName(model.getLocalName());
@@ -143,7 +143,7 @@ public class IllnessServiceImpl implements IllnessService {
 			}
 			if(tmp!=null) {
 				RestPreconditions.assertTrue(tmp.getId()==id, "Herb edit error", 
-						"The local name '"+model.getLocalName()+"' belongs to another herb in our database.");
+						RestPreconditions.assertLocaleInString()+ "The name '"+model.getLocalName()+"' belongs to another herb in our database.");
 			}
 		}
 		

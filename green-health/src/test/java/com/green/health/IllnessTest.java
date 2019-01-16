@@ -155,6 +155,22 @@ public class IllnessTest {
 	}
 	
 	@Test
+	public void getIllnessByNotEnglishName() {
+		LocaleContextHolder.setLocale(Locale.FRANCE);
+		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessLocaleRepo.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(ijpa);
+		
+		try {
+			IllnessDTO result = mockIllnessServiceImpl.getOneByLocalName("French name");
+			assertEquals("Latin name 1", result.getLatinName());
+			assertEquals("French name", result.getLocalName());
+		} catch (MyRestPreconditionsException e) {
+			fail(e.getDescription());
+		}
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
+	@Test
 	public void addIllnessPostDataMissing() {
 		
 		try {
@@ -253,7 +269,6 @@ public class IllnessTest {
 	public void tryToEditIllnessByGivingItLatinNameOfAnotherIllnessTest() {
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(list.get(2));
-		when(mockHerbRepo.getHerbByLatinName(Mockito.anyString())).thenReturn(herbJpa);
 		
 		patchModel.setLatinName("Latin name 2");
 		
@@ -264,6 +279,44 @@ public class IllnessTest {
 			patchModel.setLatinName(null);
 			assertEquals("The Latin name 'Latin name 2' has already been assigned to another illness.", e.getDetails());
 		}
+	}
+	
+	@Test
+	public void tryToEditIllnessByGivingItEnglishNameOfAnotherIllness() {
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
+		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(list.get(2));
+		
+		patchModel.setLocalName("Eng name 2");
+		
+		try {
+			mockIllnessServiceImpl.edit(patchModel, 1L);
+			fail("Exception expected");
+		} catch (MyRestPreconditionsException e) {	
+			assertEquals("We assert your language as English ; "+
+					"The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.", e.getDetails());
+		}
+		patchModel.setLatinName(null);
+	}
+	
+	@Test
+	public void tryToEditIllnessByGivingItLocalNameOfAnotherIllness() {
+		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(2));
+		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(null);
+		when(mockIllnessLocaleRepo.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(ijpa);
+		
+		LocaleContextHolder.setLocale(Locale.FRENCH);
+		postModel.setLocalName("French name");
+		
+		try {
+			mockIllnessServiceImpl.edit(patchModel, 2L);
+			fail("Exception expected");
+		} catch (MyRestPreconditionsException e) {
+			
+			assertEquals("We assert your language as French ; "+
+					"The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.", e.getDetails());
+		}
+		patchModel.setLatinName(null);
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test

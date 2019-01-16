@@ -149,7 +149,7 @@ public class HerbServiceImpl implements HerbService {
 			}
 		}
 		// check that new locale name is not taken:
-		if(model.getLocalName()!=null) {
+		if(RestPreconditions.checkString(model.getLocalName())) {
 			HerbJPA jpa = null;
 			if(RestPreconditions.checkLocaleIsEnglish()) {
 				jpa = herbDao.getHerbByEngName(model.getLocalName());
