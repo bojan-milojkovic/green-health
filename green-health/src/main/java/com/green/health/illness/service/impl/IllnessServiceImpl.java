@@ -268,7 +268,11 @@ public class IllnessServiceImpl implements IllnessService {
 				HerbDTO hmodel = new HerbDTO();
 				hmodel.setId(ljpa.getHerb().getId());
 				hmodel.setLatinName(ljpa.getHerb().getLatinName());
-				hmodel.setLocalName(ljpa.getHerb().getEngName());  //TODO local(e) name
+				if(RestPreconditions.checkLocaleIsEnglish()){
+					hmodel.setLocalName(ljpa.getHerb().getEngName());
+				} else{
+					hmodel.setLocalName(ljpa.getHerb().getNameForSpecificLocale(LocaleContextHolder.getLocale().toString()));
+				}
 				model.getHerbs().add(hmodel);
 			}
 		}

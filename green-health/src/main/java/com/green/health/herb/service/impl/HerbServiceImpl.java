@@ -304,7 +304,12 @@ public class HerbServiceImpl implements HerbService {
 				// this is more memory-efficient than autowiring IllnessService
 				IllnessDTO imodel = new IllnessDTO();
 				imodel.setId(ijpa.getIllness().getId());
-				imodel.setLocalName(ijpa.getIllness().getEngName()); //TODO local(e) name
+				
+				if(RestPreconditions.checkLocaleIsEnglish()){
+					imodel.setLocalName(ijpa.getIllness().getEngName());
+				} else {
+					imodel.setLocalName(ijpa.getIllness().getNameForSpecificLocale(LocaleContextHolder.getLocale().toString()));
+				}
 				imodel.setLatinName(ijpa.getIllness().getLatinName());
 				model.getIllnesses().add(imodel);
 			}

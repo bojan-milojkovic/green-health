@@ -48,6 +48,14 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 		}
 	}
 	
+	public String getNameForSpecificLocale(final String locale){
+		IllnessInterface ii = getForSpecificLocale(locale);
+		if(ii!=null){
+			return ii.getLocalName();
+		}
+		return engName;
+	}
+	
 	public void setId(Long id) {
 		this.id = id;
 	}

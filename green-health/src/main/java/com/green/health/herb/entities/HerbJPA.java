@@ -59,6 +59,14 @@ public class HerbJPA implements PojoParent, HerbInterface{
 			return null;
 		}
 	}
+	
+	public String getNameForSpecificLocale(final String locale){
+		HerbInterface ii = getForSpecificLocale(locale);
+		if(ii!=null){
+			return ii.getLocalName();
+		}
+		return engName;
+	}
 
 	public Long getId() {
 		return id;
