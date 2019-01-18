@@ -160,6 +160,6 @@ Content-Type: image/jpeg
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteHerb(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
-		herbServiceImpl.delete(id);
+		herbServiceImpl.delete(id, "Herb");
 	}
 }

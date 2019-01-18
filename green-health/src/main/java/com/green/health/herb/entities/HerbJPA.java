@@ -53,11 +53,13 @@ public class HerbJPA implements PojoParent, HerbInterface{
 	private Set<HerbLocaleJPA> herbLocales = new HashSet<HerbLocaleJPA>();
 	
 	public HerbLocaleJPA getForSpecificLocale(String locale) {
-		try {
+		HerbLocaleJPA pom = new HerbLocaleJPA();
+		pom.setLocale(locale);
+		pom.setHerb(this);
+		if(herbLocales.contains(pom)) {
 			return herbLocales.stream().filter(l -> l.getLocale().equals(locale)).findFirst().get();
-		} catch(Exception e) {
-			return null;
 		}
+		return null;
 	}
 	
 	public String getNameForSpecificLocale(final String locale){

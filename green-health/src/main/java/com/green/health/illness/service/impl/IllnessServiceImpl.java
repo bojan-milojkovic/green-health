@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
@@ -150,17 +151,6 @@ public class IllnessServiceImpl implements IllnessService {
 		return convertJpaToModel(illnessDao.save(convertModelToJPA(model)));
 	}
 	
-	// delete illness
-	//TODO : put this in ServiceParent
-	@Override
-	public void delete(final Long id) throws MyRestPreconditionsException{
-		checkId(id);
-		
-		RestPreconditions.checkNotNull(illnessDao.getOne(id),"Illness delete error",
-				"Illness with id = "+id+" does not exist in our database.");
-		illnessDao.deleteById(id);
-	}
-	
 	private void useSettersInConvertToJPA(IllnessInterface model, IllnessInterface jpa){
 		if(RestPreconditions.checkString(model.getDescription())){
 			jpa.setDescription(model.getDescription());
@@ -295,6 +285,11 @@ public class IllnessServiceImpl implements IllnessService {
 				RestPreconditions.checkString(model.getLocalName()) ||
 				RestPreconditions.checkString(model.getSymptoms()) ||
 				(model.getHerbs()!=null && !model.getHerbs().isEmpty());
+	}
+
+	@Override
+	public JpaRepository<IllnessJPA, Long> getRepository() {
+		return illnessDao;
 	}
 	
 }

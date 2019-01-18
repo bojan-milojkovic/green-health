@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.service.IllnessService;
+import com.green.health.images.storage.StorageService;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -24,10 +25,13 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class IllnessController {
 
 	private IllnessService illnessServiceImpl;
+	
+	private StorageService storageServiceImpl;
 
 	@Autowired
-	public IllnessController(IllnessService illnessServiceImpl) {
+	public IllnessController(IllnessService illnessServiceImpl, StorageService storageServiceImpl) {
 		this.illnessServiceImpl = illnessServiceImpl;
+		this.storageServiceImpl = storageServiceImpl;
 	}
 	
 	// .../gh/illness
@@ -83,6 +87,8 @@ public class IllnessController {
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteIllness(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
-		illnessServiceImpl.delete(id);
+		illnessServiceImpl.delete(id, "Illness");
+		
+		storageServiceImpl.deleteImage(id, false);
 	}
 }

@@ -110,7 +110,9 @@ public class UserController {
 		RestPreconditions.assertTrue(model!=null, "Delete user error", "Your user account no longer exists");
 		RestPreconditions.assertTrue(model.getId() != id, "Access violation !!!", "You are trying to delete someone elses's user");
 		
-		userServiceImpl.delete(id);
+		userServiceImpl.delete(id, "User");
+		
+		storageServiceImpl.deleteImage(id, true);
 	}
 	
 	// .../gh/users/cpw

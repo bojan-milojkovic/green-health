@@ -10,6 +10,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
+
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,6 +106,11 @@ public class IllnessTest {
 		list.get(1).getIllnessLocales().add(ijpa);
 	}
 	
+	@After // after each and every test
+	public void setLocale() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+	}
+	
 	@Test
 	public void getAllIllnessesTest() {
 		when(mockIllnessRepo.findAll()).thenReturn(list);
@@ -167,7 +174,6 @@ public class IllnessTest {
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());
 		}
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
@@ -223,7 +229,6 @@ public class IllnessTest {
 			assertEquals("The herb with local name "+postModel.getLocalName()+" is already in our database.", e.getDetails());
 		}
 		postModel.setLocalName("Some illness name");
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	
@@ -316,7 +321,6 @@ public class IllnessTest {
 					"The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.", e.getDetails());
 		}
 		patchModel.setLatinName(null);
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
@@ -359,7 +363,7 @@ public class IllnessTest {
 	@Test
 	public void tryToDeleteInvalidIdTest() {
 		try {
-			mockIllnessServiceImpl.delete(-1L);
+			mockIllnessServiceImpl.delete(-1L, "Illness");
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id is invalid", e.getDetails());
@@ -371,7 +375,7 @@ public class IllnessTest {
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try {
-			mockIllnessServiceImpl.delete(1L);
+			mockIllnessServiceImpl.delete(1L, "Illness");
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());

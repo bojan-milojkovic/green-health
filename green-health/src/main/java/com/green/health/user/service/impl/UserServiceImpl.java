@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.images.storage.StorageService;
@@ -85,26 +85,19 @@ public class UserServiceImpl implements UserService {
 	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
-			UserSecurityJPA jpa = userSecurityRepository.findByUsername(username);
-			if(jpa!=null){
-				return convertJpaToModel(jpa.getUserJpa());
-			}
-			
-			throw new MyRestPreconditionsException("Finding user by parameters failed",
-					"There is no user in our database with that username.");
+			return convertJpaToModel(RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
+							"Finding user by parameters failed", 
+							"There is no user in our database with that username.").getUserJpa());
 		}
 		if(RestPreconditions.checkString(email)){
 			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
 				throw new MyRestPreconditionsException("Finding user by parameters failed",
 						"You must provide a valid email address.");
 			}
-			UserJPA jpa = userRepository.findByEmail(email);
-			if(jpa!=null){
-				return convertJpaToModel(jpa);
-			}
 			
-			throw new MyRestPreconditionsException("Finding user by parameters failed",
-						"There is no user in our database with that email.");
+			return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.findByEmail(email), 
+					"Finding user by parameters failed", 
+					"There is no user in our database with that email."));
 		}
 		
 		throw new MyRestPreconditionsException("Finding user by parameters failed",
@@ -194,13 +187,6 @@ public class UserServiceImpl implements UserService {
 			throw ex;
 		}
 	}
-
-	@Override
-	public void delete(final Long id) throws MyRestPreconditionsException {
-		checkId(id);
-		userRepository.deleteById(id);
-		storageServiceImpl.deleteImage(id, true);
-	}
 	
 	@Override
 	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
@@ -280,5 +266,10 @@ public class UserServiceImpl implements UserService {
 		model.setEmail(jpa.getEmail());
 		
 		return model;
+	}
+
+	@Override
+	public JpaRepository<UserJPA, Long> getRepository() {
+		return userRepository;
 	}
 }

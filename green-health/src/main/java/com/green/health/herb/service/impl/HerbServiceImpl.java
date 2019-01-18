@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
@@ -170,17 +171,6 @@ public class HerbServiceImpl implements HerbService {
 		
 		return convertJpaToModel(herbDao.save(convertModelToJPA(model)));
 	}
-
-	@Override
-	public void delete(final Long id) throws MyRestPreconditionsException {
-		checkId(id);
-		
-		RestPreconditions.assertTrue(herbDao.getOne(id)!=null, "Herb delete error",
-					"Herb with id = "+ id + " does not exist in our database.");
-		herbDao.deleteById(id);
-		
-		storageServiceImpl.deleteImage(id, false);
-	}
 	
 	private void useSettersInConvertToJPA(HerbInterface model, HerbInterface jpa){
 		if(RestPreconditions.checkString(model.getDescription())){
@@ -342,5 +332,10 @@ public class HerbServiceImpl implements HerbService {
 				RestPreconditions.checkString(model.getWhereToBuy()) ||
 				(model.getIllnesses()!=null && !model.getIllnesses().isEmpty())
 				;
+	}
+
+	@Override
+	public JpaRepository<HerbJPA, Long> getRepository() {
+		return herbDao;
 	}
 }

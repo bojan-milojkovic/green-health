@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,12 +58,12 @@ public class HerbTest {
 	
 	@BeforeClass
 	public static void init(){
-		LocaleContextHolder.setDefaultLocale(Locale.ENGLISH);
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
 		for(long i=0 ; i<3 ; i++){
 			HerbJPA jpa = new HerbJPA();
 			jpa.setId(i);
 			jpa.setLatinName("latinName-"+i);
-			jpa.setEngName("srbName-"+i);
+			jpa.setEngName("engName-"+i);
 			jpa.setDescription("bilosta");
 			list.add(jpa);
 		}
@@ -102,6 +103,11 @@ public class HerbTest {
 		hjpa.setLocalName("francusko ime");
 		hjpa.setHerb(list.get(1));
 		list.get(1).getHerbLocales().add(hjpa);
+	}
+	
+	@After // after each and every test
+	public void setLocale() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
@@ -154,6 +160,7 @@ public class HerbTest {
 	
 	@Test
 	public void getHerbByNameTest2() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
 		when(mockHerbDao.getHerbByEngName(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
@@ -180,8 +187,6 @@ public class HerbTest {
 		} catch (MyRestPreconditionsException e) {
 			fail("Herb by not-english name test failed");
 		}
-		
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	
@@ -257,12 +262,11 @@ public class HerbTest {
 		} catch (MyRestPreconditionsException e) {
 			fail("failed to create Franch herb.");
 		}
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
 	public void createHerbWithFranchDataAndFrenchNameAlreadyExists() {
-		LocaleContextHolder.setLocale(Locale.FRENCH);
+		LocaleContextHolder.setLocale(Locale.FRANCE);
 		
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(hjpa);
@@ -275,8 +279,6 @@ public class HerbTest {
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The herb with local name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
 		}
-		
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
@@ -338,7 +340,6 @@ public class HerbTest {
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The local name '"+patchModel.getLocalName()+"' belongs to another herb in our database.",e.getDetails());
 		}
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
 	}
 	
 	@Test
@@ -354,11 +355,12 @@ public class HerbTest {
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());
 		}
+		
+		list.get(1).setLatinName("latinName-1");
 	}
 	
 	@Test
 	public void tryMakeDuplicateHerbIllnessLink() {
-		
 		// illnessJpa is already in a list of links for that herb :
 		LinkJPA link = new LinkJPA(list.get(1),illnessJpa);
 		list.get(1).getLinks().add(link);
@@ -400,7 +402,7 @@ public class HerbTest {
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try{
-			mockHerbServiceImpl.delete(1L);
+			mockHerbServiceImpl.delete(1L, "Herb");
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e){
 			assertEquals("Herb with id = 1 does not exist in our database.", e.getDetails());
@@ -414,7 +416,7 @@ public class HerbTest {
 
 		try {
 			doNothing().when(mockStorageServiceImpl).deleteImage(isA(Long.class), isA(boolean.class));
-			mockHerbServiceImpl.delete(1L);
+			mockHerbServiceImpl.delete(1L, "Herb");
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());

@@ -41,11 +41,13 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	private Set<IllnessLocaleJPA> illnessLocales = new HashSet<IllnessLocaleJPA>();
 	
 	public IllnessLocaleJPA getForSpecificLocale(final String locale) {
-		try {
+		IllnessLocaleJPA pom = new IllnessLocaleJPA();
+		pom.setLocale(locale);
+		pom.setIllness(this);
+		if(illnessLocales.contains(pom)) {
 			return illnessLocales.stream().filter(i -> i.getLocale().equals(locale)).findFirst().get();
-		}catch(Exception e) {
-			return null;
 		}
+		return null;
 	}
 	
 	public String getNameForSpecificLocale(final String locale){
