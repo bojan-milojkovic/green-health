@@ -252,7 +252,7 @@ public class HerbTest {
 	public void createHerbWithFranchData() {
 		LocaleContextHolder.setLocale(Locale.FRANCE);
 		
-		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(null);
+		when(mockHerbDao.save(Mockito.any(HerbJPA.class))).thenReturn(list.get(0));
 		when(mockHerbDao.getHerbByLatinName(Mockito.anyString())).thenReturn(null);
 		when(mockHerbLocaleDao.save(Mockito.any(HerbLocaleJPA.class))).thenReturn(null);
 		when(mockHerbLocaleDao.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(null);

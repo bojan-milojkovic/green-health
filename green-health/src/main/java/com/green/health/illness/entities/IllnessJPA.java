@@ -34,6 +34,12 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	@Column
 	private String symptoms;
 	
+	
+	public IllnessJPA() {
+		links = new HashSet<LinkJPA>();
+		illnessLocales = new HashSet<IllnessLocaleJPA>();
+	}
+
 	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
@@ -41,11 +47,13 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	private Set<IllnessLocaleJPA> illnessLocales = new HashSet<IllnessLocaleJPA>();
 	
 	public IllnessLocaleJPA getForSpecificLocale(final String locale) {
-		IllnessLocaleJPA pom = new IllnessLocaleJPA();
-		pom.setLocale(locale);
-		pom.setIllness(this);
-		if(illnessLocales.contains(pom)) {
-			return illnessLocales.stream().filter(i -> i.getLocale().equals(locale)).findFirst().get();
+		if(!illnessLocales.isEmpty()){
+			IllnessLocaleJPA pom = new IllnessLocaleJPA();
+			pom.setLocale(locale);
+			pom.setIllness(this);
+			if(illnessLocales.contains(pom)) {
+				return illnessLocales.stream().filter(i -> i.getLocale().equals(locale)).findFirst().get();
+			}
 		}
 		return null;
 	}

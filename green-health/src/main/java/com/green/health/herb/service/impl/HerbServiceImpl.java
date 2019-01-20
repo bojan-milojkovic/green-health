@@ -214,14 +214,16 @@ public class HerbServiceImpl implements HerbService {
 			useSettersInConvertToJPA(model, jpa);
 		} else {
 			
-			if(model.getId()==null) {
-				//TODO: if it is a brand new herb, email admin to fill in english info
-			}
-			
 			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa==null) {
 				hjpa = new HerbLocaleJPA();
+				if(jpa.getId()==null){
+					// herb needs to have id before we put HerbLocale into its set
+					jpa = herbDao.save(jpa);
+					//TODO: if it is a brand new herb, email admin to fill in english info
+				}
+				
 				hjpa.setLocale(LocaleContextHolder.getLocale().toString());
 				hjpa.setHerb(jpa);
 				jpa.getHerbLocales().add(hjpa);

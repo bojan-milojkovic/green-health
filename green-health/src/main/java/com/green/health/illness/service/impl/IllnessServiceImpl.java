@@ -182,14 +182,16 @@ public class IllnessServiceImpl implements IllnessService {
 			useSettersInConvertToJPA(model, jpa);
 		} else {
 			
-			if(model.getId()==null) {
-				//TODO: if it is a brand new herb, email admin to fill in english info
-			}
-			
 			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
 			IllnessLocaleJPA ijpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(ijpa == null) {
 				ijpa = new IllnessLocaleJPA();
+				if(jpa.getId()==null){
+					// illness needs to have id before we put IllnessLocale into its set
+					jpa = illnessDao.save(jpa);
+					//TODO: if it is a brand new herb, email admin to fill in english info
+				}
+				
 				ijpa.setLocale(LocaleContextHolder.getLocale().toString());
 				ijpa.setIllness(jpa);
 				jpa.getIllnessLocales().add(ijpa);

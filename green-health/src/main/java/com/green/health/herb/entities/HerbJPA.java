@@ -46,6 +46,11 @@ public class HerbJPA implements PojoParent, HerbInterface{
 	@Column
 	private String properties;
 	
+	public HerbJPA() {
+		links = new HashSet<LinkJPA>();
+		herbLocales = new HashSet<HerbLocaleJPA>();
+	}
+
 	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
@@ -53,11 +58,13 @@ public class HerbJPA implements PojoParent, HerbInterface{
 	private Set<HerbLocaleJPA> herbLocales = new HashSet<HerbLocaleJPA>();
 	
 	public HerbLocaleJPA getForSpecificLocale(String locale) {
-		HerbLocaleJPA pom = new HerbLocaleJPA();
-		pom.setLocale(locale);
-		pom.setHerb(this);
-		if(herbLocales.contains(pom)) {
-			return herbLocales.stream().filter(l -> l.getLocale().equals(locale)).findFirst().get();
+		if(!herbLocales.isEmpty()){
+			HerbLocaleJPA pom = new HerbLocaleJPA();
+			pom.setLocale(locale);
+			pom.setHerb(this);
+			if(herbLocales.contains(pom)) {
+				return herbLocales.stream().filter(l -> l.getLocale().equals(locale)).findFirst().get();
+			}
 		}
 		return null;
 	}

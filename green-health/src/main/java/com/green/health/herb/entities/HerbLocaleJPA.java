@@ -151,12 +151,18 @@ public class HerbLocaleJPA implements PojoParent, HerbInterface{
 	
 	@Override
     public int hashCode() {
-		// FNV hashing algorithm :
+		/*// FNV hashing algorithm :
 		long hash = 0xCBF29CE484222325L;
 		for (String s : new String[] {this.locale, this.herb.getLatinName()}) {
 			hash ^= s.hashCode();
 			hash *= 0x100000001B3L;
 		}
-		return (int)hash;
+		return (int)hash;*/
+		long h = 1125899906842597L; // prime
+		
+		for (int i = 0; i < locale.length(); i++) {
+			h = 31*h + locale.charAt(i);
+		}
+		return (int)(31*h + herb.getId().hashCode());
     }
 }
