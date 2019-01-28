@@ -75,7 +75,9 @@ public class IllnessServiceImpl implements IllnessService {
 	// add new illness
 	@Override
 	public void addNew(final IllnessDTO model) throws MyRestPreconditionsException{
-		
+		RestPreconditions.assertTrue(model!=null, "Illness creation error",
+				"You are sending a request without the object");
+		model.setId(null);
 		if(isPostDataPresent(model)){
 			// check names :
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
@@ -99,15 +101,12 @@ public class IllnessServiceImpl implements IllnessService {
 			if(RestPreconditions.checkString(model.getDescription())){
 				ex.getErrors().add("illness description");
 			}
-			
 			if(RestPreconditions.checkString(model.getLatinName() )){
 				ex.getErrors().add("illness Latin name");			
 			}
-			
 			if(RestPreconditions.checkString(model.getLocalName())){
 				ex.getErrors().add("illness local name");
 			}
-			
 			if(RestPreconditions.checkString(model.getSymptoms())){
 				ex.getErrors().add("symptoms of the illness");
 			}
@@ -119,6 +118,8 @@ public class IllnessServiceImpl implements IllnessService {
 	// edit illness
 	@Override
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
+		RestPreconditions.assertTrue(model!=null, "Illness edit error",
+				"You are sending a request without the object");
 		checkId(id);
 		
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 

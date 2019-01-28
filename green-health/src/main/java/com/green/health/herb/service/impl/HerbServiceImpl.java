@@ -82,6 +82,7 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
+		model.setId(null);
 		if(isPostDataPresent(model)) {
 			// check that herb name is unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
@@ -104,6 +105,7 @@ public class HerbServiceImpl implements HerbService {
 			
 			herbDao.save(convertModelToJPA(model));
 		} else {
+			// use .checkStringMatches() here because model object is created from json in controller
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
 							"The following data is missing from the herb form");
 			if(!RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}")){
@@ -318,8 +320,7 @@ public class HerbServiceImpl implements HerbService {
 				RestPreconditions.checkString(model.getLocalName()) && 
 				RestPreconditions.checkString(model.getProperties()) && 
 				RestPreconditions.checkString(model.getWarnings()) && 
-				RestPreconditions.checkString(model.getWhenToPick())
-				;
+				RestPreconditions.checkString(model.getWhenToPick());
 	}
 
 	@Override

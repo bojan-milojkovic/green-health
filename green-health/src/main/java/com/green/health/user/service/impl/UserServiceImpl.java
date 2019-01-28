@@ -67,8 +67,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	public boolean isPatchDataPresent(final UserDTO model) {
-		return /*RestPreconditions.checkString(model.getPassword()) ||*/ 
-				RestPreconditions.checkString(model.getEmail()) || 
+		return RestPreconditions.checkString(model.getEmail()) || 
 				RestPreconditions.checkString(model.getFirstName()) || 
 				RestPreconditions.checkString(model.getLastName());
 	}
@@ -107,11 +106,16 @@ public class UserServiceImpl implements UserService {
 	// add new user to db :
 	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
 		RestPreconditions.assertTrue(model!=null, "Add user error", "Add new user cannot be done without the user object");
+		model.setId(null);
 		// check everything except id and registration is present in resource :
 		if(isPostDataPresent(model)) {
 			// check that username and email are unique :
 			RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
 					"Create user : the username "+ model.getUsername()+" belongs to another user.");
+			if(!model.getEmail().matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
+				throw new MyRestPreconditionsException("Create new user failed",
+						"You must provide a valid email address.");
+			}
 			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
 					"Create user : Email " + model.getEmail() + " belongs to another user.");
 			

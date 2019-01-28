@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.green.health.illness.entities.IllnessDTO;
 import com.green.health.illness.service.IllnessService;
 import com.green.health.images.storage.StorageService;
-import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Controller
@@ -67,8 +66,6 @@ public class IllnessController {
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void addIllness(@RequestBody @Valid IllnessDTO model) throws MyRestPreconditionsException {
-		RestPreconditions.assertTrue(model!=null, "Illness creation error",
-					"You are sending a request without the object");
 		illnessServiceImpl.addNew(model);
 	}
 	
@@ -77,8 +74,6 @@ public class IllnessController {
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody IllnessDTO editIllness(@RequestBody @Valid IllnessDTO model, @PathVariable("id") Long id) throws MyRestPreconditionsException{
-		RestPreconditions.assertTrue(model!=null, "Illness edit error",
-				"You are sending a request without the object");
 		return illnessServiceImpl.edit(model, id);
 	}
 	
