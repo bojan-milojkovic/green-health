@@ -30,7 +30,7 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 		http.authorizeRequests()
 			.antMatchers(HttpMethod.GET, "/gh/users").hasRole("USER")
 			.antMatchers(HttpMethod.GET, "/gh/users/*").hasRole("USER")
-			.antMatchers(HttpMethod.POST, "/gh/users").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/gh/users").permitAll() // everyone should access register-api
 			.antMatchers(HttpMethod.GET, "/gh/users/prfimg/*").hasRole("USER")
 			.antMatchers(HttpMethod.POST, "/gh/users/prfimg").hasRole("USER")
 			.antMatchers(HttpMethod.PATCH, "/gh/users/*").hasRole("USER")
@@ -55,7 +55,7 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 			.antMatchers(HttpMethod.GET, "/gh/rating").hasRole("USER")
 			.antMatchers(HttpMethod.GET, "/gh/rating/*").hasRole("USER")
 			
-			.antMatchers(HttpMethod.POST, "/gh/roles").permitAll()
+			.antMatchers(HttpMethod.POST, "/gh/roles").permitAll() // everyone should access login-api
 			;
 
 		// disable csrf

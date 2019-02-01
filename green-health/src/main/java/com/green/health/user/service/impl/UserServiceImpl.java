@@ -224,9 +224,6 @@ public class UserServiceImpl implements UserService {
 		// password is verified with : BCrypt.checkpw(password_plaintext, stored_hash)
 		RestPreconditions.assertTrue(BCrypt.checkpw(model.getPassword(), jpa.getPassword()), 
 				"Change password error","Your entry for original password does not match with the DB value");
-		/*// new password should be different
-		RestPreconditions.assertTrue(!BCrypt.checkpw(model.getNewPassword(), jpa.getPassword()),
-				"Change password error","Stored password in DB is the same as the new password");*/
 		
 		jpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 		userSecurityRepository.save(jpa);
