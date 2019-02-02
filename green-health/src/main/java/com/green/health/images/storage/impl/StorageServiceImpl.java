@@ -224,6 +224,9 @@ public class StorageServiceImpl implements StorageService {
 
 	// create dir path in classpath: from userId / herbId
 	private String buildDirPath(Long id) throws MyRestPreconditionsException{
+		RestPreconditions.assertTrue(id!=null && id>=0, "Dir path assembly error", 
+				"Id used for directory structure traverse is invalid");
+		
 		char[] folders = (""+id).toCharArray();
 		
 		String dir = fileStorageLocation;

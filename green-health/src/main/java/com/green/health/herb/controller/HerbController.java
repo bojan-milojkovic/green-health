@@ -71,18 +71,14 @@ public class HerbController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-		Resource resource = herbServiceImpl.getImage(id, true);
-		
-		return storageServiceImpl.getImage(resource, request);
+		return storageServiceImpl.getImage(herbServiceImpl.getImage(id, true), request);
 	}
 	
 	@RequestMapping(value = "/image/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException{
-		Resource resource = herbServiceImpl.getImage(id, false);
-		
-		return storageServiceImpl.getImage(resource, request);
+		return storageServiceImpl.getImage(herbServiceImpl.getImage(id, false), request);
 	}
 	
 	

@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 		storageServiceImpl.saveImage(file, usjpa.getId(), true);
 	}
 	
-	public Resource readImage(Long id) throws MyRestPreconditionsException {
+	public Resource readImage(Long id) throws MyRestPreconditionsException {// has to be 'id' so we can view other user's profile pic
 		RestPreconditions.assertTrue(id!=null && id>0, "Retreaving image error","Invalid user id ("+id+")");
 		return storageServiceImpl.readImage(id, "profile_THUMBNAIL");
 	}

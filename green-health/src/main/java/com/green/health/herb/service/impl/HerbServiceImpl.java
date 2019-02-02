@@ -72,7 +72,6 @@ public class HerbServiceImpl implements HerbService {
 	
 	@Override
 	public Resource getImage(Long id, boolean isThumbnail) throws MyRestPreconditionsException{
-		RestPreconditions.assertTrue(id!=null && id>0, "Retreaving image error","Invalid herb id ("+id+")");
 		if(isThumbnail){
 			return storageServiceImpl.readImage(id, "herb_THUMBNAIL");
 		} else {

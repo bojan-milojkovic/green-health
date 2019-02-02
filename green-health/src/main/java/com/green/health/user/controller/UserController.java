@@ -69,9 +69,7 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-	    Resource resource = userServiceImpl.readImage(id);
-	    
-	    return storageServiceImpl.getImage(resource, request);
+	    return storageServiceImpl.getImage(userServiceImpl.readImage(id), request);
 	}
 	
 	// .../gh/users
