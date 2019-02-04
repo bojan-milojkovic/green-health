@@ -3,7 +3,7 @@ package com.green.health.util;
 import java.util.List;
 
 public class MyBadInputResponse {
-private String cause;
+	private String cause;
     
     private String message;
     

@@ -1,6 +1,8 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDateTime;
+
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,10 +16,9 @@ import com.green.health.parents.PojoParent;
 @JsonInclude(Include.NON_NULL)
 public class UserDTO implements PojoParent{
 	
-	@JsonProperty(access = Access.READ_WRITE)
+	@Min(0)
 	private Long id;
 	
-	@JsonProperty(access = Access.READ_WRITE)
 	@Pattern(regexp="^[A-Za-z0-9._-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
 	private String username;
 	
@@ -29,19 +30,16 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[^ ;]{6,}$", message="New password cannot contain a white space or ; and must be at least 6 characters long")
 	private String newPassword;
 	
-	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="^[A-Z][a-z]+$", message="First name must start with a capital letter, followed by small letters.")
+	@Pattern(regexp="^[^ ;]+$", message="First name cannot have ; or a white space")
 	private String firstName;
 	
-	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Z][a-z]+", message="Last name must start with a capital letter, followed by small letters.")
+	@Pattern(regexp="^[^ ;]+$", message="Last name cannot have ; or a white space")
 	private String lastName;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDate object from json string
 	private LocalDateTime registration;
 	
-	@JsonProperty(access = Access.READ_WRITE)
 	@EmailPattern
 	private String email;
 
