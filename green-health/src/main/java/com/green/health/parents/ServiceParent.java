@@ -1,9 +1,7 @@
 package com.green.health.parents;
 
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -12,7 +10,7 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	J convertModelToJPA(final M model) throws MyRestPreconditionsException;
 	M convertJpaToModel(final J jpa);
 	
-	boolean isPostDataPresent(final M model);
+	void isPostDataPresent(final M model) throws MyRestPreconditionsException;
 	boolean isPatchDataPresent(final M model);
 	
 	public List<M> getAll();

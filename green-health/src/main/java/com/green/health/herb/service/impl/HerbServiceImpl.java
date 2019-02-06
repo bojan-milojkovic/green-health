@@ -82,57 +82,28 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
 		model.setId(null);
-		if(isPostDataPresent(model)) {
-			// check that herb name is unique :
-			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
-					"The herb with Latin name "+model.getLatinName()+" is already in our database.");
-			
-			if(RestPreconditions.checkLocaleIsEnglish()) {
-				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
-					"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
-			} else {
-				RestPreconditions.checkSuchEntityAlreadyExists(
-					// 'if' ensures that LocaleContextHolder.getLocale() is not null
-					herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
-						"The herb with local name "+model.getLocalName()+" is already in our database.");
-			}
-
-			if(model.getImage()!=null){
-				// save image :
-				storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
-			}
-			
-			herbDao.save(convertModelToJPA(model));
+		isPostDataPresent(model);
+		
+		// check that herb name is unique :
+		RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
+				"The herb with Latin name "+model.getLatinName()+" is already in our database.");
+		
+		if(RestPreconditions.checkLocaleIsEnglish()) {
+			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
+				"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
 		} else {
-			// use .checkStringMatches() here because model object is created from json in controller
-			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
-							"The following data is missing from the herb form");
-			if(!RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}")){
-				ex.getErrors().add("herb description");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}")){
-				ex.getErrors().add("where the herb grows");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
-				ex.getErrors().add("herb's latin name");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
-				ex.getErrors().add("herb's use properties");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[A-Za-z ]{3,}")){
-				ex.getErrors().add("herb's local name");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
-				ex.getErrors().add("herb's use warnings");
-			}
-			if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")){
-				ex.getErrors().add("when to pick the herb");
-			}
-			if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([A-Za-z0-9 .,:'()-]{10,})|(^$)")){
-				ex.getErrors().add("where to buy the herb");
-			}
-			throw ex;
+			RestPreconditions.checkSuchEntityAlreadyExists(
+				// 'if' ensures that LocaleContextHolder.getLocale() is not null
+				herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+					"The herb with local name "+model.getLocalName()+" is already in our database.");
 		}
+
+		if(model.getImage()!=null){
+			// save image :
+			storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
+		}
+		
+		herbDao.save(convertModelToJPA(model));
 	}
 
 	@Override
@@ -312,14 +283,38 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public boolean isPostDataPresent(HerbDTO model) {
-		return RestPreconditions.checkString(model.getDescription()) && 
-				RestPreconditions.checkString(model.getGrowsAt()) && 
-				RestPreconditions.checkString(model.getLatinName()) &&
-				RestPreconditions.checkString(model.getLocalName()) && 
-				RestPreconditions.checkString(model.getProperties()) && 
-				RestPreconditions.checkString(model.getWarnings()) && 
-				RestPreconditions.checkString(model.getWhenToPick());
+	public void isPostDataPresent(HerbDTO model) throws MyRestPreconditionsException {
+		// use .checkStringMatches() here because model object is created from json in controller
+		MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
+						"The following data is missing from the herb form");
+		if(!RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}")){
+			ex.getErrors().add("herb description");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}")){
+			ex.getErrors().add("where the herb grows");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
+			ex.getErrors().add("herb's latin name");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
+			ex.getErrors().add("herb's use properties");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[A-Za-z ]{3,}")){
+			ex.getErrors().add("herb's local name");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
+			ex.getErrors().add("herb's use warnings");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")){
+			ex.getErrors().add("when to pick the herb");
+		}
+		if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([A-Za-z0-9 .,:'()-]{10,})|(^$)")){ // regexp allows for ""
+			ex.getErrors().add("where to buy the herb");
+		}
+		
+		if(!ex.getErrors().isEmpty()) {
+			throw ex;
+		}
 	}
 
 	@Override

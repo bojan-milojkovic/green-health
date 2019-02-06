@@ -78,41 +78,23 @@ public class IllnessServiceImpl implements IllnessService {
 		RestPreconditions.assertTrue(model!=null, "Illness creation error",
 				"You are sending a request without the object");
 		model.setId(null);
-		if(isPostDataPresent(model)){
-			// check names :
-			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
-					"Illness with Latin name "+model.getLatinName()+" is already in our database.");
-			
-			if(RestPreconditions.checkLocaleIsEnglish()) {
-				RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
-						"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
-			}else {
-				RestPreconditions.checkSuchEntityAlreadyExists(
-						// 'if' ensures that LocaleContextHolder.getLocale() is not null
-						illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
-						"The herb with local name "+model.getLocalName()+" is already in our database.");
-			}
-			
-			illnessDao.save(convertModelToJPA(model));
-		} else {
-			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this illness",
-					"The following data is missing from the illness form");
-			
-			if(RestPreconditions.checkString(model.getDescription())){
-				ex.getErrors().add("illness description");
-			}
-			if(RestPreconditions.checkString(model.getLatinName() )){
-				ex.getErrors().add("illness Latin name");			
-			}
-			if(RestPreconditions.checkString(model.getLocalName())){
-				ex.getErrors().add("illness local name");
-			}
-			if(RestPreconditions.checkString(model.getSymptoms())){
-				ex.getErrors().add("symptoms of the illness");
-			}
-			
-			throw ex;
+		isPostDataPresent(model);
+		
+		// check names :
+		RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
+				"Illness with Latin name "+model.getLatinName()+" is already in our database.");
+		
+		if(RestPreconditions.checkLocaleIsEnglish()) {
+			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
+					"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
+		}else {
+			RestPreconditions.checkSuchEntityAlreadyExists(
+					// 'if' ensures that LocaleContextHolder.getLocale() is not null
+					illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+					"The herb with local name "+model.getLocalName()+" is already in our database.");
 		}
+		
+		illnessDao.save(convertModelToJPA(model));
 	}
 	
 	// edit illness
@@ -274,11 +256,26 @@ public class IllnessServiceImpl implements IllnessService {
 	}
 
 	@Override
-	public boolean isPostDataPresent(final IllnessDTO model) {
-		return RestPreconditions.checkString(model.getDescription()) &&
-				RestPreconditions.checkString(model.getLatinName()) &&
-				RestPreconditions.checkString(model.getLocalName()) &&
-				RestPreconditions.checkString(model.getSymptoms());
+	public void isPostDataPresent(final IllnessDTO model) throws MyRestPreconditionsException {
+		MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this illness",
+				"The following data is missing from the illness form");
+		
+		if(!RestPreconditions.checkString(model.getDescription())){
+			ex.getErrors().add("illness description");
+		}
+		if(!RestPreconditions.checkString(model.getLatinName() )){
+			ex.getErrors().add("illness Latin name");			
+		}
+		if(!RestPreconditions.checkString(model.getLocalName())){
+			ex.getErrors().add("illness local name");
+		}
+		if(!RestPreconditions.checkString(model.getSymptoms())){
+			ex.getErrors().add("symptoms of the illness");
+		}
+		
+		if(!ex.getErrors().isEmpty()) {
+			throw ex;
+		}
 	}
 
 	@Override
