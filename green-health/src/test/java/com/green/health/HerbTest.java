@@ -202,6 +202,7 @@ public class HerbTest {
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
 		try {
+			postModel.setId(4L);
 			mockHerbServiceImpl.addNew(postModel);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
@@ -402,10 +403,10 @@ public class HerbTest {
 		when(mockHerbDao.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try{
-			mockHerbServiceImpl.delete(1L, "Herb");
+			mockHerbServiceImpl.delete(1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e){
-			assertEquals("Herb with id = 1 does not exist in our database.", e.getDetails());
+			assertEquals("herb with id = 1 does not exist in our database.", e.getDetails());
 		}
 	}
 	
@@ -416,7 +417,7 @@ public class HerbTest {
 
 		try {
 			doNothing().when(mockStorageServiceImpl).deleteImage(isA(Long.class), isA(boolean.class));
-			mockHerbServiceImpl.delete(1L, "Herb");
+			mockHerbServiceImpl.delete(1L);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());

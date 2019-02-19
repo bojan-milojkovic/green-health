@@ -2,7 +2,6 @@ package com.green.health.illness.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,15 +37,13 @@ public class IllnessServiceImpl implements IllnessService {
 	// get all
 	@Override
 	public List<IllnessDTO> getAll(){
-		return getRepository().findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
+		return IllnessService.super.getAll();
 	}
 
 	// get one by id
 	@Override
 	public IllnessDTO getOneById(final Long id) throws MyRestPreconditionsException{
-		checkId(id);
-		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.getOne(id), 
-				"Find illness error", "Cannot find illness with id = "+id));
+		return IllnessService.super.getOneById(id);
 	}
 	
 	// get one by name :
@@ -68,10 +65,8 @@ public class IllnessServiceImpl implements IllnessService {
 	// add new illness
 	@Override
 	public void addNew(final IllnessDTO model) throws MyRestPreconditionsException{
-		RestPreconditions.checkNotNull(model, "Illness creation error",
-				"You are sending a request without the object");
-		model.setId(null);
-		isPostDataPresent(model);
+		// basic checks
+		IllnessService.super.addNew(model);
 		
 		// check names :
 		RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
@@ -93,12 +88,8 @@ public class IllnessServiceImpl implements IllnessService {
 	// edit illness
 	@Override
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
-		RestPreconditions.checkNotNull(model, "Illness edit error",
-				"You are sending a request without the object");
-		checkId(id);
-		model.setId(id);
-		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 
-						"Your illness edit request is invalid - You must provide some editable data.");
+		// basic checks
+		model = IllnessService.super.edit(model, id);
 		
 		// check Latin name is not already taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
@@ -284,4 +275,8 @@ public class IllnessServiceImpl implements IllnessService {
 		return illnessDao;
 	}
 	
+	@Override
+	public String getName(){
+		return "illness";
+	}
 }

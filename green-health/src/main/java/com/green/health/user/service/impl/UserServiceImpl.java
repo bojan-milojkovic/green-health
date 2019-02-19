@@ -2,7 +2,6 @@ package com.green.health.user.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -48,14 +47,12 @@ public class UserServiceImpl implements UserService {
 
 	// get all users :
 	public List<UserDTO> getAll(){
-		return getRepository().findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
+		return UserService.super.getAll();
 	}
 	
 	// get a specific user :
 	public UserDTO getOneById(final Long id) throws MyRestPreconditionsException{
-		checkId(id);
-		return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.getOne(id), 
-				"Get User error","Cannot find the user with id = "+id));
+		return UserService.super.getOneById(id);
 	}
 	
 	public void isPostDataPresent(final UserDTO model) throws MyRestPreconditionsException {
@@ -103,7 +100,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public void delete(final Long id, final String object) throws MyRestPreconditionsException {
+	public void delete(final Long id) throws MyRestPreconditionsException {
 		getRepository().deleteById(id);
 		storageServiceImpl.deleteImage(id, true);
 	}
@@ -131,10 +128,8 @@ public class UserServiceImpl implements UserService {
 	
 	// add new user to db :
 	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
-		RestPreconditions.checkNotNull(model, "Add user error", "Add new user cannot be done without the user object");
-		model.setId(null);
-		// check everything except id and registration is present in resource :
-		isPostDataPresent(model);
+		// basic checks
+		UserService.super.addNew(model);
 		
 		// check that username and email are unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
@@ -152,12 +147,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDTO edit(UserDTO model, final Long id) throws MyRestPreconditionsException {
-		RestPreconditions.checkNotNull(model, "Edit user error", "Edit user cannot be done without the user object");
-		// check that ids match :
-		checkId(id);
-		model.setId(id);
-		RestPreconditions.assertTrue(isPatchDataPresent(model), 
-				"Edit user error", "You must provide some editable data (username is not editable)");
+		// basic checks
+		model = UserService.super.edit(model, id);
 		
 		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
 		RestPreconditions.assertTrue(usJpa.getId()==id, "Edit user error", "You cannot edit someone else's user account.");
@@ -272,5 +263,10 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public JpaRepository<UserJPA, Long> getRepository() {
 		return userRepository;
+	}
+	
+	@Override
+	public String getName(){
+		return "user";
 	}
 }

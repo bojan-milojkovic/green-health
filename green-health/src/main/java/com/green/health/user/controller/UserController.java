@@ -109,7 +109,7 @@ public class UserController {
 							, "Delete user error", "Your user account no longer exists"))
 				.getId() != id, "Access violation !!!", "You are trying to delete someone elses's user");
 		
-		userServiceImpl.delete(id, "User");
+		userServiceImpl.delete(id);
 	}
 	
 	// .../gh/users/cpw

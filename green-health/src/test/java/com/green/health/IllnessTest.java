@@ -145,7 +145,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.getOneById(1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Cannot find illness with id = 1", e.getDetails());
+			assertEquals("Cannot find the illness with id = 1", e.getDetails());
 		}
 	}
 	
@@ -252,7 +252,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.edit(badModel, 1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Your illness edit request is invalid - You must provide some editable data.", e.getDetails());
+			assertEquals("Your edit request is invalid - You must provide some editable data", e.getDetails());
 		}
 	}
 	
@@ -363,7 +363,7 @@ public class IllnessTest {
 	@Test
 	public void tryToDeleteInvalidIdTest() {
 		try {
-			mockIllnessServiceImpl.delete(-1L, "Illness");
+			mockIllnessServiceImpl.delete(-1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Id is invalid", e.getDetails());
@@ -375,10 +375,10 @@ public class IllnessTest {
 		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try {
-			mockIllnessServiceImpl.delete(1L, "Illness");
+			mockIllnessServiceImpl.delete(1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
+			assertEquals("illness with id = 1 does not exist in our database.", e.getDetails());
 		}
 	}
 	

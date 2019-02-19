@@ -2,7 +2,6 @@ package com.green.health.herb.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
@@ -41,13 +40,12 @@ public class HerbServiceImpl implements HerbService {
 	
 	@Override
 	public List<HerbDTO> getAll() {
-		return getRepository().findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
+		return HerbService.super.getAll();
 	}
 	
 	@Override
-	public HerbDTO getOneById(Long id) throws MyRestPreconditionsException {
-		checkId(id);
-		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getOne(id), "Get herb error", "Cannot find the herb with id = "+id));
+	public HerbDTO getOneById(final Long id) throws MyRestPreconditionsException {
+		return HerbService.super.getOneById(id);
 	}
 
 	@Override
@@ -75,9 +73,8 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
-		// POST new is only with image, so model is never null
-		model.setId(null);
-		isPostDataPresent(model);
+		// basic checks
+		HerbService.super.addNew(model);
 		
 		// check that herb name is unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
@@ -103,12 +100,8 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public HerbDTO edit(HerbDTO model, Long id) throws MyRestPreconditionsException {
-		RestPreconditions.checkNotNull(model, "Herb edit error",
-				"You are sending a request without body");
-		checkId(id);
-		model.setId(id);
-		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", 
-				"Your edit request is invalid - You must provide some editable data");
+		// basic checks :
+		model = HerbService.super.edit(model, id);
 
 		// check that latin name is not taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
@@ -329,5 +322,10 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public JpaRepository<HerbJPA, Long> getRepository() {
 		return herbDao;
+	}
+	
+	@Override
+	public String getName(){
+		return "herb";
 	}
 }

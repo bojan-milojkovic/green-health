@@ -82,7 +82,7 @@ public class IllnessController {
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteIllness(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
-		illnessServiceImpl.delete(id, "Illness");
+		illnessServiceImpl.delete(id);
 		
 		storageServiceImpl.deleteImage(id, false);
 	}
