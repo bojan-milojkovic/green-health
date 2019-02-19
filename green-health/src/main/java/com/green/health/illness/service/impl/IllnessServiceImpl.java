@@ -96,10 +96,9 @@ public class IllnessServiceImpl implements IllnessService {
 		RestPreconditions.checkNotNull(model, "Illness edit error",
 				"You are sending a request without the object");
 		checkId(id);
-		
+		model.setId(id);
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Illness edit error", 
 						"Your illness edit request is invalid - You must provide some editable data.");
-		model.setId(id);
 		
 		// check Latin name is not already taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {

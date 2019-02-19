@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
 	// get a specific user :
 	public UserDTO getOneById(final Long id) throws MyRestPreconditionsException{
 		checkId(id);
-		UserJPA jpa = (UserJPA) RestPreconditions.checkNotNull(userRepository.getOne(id), "Cannot find the user with id = "+id);
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.getOne(id), 
+				"Get User error","Cannot find the user with id = "+id));
 	}
 	
 	public void isPostDataPresent(final UserDTO model) throws MyRestPreconditionsException {
@@ -156,47 +156,40 @@ public class UserServiceImpl implements UserService {
 		// check that ids match :
 		checkId(id);
 		model.setId(id);
+		RestPreconditions.assertTrue(isPatchDataPresent(model), 
+				"Edit user error", "You must provide some editable data (username is not editable)");
+		
 		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
 		RestPreconditions.assertTrue(usJpa.getId()==id, "Edit user error", "You cannot edit someone else's user account.");
 		
 		UserJPA jpa = usJpa.getUserJpa();
 		
-		if(isPatchDataPresent(model)) {
+		// email
+		if(RestPreconditions.checkString(model.getEmail()) && !jpa.getEmail().equals(model.getEmail())) {
 			
-			// email
-			if(RestPreconditions.checkString(model.getEmail()) && !jpa.getEmail().equals(model.getEmail())) {
-				
-				// check this new email isn't in the db already :
-				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
-						"Edit user : Email "+model.getEmail()+" belongs to another user.");
-				
-				jpa.setEmail(model.getEmail());
-			}
-			// first name
-			if(RestPreconditions.checkString(model.getFirstName()) && !jpa.getFirstName().equals(model.getFirstName())) {
-				jpa.setFirstName(model.getFirstName());
-			}
-			// last name
-			if(RestPreconditions.checkString(model.getLastName()) && !jpa.getLastName().equals(model.getLastName())) {
-				jpa.setLastName(model.getLastName());
-			}
+			// check this new email isn't in the db already :
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
+					"Edit user : Email "+model.getEmail()+" belongs to another user.");
 			
-			userRepository.save(jpa);
-			
-			// update user security :
-			usJpa.setLastUpdate(LocalDateTime.now());
-			
-			userSecurityRepository.save(usJpa);
-			
-			return convertJpaToModel(jpa);
-			
-		} else {
-			MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot edit your user",
-					"Your user edit request is invalid.");
-			ex.getErrors().add("You must provide some editable data");
-			ex.getErrors().add("Username is not editable");
-			throw ex;
+			jpa.setEmail(model.getEmail());
 		}
+		// first name
+		if(RestPreconditions.checkString(model.getFirstName()) && !jpa.getFirstName().equals(model.getFirstName())) {
+			jpa.setFirstName(model.getFirstName());
+		}
+		// last name
+		if(RestPreconditions.checkString(model.getLastName()) && !jpa.getLastName().equals(model.getLastName())) {
+			jpa.setLastName(model.getLastName());
+		}
+		
+		userRepository.save(jpa);
+		
+		// update user security :
+		usJpa.setLastUpdate(LocalDateTime.now());
+		
+		userSecurityRepository.save(usJpa);
+		
+		return convertJpaToModel(jpa);
 	}
 	
 	@Override

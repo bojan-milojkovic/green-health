@@ -75,7 +75,7 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
-		RestPreconditions.checkNotNull(model, "Add Herb error","You cannot create new herb with empty request.");
+		// POST new is only with image, so model is never null
 		model.setId(null);
 		isPostDataPresent(model);
 		
