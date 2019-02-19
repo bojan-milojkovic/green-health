@@ -247,7 +247,7 @@ public class UserTest {
 			mockUserServiceimpl.edit(badPatchModel, 1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Your user edit request is invalid.", e.getDetails());
+			assertEquals("You must provide some editable data (username is not editable)", e.getDetails());
 		}
 	}
 	

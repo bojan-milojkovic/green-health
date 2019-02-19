@@ -38,16 +38,15 @@ public class IllnessServiceImpl implements IllnessService {
 	// get all
 	@Override
 	public List<IllnessDTO> getAll(){
-		return illnessDao.findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
+		return getRepository().findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
 	}
 
 	// get one by id
 	@Override
 	public IllnessDTO getOneById(final Long id) throws MyRestPreconditionsException{
 		checkId(id);
-		IllnessJPA jpa = RestPreconditions.checkNotNull(illnessDao.getOne(id), "Find illness by id error",
-				"Cannot find illness with id = "+id);
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.getOne(id), 
+				"Find illness error", "Cannot find illness with id = "+id));
 	}
 	
 	// get one by name :
@@ -57,12 +56,13 @@ public class IllnessServiceImpl implements IllnessService {
 				(RestPreconditions.checkLocaleIsEnglish() ? 
 					illnessDao.findByEngName(name) :
 					illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getIllness())
-				, "No such illness in database","Cannot find the illness with name '"+name+"'."));
+				, "Find illness error","Cannot find illness with name '"+name+"'."));
 	}
 	
 	@Override
 	public IllnessDTO getOneByLatinName(final String name) throws MyRestPreconditionsException{
-		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.findByLatinName(name),"Cannot find the illness with latin name '"+name+"'"));
+		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.findByLatinName(name),
+				"Cannot find the illness with latin name '"+name+"'"));
 	}
 	
 	// add new illness

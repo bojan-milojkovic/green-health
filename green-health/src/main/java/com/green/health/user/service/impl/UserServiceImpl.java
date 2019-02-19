@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
 	// get all users :
 	public List<UserDTO> getAll(){
-		return userRepository.findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
+		return getRepository().findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
 	}
 	
 	// get a specific user :

@@ -41,13 +41,13 @@ public class HerbServiceImpl implements HerbService {
 	
 	@Override
 	public List<HerbDTO> getAll() {
-		return herbDao.findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
+		return getRepository().findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
 	}
 	
 	@Override
 	public HerbDTO getOneById(Long id) throws MyRestPreconditionsException {
 		checkId(id);
-		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getOne(id), "Cannot find the herb with id = "+id));
+		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getOne(id), "Get herb error", "Cannot find the herb with id = "+id));
 	}
 
 	@Override
