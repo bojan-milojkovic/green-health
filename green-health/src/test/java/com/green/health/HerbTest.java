@@ -231,7 +231,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("We assert your locale as English. The herb with name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
+			assertEquals("We assert your locale as English. The herb with eng. name "+postModel.getLocalName()+" is already in our database.",e.getDetails());
 		}
 	}
 	
@@ -291,7 +291,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(invalidPatchModel, invalidPatchModel.getId());
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
-			assertEquals("Your herb edit request is invalid - You must provide some editable data",e.getDetails());
+			assertEquals("Your edit request is invalid - You must provide some editable data",e.getDetails());
 		}
 	}
 	
@@ -338,7 +338,7 @@ public class HerbTest {
 			mockHerbServiceImpl.edit(patchModel, 2L);
 			fail();
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The local name '"+patchModel.getLocalName()+"' belongs to another herb in our database.",e.getDetails());
+			assertEquals("The herb with local name "+patchModel.getLocalName()+" is already in our database.",e.getDetails());
 		}
 	}
 	

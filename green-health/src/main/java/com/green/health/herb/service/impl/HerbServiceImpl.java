@@ -52,17 +52,11 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public HerbDTO getHerbByLocalName(String name) throws MyRestPreconditionsException {
-		HerbJPA jpa = null;
-		if(RestPreconditions.checkLocaleIsEnglish()) {
-			jpa = herbDao.getHerbByEngName(name);
-		} else {
-			// 'if' ensures that LocaleContextHolder.getLocale() is not null
-			jpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getHerb();
-		}
-		if(jpa!=null) {
-			return convertJpaToModel(jpa);
-		}
-		throw new MyRestPreconditionsException("No such herb in database","Cannot find the herb with name '"+name+"'.");
+		return convertJpaToModel(RestPreconditions.checkNotNull(
+				(RestPreconditions.checkLocaleIsEnglish() ?
+						herbDao.getHerbByEngName(name) :
+						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getHerb())
+				,"No such herb in database","Cannot find the herb with name '"+name+"'."));
 	}
 
 	@Override
@@ -81,6 +75,7 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
+		RestPreconditions.checkNotNull(model, "Add Herb error","You cannot create new herb with empty request.");
 		model.setId(null);
 		isPostDataPresent(model);
 		
@@ -90,7 +85,7 @@ public class HerbServiceImpl implements HerbService {
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
-				"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
+				"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
 		} else {
 			RestPreconditions.checkSuchEntityAlreadyExists(
 				// 'if' ensures that LocaleContextHolder.getLocale() is not null
@@ -108,31 +103,31 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public HerbDTO edit(HerbDTO model, Long id) throws MyRestPreconditionsException {
-		
-		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", 
-				"Your herb edit request is invalid - You must provide some editable data");
+		RestPreconditions.checkNotNull(model, "Herb edit error",
+				"You are sending a request without body");
+		checkId(id);
 		model.setId(id);
+		RestPreconditions.assertTrue(isPatchDataPresent(model), "Herb edit error", 
+				"Your edit request is invalid - You must provide some editable data");
 
 		// check that latin name is not taken :
 		if(RestPreconditions.checkString(model.getLatinName())) {
 			HerbJPA jpa = herbDao.getHerbByLatinName(model.getLatinName());
 			if(jpa!=null) {
-				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error !", 
+				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error", 
 						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
 			}
 		}
 		// check that new locale name is not taken:
 		if(RestPreconditions.checkString(model.getLocalName())) {
-			HerbJPA jpa = null;
 			if(RestPreconditions.checkLocaleIsEnglish()) {
-				jpa = herbDao.getHerbByEngName(model.getLocalName());
+				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()), 
+						"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
 			} else {
 				// 'if' ensures that LocaleContextHolder.getLocale() is not null
-				jpa = herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()).getHerb();
-			}
-			if(jpa!=null) {
-				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error", 
-						"The local name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				RestPreconditions.checkSuchEntityAlreadyExists(
+						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+						"The herb with local name "+model.getLocalName()+" is already in our database.");
 			}
 		}
 

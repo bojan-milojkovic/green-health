@@ -90,13 +90,22 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	public void saveProfilePicture(MultipartFile file, final String username) throws MyRestPreconditionsException{
-		UserSecurityJPA usjpa = userSecurityRepository.findByUsername(username);
-		storageServiceImpl.saveImage(file, usjpa.getId(), true);
+		storageServiceImpl.saveImage(file, 
+					RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username),
+					"Save profile picture error","The user '"+username+"' doesn't exist")
+				.getId(), 
+				true);
 	}
 	
 	public Resource readImage(Long id) throws MyRestPreconditionsException {// has to be 'id' so we can view other user's profile pic
-		RestPreconditions.assertTrue(id!=null && id>0, "Retreaving image error","Invalid user id ("+id+")");
+		checkId(id);
 		return storageServiceImpl.readImage(id, "profile_THUMBNAIL");
+	}
+	
+	@Override
+	public void delete(final Long id, final String object) throws MyRestPreconditionsException {
+		getRepository().deleteById(id);
+		storageServiceImpl.deleteImage(id, true);
 	}
 	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
@@ -122,7 +131,7 @@ public class UserServiceImpl implements UserService {
 	
 	// add new user to db :
 	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
-		RestPreconditions.assertTrue(model!=null, "Add user error", "Add new user cannot be done without the user object");
+		RestPreconditions.checkNotNull(model, "Add user error", "Add new user cannot be done without the user object");
 		model.setId(null);
 		// check everything except id and registration is present in resource :
 		isPostDataPresent(model);
@@ -130,7 +139,8 @@ public class UserServiceImpl implements UserService {
 		// check that username and email are unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
 				"Create user : the username "+ model.getUsername()+" belongs to another user.");
-		if(!model.getEmail().matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
+		
+		if(!RestPreconditions.checkStringMatches(model.getEmail(),  "^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
 			throw new MyRestPreconditionsException("Create new user failed",
 					"You must provide a valid email address.");
 		}
@@ -142,11 +152,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDTO edit(UserDTO model, final Long id) throws MyRestPreconditionsException {
-		
+		RestPreconditions.checkNotNull(model, "Edit user error", "Edit user cannot be done without the user object");
 		// check that ids match :
 		checkId(id);
+		model.setId(id);
 		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
-		RestPreconditions.assertTrue(usJpa.getId()==id, "You cannot edit someone else's user account.");
+		RestPreconditions.assertTrue(usJpa.getId()==id, "Edit user error", "You cannot edit someone else's user account.");
 		
 		UserJPA jpa = usJpa.getUserJpa();
 		
@@ -154,6 +165,7 @@ public class UserServiceImpl implements UserService {
 			
 			// email
 			if(RestPreconditions.checkString(model.getEmail()) && !jpa.getEmail().equals(model.getEmail())) {
+				
 				// check this new email isn't in the db already :
 				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
 						"Edit user : Email "+model.getEmail()+" belongs to another user.");

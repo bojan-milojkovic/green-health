@@ -209,7 +209,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("We assert your locale as English. The herb with name "+postModel.getLocalName()+
+			assertEquals("We assert your locale as English. The herb with eng. name "+postModel.getLocalName()+
 					" is already in our database.", e.getDetails());
 		}
 	}
@@ -298,7 +298,7 @@ public class IllnessTest {
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {	
 			assertEquals("We assert your language as English ; "+
-					"The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.", e.getDetails());
+					"The name '"+patchModel.getLocalName()+"' belongs to another illness in our database.", e.getDetails());
 		}
 		patchModel.setLatinName(null);
 	}
@@ -318,7 +318,7 @@ public class IllnessTest {
 		} catch (MyRestPreconditionsException e) {
 			
 			assertEquals("We assert your language as French ; "+
-					"The name '"+patchModel.getLocalName()+"' belongs to another herb in our database.", e.getDetails());
+					"The name '"+patchModel.getLocalName()+"' belongs to another illness in our database.", e.getDetails());
 		}
 		patchModel.setLatinName(null);
 	}

@@ -23,13 +23,13 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	public default void delete(final Long id, final String object) throws MyRestPreconditionsException {
 		checkId(id);
 		
-		RestPreconditions.assertTrue(getRepository().getOne(id)!=null, object+" delete error",
+		RestPreconditions.checkNotNull(getRepository().getOne(id), object+" delete error",
 					object+" with id = "+ id + " does not exist in our database.");
 		
 		getRepository().deleteById(id);
 	}
 	
-	default void checkId(final Long id) throws MyRestPreconditionsException {
+	public default void checkId(final Long id) throws MyRestPreconditionsException {
 		if(!(id!=null && id>0)){
 			throw new MyRestPreconditionsException("Find object by id failed", "Id is invalid");
 		}

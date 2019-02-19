@@ -235,8 +235,8 @@ public class StorageServiceImpl implements StorageService {
 			dir += (folders[i]+File.separator);
 		}
 		
-		RestPreconditions.assertTrue((new File(dir)).isDirectory(), 
-				"Dir path assembly error","The path "+dir+" is not a directory");
+		/*RestPreconditions.assertTrue((new File(dir)).isDirectory(), 
+				"Dir path assembly error","The path "+dir+" is not a directory");*/
 		
 		return dir;
 	}

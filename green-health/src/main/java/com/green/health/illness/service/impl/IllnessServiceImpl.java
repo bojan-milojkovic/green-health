@@ -52,19 +52,12 @@ public class IllnessServiceImpl implements IllnessService {
 	
 	// get one by name :
 	@Override
-	public IllnessDTO getOneByLocalName(final String name) throws MyRestPreconditionsException{
-		IllnessJPA jpa = null;
-		
-		if(RestPreconditions.checkLocaleIsEnglish()) {
-			jpa = illnessDao.findByEngName(name);
-		} else {
-			jpa = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getIllness();
-		}
-		if(jpa==null) {
-			throw new MyRestPreconditionsException("No such illness in database","Cannot find the illness with name '"+name+"'.");
-		}
-		
-		return convertJpaToModel(jpa);
+	public IllnessDTO getOneByLocalName(final String name) throws MyRestPreconditionsException{		
+		return convertJpaToModel(RestPreconditions.checkNotNull(
+				(RestPreconditions.checkLocaleIsEnglish() ? 
+					illnessDao.findByEngName(name) :
+					illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), name).getIllness())
+				, "No such illness in database","Cannot find the illness with name '"+name+"'."));
 	}
 	
 	@Override
@@ -75,7 +68,7 @@ public class IllnessServiceImpl implements IllnessService {
 	// add new illness
 	@Override
 	public void addNew(final IllnessDTO model) throws MyRestPreconditionsException{
-		RestPreconditions.assertTrue(model!=null, "Illness creation error",
+		RestPreconditions.checkNotNull(model, "Illness creation error",
 				"You are sending a request without the object");
 		model.setId(null);
 		isPostDataPresent(model);
@@ -86,7 +79,7 @@ public class IllnessServiceImpl implements IllnessService {
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
-					"We assert your locale as English. The herb with name "+model.getLocalName()+" is already in our database.");
+					"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
 		}else {
 			RestPreconditions.checkSuchEntityAlreadyExists(
 					// 'if' ensures that LocaleContextHolder.getLocale() is not null
@@ -100,7 +93,7 @@ public class IllnessServiceImpl implements IllnessService {
 	// edit illness
 	@Override
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
-		RestPreconditions.assertTrue(model!=null, "Illness edit error",
+		RestPreconditions.checkNotNull(model, "Illness edit error",
 				"You are sending a request without the object");
 		checkId(id);
 		
@@ -126,8 +119,8 @@ public class IllnessServiceImpl implements IllnessService {
 				tmp = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()).getIllness();
 			}
 			if(tmp!=null) {
-				RestPreconditions.assertTrue(tmp.getId()==id, "Herb edit error", 
-						RestPreconditions.assertLocaleInString()+ "The name '"+model.getLocalName()+"' belongs to another herb in our database.");
+				RestPreconditions.assertTrue(tmp.getId()==id, "Illness edit error", 
+						RestPreconditions.assertLocaleInString()+ "The name '"+model.getLocalName()+"' belongs to another illness in our database.");
 			}
 		}
 		

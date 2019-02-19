@@ -93,7 +93,6 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody UserDTO editUserById(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
-		RestPreconditions.assertTrue(model!=null, "Edit user error !", "Edit user cannot be performed without the user object.");
 		model.setUsername(principal.getName());
 		return userServiceImpl.edit(model, id);
 	}
@@ -103,14 +102,14 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteUserById(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
-		UserDTO model = userServiceImpl.getUserByUsernameOrEmail(principal.getName(), null);
+		userServiceImpl.checkId(id);
 		
-		RestPreconditions.assertTrue(model!=null, "Delete user error", "Your user account no longer exists");
-		RestPreconditions.assertTrue(model.getId() != id, "Access violation !!!", "You are trying to delete someone elses's user");
+		RestPreconditions.assertTrue(
+					(RestPreconditions.checkNotNull(userServiceImpl.getUserByUsernameOrEmail(principal.getName(), null)
+							, "Delete user error", "Your user account no longer exists"))
+				.getId() != id, "Access violation !!!", "You are trying to delete someone elses's user");
 		
 		userServiceImpl.delete(id, "User");
-		
-		storageServiceImpl.deleteImage(id, true);
 	}
 	
 	// .../gh/users/cpw
