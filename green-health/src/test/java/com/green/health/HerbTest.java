@@ -202,7 +202,6 @@ public class HerbTest {
 		when(mockIllnessDao.findByLatinName(Mockito.anyString())).thenReturn(illnessJpa);
 		
 		try {
-			postModel.setId(4L);
 			mockHerbServiceImpl.addNew(postModel);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {
