@@ -166,7 +166,12 @@ public class StorageServiceImpl implements StorageService {
 	private void saveFileInDir(String dir, MultipartFile mpf, boolean isUser) throws MyRestPreconditionsException{
 
 		String fileName = isUser ? "profile" : "herb";
-		String contentType = mpf.getOriginalFilename().split("\\.")[1];
+		
+		String contentType;
+		{//in case there is more than one . in name
+			String parts[] = mpf.getOriginalFilename().split("\\.");
+			contentType = parts[parts.length-1];
+		}// parts[] ceases to exist here
 		
 		// delete previous (has to be here - even if filenames are same, extensions can differ)
 		deletePreviousImage(dir, fileName);
