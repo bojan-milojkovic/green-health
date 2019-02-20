@@ -315,6 +315,7 @@ public class HerbServiceImpl implements HerbService {
 				RestPreconditions.checkString(model.getWarnings()) ||
 				RestPreconditions.checkString(model.getWhenToPick()) ||
 				RestPreconditions.checkString(model.getWhereToBuy()) ||
+				model.getImage() != null ||
 				(model.getIllnesses()!=null && !model.getIllnesses().isEmpty())
 				;
 	}

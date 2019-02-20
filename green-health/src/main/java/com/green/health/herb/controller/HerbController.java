@@ -131,23 +131,22 @@ Content-Type: image/jpeg
 										  @RequestParam(value="json", required=false) final String json,
 										  @PathVariable("id") final Long id) 
 												  throws MyRestPreconditionsException {
-		HerbDTO model;
-		if(RestPreconditions.checkString(json)){
-			try {
+		try {
+			HerbDTO model;
+			if(RestPreconditions.checkString(json)){
 				model = (new ObjectMapper()).readValue(json, HerbDTO.class);
-				
-				model.setImage(file);
-				return herbServiceImpl.edit(model, id);
-			} catch (IOException e) {
-				MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
-				ex.getErrors().add(e.getMessage());
-				ex.getErrors().add(e.getLocalizedMessage());
-				e.printStackTrace();
-				throw ex;
+			} else {
+				model = new HerbDTO();
 			}
-		} else {
-			storageServiceImpl.saveImage(file, id, false);
-			return herbServiceImpl.getOneById(id);
+			
+			model.setImage(file);
+			return herbServiceImpl.edit(model, id);
+		} catch (IOException e) {
+			MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
+			ex.getErrors().add(e.getMessage());
+			ex.getErrors().add(e.getLocalizedMessage());
+			e.printStackTrace();
+			throw ex;
 		}
 	}
 	
