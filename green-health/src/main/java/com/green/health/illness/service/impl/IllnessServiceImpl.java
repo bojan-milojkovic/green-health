@@ -127,6 +127,12 @@ public class IllnessServiceImpl implements IllnessService {
 		if(RestPreconditions.checkString(model.getLocalName())){
 			jpa.setLocalName(model.getLocalName());
 		}
+		if(RestPreconditions.checkString(model.getCause())) {
+			jpa.setCause(model.getCause());
+		}
+		if(RestPreconditions.checkString(model.getTreatment())) {
+			jpa.setTreatment(model.getTreatment());
+		}
 	}
 	
 	@Override
@@ -196,6 +202,8 @@ public class IllnessServiceImpl implements IllnessService {
 		model.setLocalName(jpa.getLocalName());
 		model.setSymptoms(jpa.getSymptoms());
 		model.setDescription(jpa.getDescription());
+		model.setCause(jpa.getCause());
+		model.setTreatment(jpa.getTreatment());
 	}
 	
 	@Override
@@ -255,7 +263,12 @@ public class IllnessServiceImpl implements IllnessService {
 		if(!RestPreconditions.checkString(model.getSymptoms())){
 			ex.getErrors().add("symptoms of the illness");
 		}
-		
+		if(!RestPreconditions.checkString(model.getCause())){
+			ex.getErrors().add("cause of the illness");
+		}
+		if(!RestPreconditions.checkString(model.getTreatment())){
+			ex.getErrors().add("treatment for the illness");
+		}
 		if(!ex.getErrors().isEmpty()) {
 			throw ex;
 		}
@@ -267,6 +280,8 @@ public class IllnessServiceImpl implements IllnessService {
 				RestPreconditions.checkString(model.getLatinName()) ||
 				RestPreconditions.checkString(model.getLocalName()) ||
 				RestPreconditions.checkString(model.getSymptoms()) ||
+				RestPreconditions.checkString(model.getCause()) ||
+				RestPreconditions.checkString(model.getTreatment()) ||
 				(model.getHerbs()!=null && !model.getHerbs().isEmpty());
 	}
 

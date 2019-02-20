@@ -34,6 +34,12 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	@Column
 	private String symptoms;
 	
+	@Column
+	private String cause;
+	
+	@Column
+	private String treatment;
+	
 	
 	public IllnessJPA() {
 		links = new HashSet<LinkJPA>();
@@ -131,5 +137,21 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 	@Override
 	public void setLocalName(String localName) {
 		this.engName = localName;
+	}
+
+	public String getCause() {
+		return cause;
+	}
+
+	public void setCause(String cause) {
+		this.cause = cause;
+	}
+
+	public String getTreatment() {
+		return treatment;
+	}
+
+	public void setTreatment(String treatment) {
+		this.treatment = treatment;
 	}
 }

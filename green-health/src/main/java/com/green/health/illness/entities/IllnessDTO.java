@@ -18,20 +18,28 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 	private Long id;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ]{3,}", message="Illness Latin name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[^; ]+\\s?[^; ]+", message="Illness Latin name can consist only of at least 3 letters and whitespaces")
 	private String latinName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ] {3,}+", message="Illness Serbian name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[^; ]+\\s?[^; ]+", message="Illness local name can consist only of at least 3 letters and whitespaces")
 	private String localName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness description can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^;]+", message="Illness description cannot contain ;")
 	private String description;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness symptoms can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^;]+", message="Illness symptoms cannot contain ;")
 	private String symptoms;
+	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[^;]+", message="Illness cause cannot contain ;")
+	private String cause;
+	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[^;]+", message="Illness treatment cannot contain ;")
+	private String treatment;
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	private List<HerbDTO> herbs;
@@ -84,5 +92,21 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 
 	public void setHerbs(List<HerbDTO> herbs) {
 		this.herbs = herbs;
+	}
+
+	public String getCause() {
+		return cause;
+	}
+
+	public void setCause(String cause) {
+		this.cause = cause;
+	}
+
+	public String getTreatment() {
+		return treatment;
+	}
+
+	public void setTreatment(String treatment) {
+		this.treatment = treatment;
 	}
 }

@@ -34,6 +34,12 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 	
 	@Column
 	private String symptoms;
+	
+	@Column
+	private String cause;
+	
+	@Column
+	private String treatment;
 
 	public Long getId() {
 		return id;
@@ -98,13 +104,6 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 	
 	@Override
     public int hashCode() {
-		/*// FNV hashing algorithm :
-		long hash = 0xCBF29CE484222325L;
-		for (String s : new String[] {this.locale, this.illness.getLatinName()}) {
-			hash ^= s.hashCode();
-			hash *= 0x100000001B3L;
-		}
-		return (int)hash;*/
 		long h = 1125899906842597L; // prime
 		
 		for (int i = 0; i < locale.length(); i++) {
@@ -112,4 +111,20 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 		}
 		return (int)(31*h + illness.getId().hashCode());
     }
+
+	public String getCause() {
+		return cause;
+	}
+
+	public void setCause(String cause) {
+		this.cause = cause;
+	}
+
+	public String getTreatment() {
+		return treatment;
+	}
+
+	public void setTreatment(String treatment) {
+		this.treatment = treatment;
+	}
 }
