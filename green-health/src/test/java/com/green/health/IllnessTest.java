@@ -64,6 +64,8 @@ public class IllnessTest {
 			jpa.setLatinName("Latin name "+i);
 			jpa.setEngName("Eng name "+i);
 			jpa.setSymptoms("sympthom1, sympthom 2");
+			jpa.setCause("Cause "+i);
+			jpa.setTreatment("Treatment "+i);
 			list.add(jpa);
 		}
 		
@@ -72,10 +74,13 @@ public class IllnessTest {
 		postModel.setLatinName("Some latin name");
 		postModel.setLocalName("Some illness name");
 		postModel.setSymptoms("vomiting, feaver, headache");
+		postModel.setCause("Exposure to cold");
+		postModel.setTreatment("Keeping warm");
 		
 		patchModel = new IllnessDTO();
 		patchModel.setId(1L);
 		patchModel.setSymptoms("cramps, skin rash");
+		patchModel.setCause("Scratching");
 		
 		herbDto = new HerbDTO();
 		herbDto.setId(1L);
@@ -102,6 +107,8 @@ public class IllnessTest {
 		ijpa.setLocale(Locale.FRANCE.toString());
 		ijpa.setDescription("French description");
 		ijpa.setLocalName("French name");
+		ijpa.setCause("Exposure to cold");
+		ijpa.setTreatment("Keeping warm");
 		ijpa.setIllness(list.get(1));
 		list.get(1).getIllnessLocales().add(ijpa);
 	}
