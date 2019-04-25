@@ -2,9 +2,13 @@ package com.green.health.user.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,11 +96,6 @@ public class UserServiceImpl implements UserService {
 					"Save profile picture error","The user '"+username+"' doesn't exist")
 				.getId(), 
 				true);
-	}
-	
-	public Resource readImage(Long id) throws MyRestPreconditionsException {// has to be 'id' so we can view other user's profile pic
-		checkId(id);
-		return storageServiceImpl.readImage(id, "profile_THUMBNAIL");
 	}
 	
 	@Override
@@ -268,5 +267,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public String getName(){
 		return "user";
+	}
+
+	@Override
+	public ResponseEntity<Resource> getProfilePictureThumb(Long id, String name, HttpServletRequest request)
+			throws MyRestPreconditionsException {
+		return storageServiceImpl.getImage(id, "profile_THUMBNAIL", request);
 	}
 }

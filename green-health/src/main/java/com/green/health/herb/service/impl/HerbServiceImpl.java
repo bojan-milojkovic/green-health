@@ -2,10 +2,14 @@ package com.green.health.herb.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
@@ -60,15 +64,6 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public HerbDTO getHerbByLatinName(String latinName) throws MyRestPreconditionsException {
 		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),"Cannot find the herb with latin name '"+latinName+"'"));
-	}
-	
-	@Override
-	public Resource getImage(Long id, boolean isThumbnail) throws MyRestPreconditionsException{
-		if(isThumbnail){
-			return storageServiceImpl.readImage(id, "herb_THUMBNAIL");
-		} else {
-			return storageServiceImpl.readImage(id, "herb.");
-		}
 	}
 
 	@Override
@@ -328,5 +323,11 @@ public class HerbServiceImpl implements HerbService {
 	@Override
 	public String getName(){
 		return "herb";
+	}
+
+	@Override
+	public ResponseEntity<Resource> getHerbImage(Long id, String name, HttpServletRequest request)
+			throws MyRestPreconditionsException {
+		return storageServiceImpl.getImage(id, "herb_THUMBNAIL", request);
 	}
 }

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
-import com.green.health.images.storage.StorageService;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
@@ -31,12 +30,9 @@ public class UserController {
 
 	private UserService userServiceImpl;
 	
-	private StorageService storageServiceImpl;
-	
 	@Autowired
-	public UserController(UserService userServiceImpl, StorageService storageServiceImpl) {
+	public UserController(UserService userServiceImpl) {
 		this.userServiceImpl = userServiceImpl;
-		this.storageServiceImpl = storageServiceImpl;
 	}
 
 	// .../gh/users
@@ -69,7 +65,7 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-	    return storageServiceImpl.getImage(userServiceImpl.readImage(id), request);
+	    return userServiceImpl.getProfilePictureThumb(id, "profile_THUMBNAIL", request);
 	}
 	
 	// .../gh/users

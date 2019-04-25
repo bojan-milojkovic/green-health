@@ -11,16 +11,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Base64;
 import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,11 +33,9 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class StorageServiceImpl implements StorageService {
 
 	private String fileStorageLocation;
-	private ResourceLoader resourceLoader;
 	
 	@Autowired
-	public StorageServiceImpl(ResourceLoader resourceLoader) throws MyRestPreconditionsException {
-		this.resourceLoader = resourceLoader;
+	public StorageServiceImpl() throws MyRestPreconditionsException {
 		this.fileStorageLocation = System.getProperty("user.dir")+File.separator+"images"+File.separator;
 		
 		try {
@@ -85,18 +83,19 @@ public class StorageServiceImpl implements StorageService {
 		}
 	}
 	
-	public ResponseEntity<Resource> getImage(Resource resource, HttpServletRequest request) {
-		String contentType = null;
-	    try {
-	        contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-	    } catch (Exception e) {
-	    	contentType = "application/octet-stream";
-	    }
+	public ResponseEntity<Resource> getImage(Long id, String name, HttpServletRequest request) throws MyRestPreconditionsException {
 	    
-	    return ResponseEntity.ok()
-	            .contentType(MediaType.parseMediaType(contentType))
-	            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-	            .body(resource);
+	    byte[] data = Base64.getEncoder().encodeToString(readImage(id, name)).getBytes();
+	    
+	    if(data.length>0) {
+		    return ResponseEntity.ok()
+		            .contentType(MediaType.parseMediaType("application/octet-stream"))
+		            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + name + "\"")
+		            .contentLength(data.length)
+		            .body(new ByteArrayResource(data));
+		} else {
+			return new ResponseEntity<Resource>(null, null, HttpStatus.NO_CONTENT);
+		}
 	}
 
 	@Override
@@ -104,7 +103,6 @@ public class StorageServiceImpl implements StorageService {
 		RestPreconditions.assertTrue(null != mpf, "You are attempting to upload a non-existing file.");
 		RestPreconditions.assertTrue(!mpf.isEmpty(), "You are attempting to upload an empty file.");
 		RestPreconditions.assertTrue(!mpf.getOriginalFilename().contains(".."), "Upload filename contains invalid path sequence");
-		RestPreconditions.assertTrue(mpf.getSize() < (3 * 1024 * 1024), "Max upload file size is 3MB");
 		RestPreconditions.assertTrue(checkMpFileExtension(mpf.getOriginalFilename()), "You are only allowed to upload files with extensions jpg, jpeg, png and bmp");
 		
 		// compose dir structure :
@@ -129,8 +127,7 @@ public class StorageServiceImpl implements StorageService {
 		saveFileInDir(path, mpf, isUser);
 	}
 	
-	@Override
-	public Resource readImage(final Long id, final String name) throws MyRestPreconditionsException{
+	private byte[] readImage(final Long id, final String name) throws MyRestPreconditionsException{
 		
 		String imgDir = buildDirPath(id);
 		
@@ -138,7 +135,7 @@ public class StorageServiceImpl implements StorageService {
 			File tmp = new File(imgDir);
 			RestPreconditions.assertTrue(tmp.exists(), 
 					"Image read error","File path "+imgDir+" does not exist");
-			RestPreconditions.assertTrue(java.nio.file.Files.isWritable(tmp.toPath()), 
+			RestPreconditions.assertTrue(java.nio.file.Files.isReadable(tmp.toPath()), 
 					"Image read error", "File path "+imgDir+" is not readable");
 		} // tmp ceases to exist here.
 		
@@ -153,12 +150,12 @@ public class StorageServiceImpl implements StorageService {
             }
 			
 			if(filePath!=null){
-				return new UrlResource(filePath.toUri());
+				return Files.readAllBytes(filePath);
 			} else {
-            	return resourceLoader.getResource("classpath:images/no_image_found.jpeg");
+            	return new byte[0];
             }
 		} catch (Exception e){
-			throw new MyRestPreconditionsException("Resource retreave error", "Oops ! Something went wrong in retreaving the image.");
+			throw new MyRestPreconditionsException("Resource retrieve error", "Oops ! Something went wrong in retrieving the image.");
 		}
 	}
 	

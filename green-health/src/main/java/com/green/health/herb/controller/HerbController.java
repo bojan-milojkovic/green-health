@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.health.herb.entities.HerbDTO;
 import com.green.health.herb.service.HerbService;
-import com.green.health.images.storage.StorageService;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -31,12 +30,10 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class HerbController {
 	
 	private HerbService herbServiceImpl;
-	private StorageService storageServiceImpl;
 	
 	@Autowired
-	public HerbController(HerbService herbServiceImpl, StorageService storageServiceImpl) {
+	public HerbController(HerbService herbServiceImpl) {
 		this.herbServiceImpl = herbServiceImpl;
-		this.storageServiceImpl = storageServiceImpl;
 	}
 
 	// .../gh/herb
@@ -71,14 +68,14 @@ public class HerbController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-		return storageServiceImpl.getImage(herbServiceImpl.getImage(id, true), request);
+		return herbServiceImpl.getHerbImage(id, "herb_THUMBNAIL", request);
 	}
 	
 	@RequestMapping(value = "/image/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException{
-		return storageServiceImpl.getImage(herbServiceImpl.getImage(id, false), request);
+		return herbServiceImpl.getHerbImage(id, "herb", request);
 	}
 	
 	
