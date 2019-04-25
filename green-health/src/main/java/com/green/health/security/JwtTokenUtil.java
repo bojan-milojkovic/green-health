@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
+import com.green.health.util.RestPreconditions;
+import com.green.health.util.exceptions.MyRestPreconditionsException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -122,6 +124,21 @@ public class JwtTokenUtil implements Serializable {
             return null;
         }
     }*/
+    
+    public String refreshToken(String token) throws MyRestPreconditionsException {
+        try {
+        	RestPreconditions.assertTrue(!isTokenNotExpired(token), "Session error", "Your session must expire first");
+            final Claims claims = getClaimsFromToken(token);
+            UserSecurityJPA jpa = RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(claims.getSubject()),
+            		"Session error","Your credentials are invalid");
+            claims.put(CLAIM_KEY_CREATED, new Date());
+            jpa.setLastLogin(LocalDateTime.now());
+            userSecurityRepository.save(jpa);
+            return generateTokenFromClaims(claims);
+        } catch (Exception e) {
+            throw new MyRestPreconditionsException("Refresh session error","Something went wrong during refresh");
+        }
+    }
     
     public String getUsernameFromToken(String token) {
         try {

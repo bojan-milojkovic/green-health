@@ -13,6 +13,8 @@ import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.security.service.SecurityService;
+import com.green.health.util.exceptions.MyRestPreconditionsException;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
@@ -26,7 +28,7 @@ public class SecurityServiceImpl implements SecurityService {
 	private JwtTokenUtil jwtTokenUtil;
 	
 	@Override
-	public String generateTokenForUser(CredentialsDTO credentials){
+	public String generateTokenForUser(CredentialsDTO credentials) throws MyRestPreconditionsException{
 		
 		// check username :
 		UserSecurityJPA jpa = userSecurityRepository.findByUsername(credentials.getUsername());
@@ -62,9 +64,14 @@ public class SecurityServiceImpl implements SecurityService {
 				return token;
 			}
 			
-			return "Error - passwords do not match.";
+			throw new MyRestPreconditionsException("Login error","Credentials do not match.");
 		}
 		
-		return "Error - no user with those credentials.";
+		throw new MyRestPreconditionsException("Login error","No user for those credentials.");
+	}
+	
+	@Override
+	public String refreshToken(final String token) throws MyRestPreconditionsException {
+		return jwtTokenUtil.refreshToken(token);
 	}
 }
