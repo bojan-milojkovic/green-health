@@ -1,9 +1,8 @@
 package com.green.health.util;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.stream.Collectors;
-
 import javax.persistence.EntityNotFoundException;
-
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 import com.green.health.util.exceptions.UsernameNotFoundException;
@@ -61,6 +59,22 @@ public class MyControllerAdvice {
     @ResponseBody
 	public MyBadInputResponse BadCredentials(UsernameNotFoundException ex){
 		return new MyBadInputResponse("Your credentials are invalid.", 
+				ex.getLocalizedMessage());
+	}
+	
+	@ExceptionHandler(NumberFormatException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public MyBadInputResponse badNumberInput(NumberFormatException ex) {
+		return new MyBadInputResponse("Invalid numerical value", 
+				ex.getLocalizedMessage());
+	}
+	
+	@ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public MyBadInputResponse databaseIntegrityViolation(SQLIntegrityConstraintViolationException ex) {
+		return new MyBadInputResponse("Database did not like one of the request values", 
 				ex.getLocalizedMessage());
 	}
 }
