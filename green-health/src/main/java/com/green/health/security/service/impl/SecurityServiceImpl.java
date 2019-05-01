@@ -14,7 +14,6 @@ import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.security.service.SecurityService;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
