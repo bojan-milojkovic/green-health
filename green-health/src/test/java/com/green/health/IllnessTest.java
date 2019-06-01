@@ -64,6 +64,8 @@ public class IllnessTest {
 			jpa.setLatinName("Latin name "+i);
 			jpa.setEngName("Eng name "+i);
 			jpa.setSymptoms("sympthom1, sympthom 2");
+			jpa.setCause("Eng cause");
+			jpa.setTreatment("Eng treatment");
 			list.add(jpa);
 		}
 		
@@ -72,6 +74,8 @@ public class IllnessTest {
 		postModel.setLatinName("Some latin name");
 		postModel.setLocalName("Some illness name");
 		postModel.setSymptoms("vomiting, feaver, headache");
+		postModel.setCause("Some illness cause");
+		postModel.setTreatment("Some treatment");
 		
 		patchModel = new IllnessDTO();
 		patchModel.setId(1L);
@@ -133,7 +137,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.getOneById(-1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Id is invalid", e.getDetails());
+			assertEquals("Id you entered is missing or invalid", e.getDetails());
 		}
 	}
 	
@@ -209,7 +213,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("We assert your locale as English. The herb with eng. name "+postModel.getLocalName()+
+			assertEquals("We assert your locale as English. The illness with eng. name "+postModel.getLocalName()+
 					" is already in our database.", e.getDetails());
 		}
 	}
@@ -226,7 +230,7 @@ public class IllnessTest {
 		try{
 			mockIllnessServiceImpl.addNew(postModel);
 		} catch (MyRestPreconditionsException e){
-			assertEquals("The herb with local name "+postModel.getLocalName()+" is already in our database.", e.getDetails());
+			assertEquals("The illness with local name "+postModel.getLocalName()+" is already in our database.", e.getDetails());
 		}
 		postModel.setLocalName("Some illness name");
 	}
@@ -240,7 +244,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.edit(badModel, -1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals(e.getDetails(), "Id is invalid");
+			assertEquals("Id you entered is missing or invalid", e.getDetails());
 		}
 	}
 	
@@ -366,7 +370,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.delete(-1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Id is invalid", e.getDetails());
+			assertEquals("Id you entered is missing or invalid", e.getDetails());
 		}
 	}
 	

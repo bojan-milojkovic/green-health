@@ -142,7 +142,7 @@ public class UserTest {
 			mockUserServiceimpl.getOneById(-1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Id is invalid", e.getDetails());
+			assertEquals("Id you entered is missing or invalid", e.getDetails());
 		}
 	}
 	
@@ -208,7 +208,7 @@ public class UserTest {
 			mockUserServiceimpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Create user : the username blanked belongs to another user.", e.getDetails());
+			assertEquals("Create user : Username blanked belongs to another user.", e.getDetails());
 		}
 	}
 	
@@ -296,7 +296,7 @@ public class UserTest {
 			mockUserServiceimpl.changePassword(badPatchModel, "blanked");
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Change password error : user you are changing the password for does not exist.", e.getDetails());
+			assertEquals("User you are changing the password for does not exist.", e.getDetails());
 		}
 	}
 	

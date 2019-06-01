@@ -34,6 +34,12 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 	
 	@Column
 	private String symptoms;
+	
+	@Column
+	private String cause;
+	
+	@Column
+	private String treatment;
 
 	public Long getId() {
 		return id;
@@ -83,6 +89,22 @@ public class IllnessLocaleJPA implements PojoParent, IllnessInterface {
 		this.symptoms = symptoms;
 	}
 	
+	public String getCause() {
+		return cause;
+	}
+
+	public void setCause(String cause) {
+		this.cause = cause;
+	}
+	
+	public String getTreatment() {
+		return treatment;
+	}
+
+	public void setTreatment(String treatment) {
+		this.treatment = treatment;
+	}
+
 	@Override
 	public boolean equals( Object o ) {
 		if( o != null && o instanceof IllnessLocaleJPA) {

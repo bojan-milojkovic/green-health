@@ -2,9 +2,6 @@ package com.green.health.herb.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.Resource;
@@ -63,7 +60,8 @@ public class HerbServiceImpl implements HerbService {
 
 	@Override
 	public HerbDTO getHerbByLatinName(String latinName) throws MyRestPreconditionsException {
-		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),"Cannot find the herb with latin name '"+latinName+"'"));
+		return convertJpaToModel(RestPreconditions.checkNotNull(herbDao.getHerbByLatinName(latinName),
+				"Get Herb Error","Cannot find the herb with latin name '"+latinName+"'"));
 	}
 
 	@Override
@@ -85,12 +83,12 @@ public class HerbServiceImpl implements HerbService {
 					"The herb with local name "+model.getLocalName()+" is already in our database.");
 		}
 
+		HerbJPA jpa = herbDao.save(convertModelToJPA(model));
+		
 		if(model.getImage()!=null){
 			// save image :
-			storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
+			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
 		}
-		
-		herbDao.save(convertModelToJPA(model));
 	}
 
 	@Override
@@ -162,7 +160,7 @@ public class HerbServiceImpl implements HerbService {
 					"Herb edit error", "Herb with id = "+model.getId()+" does not exist in our database.");
 		}
 		if(RestPreconditions.checkString(model.getLatinName())){
-			jpa.setLatinName(model.getLatinName());
+			jpa.setLatinName(model.getLatinName().toLowerCase());
 		}
 		// english
 		if(RestPreconditions.checkLocaleIsEnglish()) {
@@ -178,7 +176,6 @@ public class HerbServiceImpl implements HerbService {
 					jpa = herbDao.save(jpa);
 					//TODO: if it is a brand new herb, email admin to fill in english info
 				}
-				
 				hjpa.setLocale(LocaleContextHolder.getLocale().toString());
 				hjpa.setHerb(jpa);
 				jpa.getHerbLocales().add(hjpa);
@@ -326,8 +323,8 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getHerbImage(Long id, String name, HttpServletRequest request)
-			throws MyRestPreconditionsException {
-		return storageServiceImpl.getImage(id, "herb_THUMBNAIL", request);
+	public ResponseEntity<Resource> getHerbImage(Long id, String name) throws MyRestPreconditionsException {
+		checkId(id, "Get herb image error");
+		return storageServiceImpl.getImage(id, name);
 	}
 }

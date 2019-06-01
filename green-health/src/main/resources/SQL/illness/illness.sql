@@ -8,3 +8,10 @@ CREATE TABLE `greenhealth`.`illness` (
   UNIQUE INDEX `id_UNIQUE` (`id` ASC),
   UNIQUE INDEX `latin_name_UNIQUE` (`latin_name` ASC),
   UNIQUE INDEX `srb_name_UNIQUE` (`srb_name` ASC));
+  
+ALTER TABLE `greenhealth`.`illness` 
+CHANGE COLUMN `eng_name` `eng_name` VARCHAR(75) NULL DEFAULT NULL ,
+CHANGE COLUMN `description` `description` TEXT NULL DEFAULT NULL ,
+CHANGE COLUMN `symptoms` `symptoms` TEXT NULL DEFAULT NULL ,
+CHANGE COLUMN `cause` `cause` TEXT NULL DEFAULT NULL ,
+CHANGE COLUMN `treatment` `treatment` TEXT NULL DEFAULT NULL ;

@@ -1,10 +1,10 @@
-CREATE DATABASE  IF NOT EXISTS `greenhealth` /*!40100 DEFAULT CHARACTER SET latin1 */;
+CREATE DATABASE  IF NOT EXISTS `greenhealth` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
 USE `greenhealth`;
--- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
+-- MySQL dump 10.16  Distrib 10.1.37-MariaDB, for Win32 (AMD64)
 --
 -- Host: 127.0.0.1    Database: greenhealth
 -- ------------------------------------------------------
--- Server version	5.5.5-10.1.16-MariaDB
+-- Server version	10.1.37-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,19 +26,19 @@ DROP TABLE IF EXISTS `herb`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `herb` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `eng_name` varchar(45) NOT NULL,
-  `latin_name` varchar(45) NOT NULL,
-  `description` text NOT NULL,
-  `grows_at` text NOT NULL,
-  `when_to_pick` text NOT NULL,
-  `properties` text NOT NULL,
-  `warnings` text NOT NULL,
-  `where_to_buy` text,
+  `eng_name` varchar(45) CHARACTER SET latin1 DEFAULT NULL,
+  `latin_name` varchar(45) CHARACTER SET latin1 NOT NULL,
+  `description` text CHARACTER SET latin1,
+  `grows_at` text CHARACTER SET latin1,
+  `when_to_pick` text CHARACTER SET latin1,
+  `properties` text CHARACTER SET latin1,
+  `warnings` text CHARACTER SET latin1,
+  `where_to_buy` text CHARACTER SET latin1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `srbName_UNIQUE` (`eng_name`),
-  UNIQUE KEY `latin_name_UNIQUE` (`latin_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+  UNIQUE KEY `latin_name_UNIQUE` (`latin_name`),
+  UNIQUE KEY `srbName_UNIQUE` (`eng_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `herb` (
 
 LOCK TABLES `herb` WRITE;
 /*!40000 ALTER TABLE `herb` DISABLE KEYS */;
-INSERT INTO `herb` VALUES (1,'mint','mentha piperita','Mints are aromatic, almost exclusively perennial herbs. They have wide-spreading underground and overground stolons and erect, square, branched stems. The leaves are arranged in opposite pairs, from oblong to lanceolate, often downy, and with a serrated margin. Leaf colors range from dark green and gray-green to purple, blue, and sometimes pale yellow.[6] The flowers are white to purple and produced in false whorls called verticillasters. The corolla is two-lipped with four subequal lobes, the upper lobe usually the largest. The fruit is a nutlet, containing one to four seeds.','world wide','Harvesting of mint leaves can be done at any time. Fresh leaves should be used immediately or stored up to a few days in plastic bags in a refrigerator. Optionally, leaves can be frozen in ice cube trays. Dried mint leaves should be stored in an airtight container placed in a cool, dark, dry area.','Mint was originally used as a medicinal herb to treat stomach ache and chest pains. It soothes headaches and relaxes the body. There are several uses in traditional medicine and preliminary research for possible use in treating irritable bowel syndrome. Menthol and mint essential oil are also used in aromatherapy which may have clinical use to alleviate post-surgery nausea. Mint oil is also used as an environmentally friendly insecticide for its ability to kill some common pests such as wasps, hornets, ants, and cockroaches. ','Completely safe, except in oil-form. It may cause allergy in some people',NULL);
+INSERT INTO `herb` (`id`, `eng_name`, `latin_name`, `description`, `grows_at`, `when_to_pick`, `properties`, `warnings`, `where_to_buy`) VALUES (1,'mint','mentha piperita','Mints are aromatic, almost exclusively perennial herbs. They have wide-spreading underground and overground stolons and erect, square, branched stems. The leaves are arranged in opposite pairs, from oblong to lanceolate, often downy, and with a serrated margin. Leaf colors range from dark green and gray-green to purple, blue, and sometimes pale yellow.[6] The flowers are white to purple and produced in false whorls called verticillasters. The corolla is two-lipped with four subequal lobes, the upper lobe usually the largest. The fruit is a nutlet, containing one to four seeds.','world wide','Harvesting of mint leaves can be done at any time. Fresh leaves should be used immediately or stored up to a few days in plastic bags in a refrigerator. Optionally, leaves can be frozen in ice cube trays. Dried mint leaves should be stored in an airtight container placed in a cool, dark, dry area.','Mint was originally used as a medicinal herb to treat stomach ache and chest pains. It soothes headaches and relaxes the body. There are several uses in traditional medicine and preliminary research for possible use in treating irritable bowel syndrome. Menthol and mint essential oil are also used in aromatherapy which may have clinical use to alleviate post-surgery nausea. Mint oil is also used as an environmentally friendly insecticide for its ability to kill some common pests such as wasps, hornets, ants, and cockroaches. ','Completely safe, except in oil-form. It may cause allergy in some people',NULL),(3,NULL,'lavandula',NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `herb` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -73,7 +73,7 @@ CREATE TABLE `herb_for_illness` (
   KEY `fk_illness_idx` (`illness_id`),
   CONSTRAINT `fk_herb` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `fk_illness` FOREIGN KEY (`illness_id`) REFERENCES `illness` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -82,7 +82,7 @@ CREATE TABLE `herb_for_illness` (
 
 LOCK TABLES `herb_for_illness` WRITE;
 /*!40000 ALTER TABLE `herb_for_illness` DISABLE KEYS */;
-INSERT INTO `herb_for_illness` VALUES (1,1,2,0,0,2,0,0);
+INSERT INTO `herb_for_illness` (`id`, `herb_id`, `illness_id`, `rating_ones`, `rating_twos`, `rating_threes`, `rating_fours`, `rating_fives`) VALUES (1,1,2,0,0,2,0,0),(2,3,2,0,0,0,0,1);
 /*!40000 ALTER TABLE `herb_for_illness` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,7 +110,7 @@ CREATE TABLE `herb_locale` (
   KEY `idx1` (`locale`,`local_name`),
   KEY `idx2` (`herb_id`,`locale`),
   CONSTRAINT `fk_herb_id` FOREIGN KEY (`herb_id`) REFERENCES `herb` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf16;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -119,7 +119,7 @@ CREATE TABLE `herb_locale` (
 
 LOCK TABLES `herb_locale` WRITE;
 /*!40000 ALTER TABLE `herb_locale` DISABLE KEYS */;
-INSERT INTO `herb_locale` VALUES (2,1,'sr_RS','nana','Stabljika je visoka oko 50 cm, razgranata i cetrovouglasta. Stabljika, lisne drske i nervi su mo dri ili su Ijubi?asto-crvenkasti, osobito u prolece kad nana nice iz zemlje. Listovi su dugacki 3-9 cm, jajasto-kopljasti, tanki, s gornje strane tamnozeleni, a s donje bledji, pri dnu se suzavaju u drske dugacke do 1 cm.','gaji se sirom sveta','brati po najlepsem vremenu','Nana se upotrebljava kao prijatan, blag i neškodljiv lek za umirivanje, protiv gasova, nadimanja i gr?eva, protiv teškog varenja, kao stomahik, nana ulazi u sastav ?ajeva za le?enje žu?i','Nana je potpuno ne skodljiva',NULL);
+INSERT INTO `herb_locale` (`id`, `herb_id`, `locale`, `local_name`, `description`, `grows_at`, `when_to_pick`, `properties`, `warnings`, `where_to_buy`) VALUES (2,1,'sr_RS','nana','Stabljika je visoka oko 50 cm, razgranata i cetrovouglasta. Stabljika, lisne drske i nervi su mo dri ili su Ijubi?asto-crvenkasti, osobito u prolece kad nana nice iz zemlje. Listovi su dugacki 3-9 cm, jajasto-kopljasti, tanki, s gornje strane tamnozeleni, a s donje bledji, pri dnu se suzavaju u drske dugacke do 1 cm.','gaji se sirom sveta','brati po najlepsem vremenu','Nana se upotrebljava kao prijatan, blag i neškodljiv lek za umirivanje, protiv gasova, nadimanja i gr?eva, protiv teškog varenja, kao stomahik, nana ulazi u sastav ?ajeva za le?enje žu?i','Nana je potpuno bezbedna, osim kad je upitanju ulje. Moze izazvati alergiju kod nekih ljudi',NULL),(4,3,'sr_RS','lavanda','Lavandu karakterisu ljubicasti cvetovi i aromatican miris. Raste do izmedju 30 i 70 cm','Gaji se sirom sveta i na suvim i na vlaznim podrucjima','Brati kada su cvetovi naj bujniji','Najcesce se koristi za lecenje organa za varenje, srcanih bolesti, hipertenzije, bronhalne asme reumatizma, anksioznosti, nesanice, glavobolje, i vrtoglavice. Podstice mokrenje i menstrualno krvarenje. Suzbija infekciju koze i sluzokoze. Umiruje kasalj i otklanja zadah. Korisna je za lecenje akni, opekotina psorijaze i koznih oboljenja. Takodje rasteruje insekta, prvenstveno moljce i komarce.','Dijabeticari i trudnice dojilje treba da pripaze pri koriscenju lavande. Takodje moze izazvati alergijsku reakciju kod nekihljudi.',NULL);
 /*!40000 ALTER TABLE `herb_locale` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,15 +132,17 @@ DROP TABLE IF EXISTS `illness`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `illness` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `latin_name` varchar(75) NOT NULL,
-  `eng_name` varchar(75) NOT NULL,
-  `description` text NOT NULL,
-  `symptoms` text NOT NULL,
+  `latin_name` varchar(75) CHARACTER SET latin1 NOT NULL,
+  `eng_name` varchar(75) CHARACTER SET latin1 DEFAULT NULL,
+  `description` text CHARACTER SET latin1,
+  `symptoms` text CHARACTER SET latin1,
+  `cause` text CHARACTER SET latin1,
+  `treatment` text CHARACTER SET latin1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `latin_name_UNIQUE` (`latin_name`),
   UNIQUE KEY `srb_name_UNIQUE` (`eng_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -149,7 +151,7 @@ CREATE TABLE `illness` (
 
 LOCK TABLES `illness` WRITE;
 /*!40000 ALTER TABLE `illness` DISABLE KEYS */;
-INSERT INTO `illness` VALUES (1,'Astma','Asthma','Asthma is a common long-term inflammatory disease of the airways of the lungs. It is characterized by variable and recurring symptoms, reversible airflow obstruction, and bronchospasm.','Symptoms include episodes of wheezing, coughing, chest tightness, and shortness of breath. These episodes may occur a few times a day or a few times per week. Depending on the person, they may become worse at night or with exercise.'),(2,'Cephalea','Head ache','Headache is a persistent pain anywhere in the region of the head or neck.','It occurs in migraines (sharp, or throbbing pains), tension-type headaches, and cluster headaches. Frequent headaches can affect relationships and employment. There is also an increased risk of depression in those with severe headaches.');
+INSERT INTO `illness` (`id`, `latin_name`, `eng_name`, `description`, `symptoms`, `cause`, `treatment`) VALUES (1,'Astma','Asthma','Asthma is a common long-term inflammatory disease of the airways of the lungs. It is characterized by variable and recurring symptoms, reversible airflow obstruction, and bronchospasm.','Symptoms include episodes of wheezing, coughing, chest tightness, and shortness of breath. These episodes may occur a few times a day or a few times per week. Depending on the person, they may become worse at night or with exercise.','Opstrukcija sinusa, Stres, Promaja, Depresija, Mamurluk, Dehidratacija, Istegnuce','Opustanje, Lekovi za bolove'),(2,'Cephalea','Head ache','Headache is a persistent pain anywhere in the region of the head or neck.','It occurs in migraines (sharp, or throbbing pains), tension-type headaches, and cluster headaches. Frequent headaches can affect relationships and employment. There is also an increased risk of depression in those with severe headaches.','Sinus obstruction, Stress, Draft, Depression, Hangover','Relaxation, Painkillers');
 /*!40000 ALTER TABLE `illness` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -167,13 +169,15 @@ CREATE TABLE `illness_locale` (
   `local_name` varchar(45) CHARACTER SET latin1 NOT NULL,
   `description` text CHARACTER SET latin1 NOT NULL,
   `symptoms` text CHARACTER SET latin1 NOT NULL,
+  `cause` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `treatment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_illness_idx` (`illness_id`),
   KEY `index1` (`illness_id`,`locale`),
   KEY `index2` (`locale`,`local_name`),
   CONSTRAINT `fk_illness_parent` FOREIGN KEY (`illness_id`) REFERENCES `illness` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +186,7 @@ CREATE TABLE `illness_locale` (
 
 LOCK TABLES `illness_locale` WRITE;
 /*!40000 ALTER TABLE `illness_locale` DISABLE KEYS */;
-INSERT INTO `illness_locale` VALUES (1,2,'sr_RS','Glavobolja','Glavobolja je bilo koji uporan bol u predelu vrata i glave','Pojavljuje se kod migrene (oštri ili pulsirajuc?i bolovi), glavobolja tenzionog tipa i klaster glavobolje. ?este glavobolje mogu uticati na odnose i zaposlenje. Tako?e postoji povec?an rizik od depresije kod onih sa teškim glavoboljama.');
+INSERT INTO `illness_locale` (`id`, `illness_id`, `locale`, `local_name`, `description`, `symptoms`, `cause`, `treatment`) VALUES (1,2,'sr_RS','Glavobolja','Glavobolja je bilo koji uporan bol u predelu vrata i glave','Pojavljuje se kod migrene (oštri ili pulsirajuc?i bolovi), glavobolja tenzionog tipa i klaster glavobolje. ?este glavobolje mogu uticati na odnose i zaposlenje. Tako?e postoji povec?an rizik od depresije kod onih sa teškim glavoboljama.','Opstrukcija sinusa, Stres, Promaja, Depresija, Mamurluk, Dehidratacija, Istegnuce','Opustanje, Lekovi za bolove'),(2,1,'sr_RS','Asma','Asma je dugorocna bolest pluca i disajnih puteva okarakterisana zacepljenjem disajnih kanala usled alergijske reakcije.','Skripanje u plucima, nedostatak vazduha, nemogucnost da se udahne','Ekstremna alergijska reakcija, stress','Pri napadu asme, odmah uzmite prepisanu terapiju. Redovno uzimajte prepisanu terapiju');
 /*!40000 ALTER TABLE `illness_locale` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +207,7 @@ CREATE TABLE `ratings` (
   KEY `fk_link_idx` (`link_id`),
   CONSTRAINT `fk_link` FOREIGN KEY (`link_id`) REFERENCES `herb_for_illness` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -212,7 +216,7 @@ CREATE TABLE `ratings` (
 
 LOCK TABLES `ratings` WRITE;
 /*!40000 ALTER TABLE `ratings` DISABLE KEYS */;
-INSERT INTO `ratings` VALUES (2,5,1);
+INSERT INTO `ratings` (`id`, `user_id`, `link_id`) VALUES (2,5,1),(3,5,2);
 /*!40000 ALTER TABLE `ratings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -238,7 +242,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (3,'ROLE_ADMIN'),(2,'ROLE_HERBALIST'),(4,'ROLE_SUPERADMIN'),(1,'ROLE_USER');
+INSERT INTO `roles` (`role_id`, `role_name`) VALUES (3,'ROLE_ADMIN'),(2,'ROLE_HERBALIST'),(4,'ROLE_SUPERADMIN'),(1,'ROLE_USER');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,14 +255,14 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
+  `first_name` varchar(50) CHARACTER SET latin1 NOT NULL,
+  `last_name` varchar(50) CHARACTER SET latin1 NOT NULL,
+  `email` varchar(100) CHARACTER SET latin1 NOT NULL,
   `reg_date` datetime NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `id_UNIQUE` (`user_id`),
   UNIQUE KEY `email_UNIQUE` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -267,7 +271,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (5,'Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20'),(6,'Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50');
+INSERT INTO `user` (`user_id`, `first_name`, `last_name`, `email`, `reg_date`) VALUES (5,'Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20'),(6,'Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -297,7 +301,7 @@ CREATE TABLE `user_has_roles` (
 
 LOCK TABLES `user_has_roles` WRITE;
 /*!40000 ALTER TABLE `user_has_roles` DISABLE KEYS */;
-INSERT INTO `user_has_roles` VALUES (6,5,1),(7,5,2),(8,5,3),(9,5,4),(10,6,1);
+INSERT INTO `user_has_roles` (`id`, `user_id`, `role_id`) VALUES (6,5,1),(7,5,2),(8,5,3),(9,5,4),(10,6,1);
 /*!40000 ALTER TABLE `user_has_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -310,8 +314,8 @@ DROP TABLE IF EXISTS `user_security`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_security` (
   `user_id` int(11) NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(150) NOT NULL,
+  `username` varchar(50) CHARACTER SET latin1 NOT NULL,
+  `password` varchar(150) CHARACTER SET latin1 NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `not_locked` tinyint(1) NOT NULL DEFAULT '1',
   `last_login` datetime NOT NULL,
@@ -321,7 +325,7 @@ CREATE TABLE `user_security` (
   UNIQUE KEY `user_id_UNIQUE` (`user_id`),
   UNIQUE KEY `username_UNIQUE` (`username`),
   CONSTRAINT `fk_us_u` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,7 +334,7 @@ CREATE TABLE `user_security` (
 
 LOCK TABLES `user_security` WRITE;
 /*!40000 ALTER TABLE `user_security` DISABLE KEYS */;
-INSERT INTO `user_security` VALUES (5,'Lazaruss','$2a$10$Dp64n95ROylB21j8kbxpAuJdFvF.bgddIv0D3SGIyRw4YCnsLvJZi',1,1,'2019-01-20 13:37:50','2018-07-23 19:49:20','2018-07-23 19:49:20'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50');
+INSERT INTO `user_security` (`user_id`, `username`, `password`, `active`, `not_locked`, `last_login`, `last_password_change`, `last_update`) VALUES (5,'Lazaruss','$2a$10$nLmLTuMr1gRHsaaNfH8BFehEp5KpC3pyI91jLyAzKRz9MiUwTNgJ2',1,1,'2019-05-15 22:09:45','2018-07-23 19:49:20','2018-07-23 19:49:20'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50');
 /*!40000 ALTER TABLE `user_security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -343,4 +347,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-01-20 13:53:13
+-- Dump completed on 2019-05-29 20:43:28

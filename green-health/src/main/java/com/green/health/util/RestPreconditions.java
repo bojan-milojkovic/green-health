@@ -14,12 +14,6 @@ public class RestPreconditions {
 		}
 	}
 	
-	public static void assertTrue(boolean condition, String message) throws MyRestPreconditionsException {
-		if(!condition) {
-			throw new MyRestPreconditionsException("Assertion failed for this operation.", message);
-		}
-	}
-	
 	public static void assertTrue(boolean condition, String title, String message) throws MyRestPreconditionsException{
 		if(!condition) {
 			throw new MyRestPreconditionsException(title, message);
@@ -32,14 +26,6 @@ public class RestPreconditions {
 	
 	public static boolean checkStringMatches(final String s, final String regExp){
 		return s!=null && s.matches(regExp);
-	}
-	
-	
-	public static <T> T checkNotNull(T object, String description) throws MyRestPreconditionsException {
-		if(object!=null){
-			return object;
-		}
-		throw new MyRestPreconditionsException("Cannot find the object specified", description);
 	}
 	
 	public static <T> T checkNotNull(T object, String description, String details)throws MyRestPreconditionsException {

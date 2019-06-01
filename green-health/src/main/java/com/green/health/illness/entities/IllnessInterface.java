@@ -13,4 +13,12 @@ public interface IllnessInterface {
 	public String getLocalName();
 
 	public void setLocalName(String localName);
+	
+	public String getCause();
+	
+	public void setCause(final String cause);
+	
+	public String getTreatment();
+
+	public void setTreatment(String treatment);
 }

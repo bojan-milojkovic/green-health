@@ -8,7 +8,7 @@ public interface RatingsService {
 	
 	void addNew(RatingDTO model) throws MyRestPreconditionsException;
 	
-	RatingDTO getRatingForLink(Long herbId, Long illnessId) throws MyRestPreconditionsException;
+	RatingDTO getRatingForLink(final Long herbId, final Long illnessId) throws MyRestPreconditionsException;
 	
-	List<RatingDTO> getRatingsForHerbOrIllness(Long id, boolean ih) throws MyRestPreconditionsException;
+	List<RatingDTO> getRatingsForHerbOrIllness(final Long id, final boolean ih) throws MyRestPreconditionsException;
 }

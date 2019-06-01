@@ -21,7 +21,7 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	}
 	
 	public default M getOneById(final Long id) throws MyRestPreconditionsException{
-		checkId(id);
+		checkId(id, "Find "+getName()+" error");
 		return convertJpaToModel(RestPreconditions.checkNotNull(getRepository().getOne(id), 
 				"Find "+getName()+" error", "Cannot find the "+getName()+" with id = "+id));
 	}
@@ -34,9 +34,10 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	}
 	
 	public default M edit(M model, final Long id) throws MyRestPreconditionsException{
+		checkId(id,"Edit "+getName()+" error");
+		
 		RestPreconditions.checkNotNull(model, "Edit "+getName()+" error",
 				"You are sending a request without body");
-		checkId(id);
 		model.setId(id);
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Edit "+getName()+" error", 
 				"Your edit request is invalid - You must provide some editable data");
@@ -44,7 +45,7 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	}
 	
 	public default void delete(final Long id) throws MyRestPreconditionsException {
-		checkId(id);
+		checkId(id,"Delete "+getName()+" error");
 		
 		RestPreconditions.checkNotNull(getRepository().getOne(id), "Delete "+getName()+" error",
 				getName()+" with id = "+ id + " does not exist in our database.");
@@ -52,9 +53,9 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 		getRepository().deleteById(id);
 	}
 	
-	public default void checkId(final Long id) throws MyRestPreconditionsException {
-		if(!(id!=null && id>0)){
-			throw new MyRestPreconditionsException("Find object by id failed", "Id is invalid");
+	public default void checkId(final Long id, final String title) throws MyRestPreconditionsException {
+		if(id==null || id<1){
+			throw new MyRestPreconditionsException(title,"Id you entered is missing or invalid");
 		}
 	}
 }

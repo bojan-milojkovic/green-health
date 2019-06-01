@@ -14,7 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -47,16 +46,11 @@ public class StorageServiceImpl implements StorageService {
 	}
 	
 	@Override
-	public void deleteImage(final Long id, boolean isUser) throws MyRestPreconditionsException {
+	public void deleteImage(final Long id, final boolean isUser) throws MyRestPreconditionsException {
 		String dirPath = buildDirPath(id);
 		
-		{
-			File tmp = new File(dirPath);
-			RestPreconditions.assertTrue(tmp.exists(), 
-					"Image delete error","File path "+dirPath+" does not exist");
-			RestPreconditions.assertTrue(java.nio.file.Files.isWritable(tmp.toPath()), 
-					"Image delete error", "File path "+dirPath+" is not writable");
-		} // tmp ceases to exist here.
+		RestPreconditions.assertTrue((new File(dirPath)).exists(), 
+				"Delete Image Error", "No directory exists for that id.");
 		
 		if(isUser){
 			deletePreviousImage(dirPath, "profile_THUMBNAIL");
@@ -68,14 +62,14 @@ public class StorageServiceImpl implements StorageService {
 		deleteEmptyDirectoryTreeLeaf(dirPath);
 	}
 	
-	private void deleteEmptyDirectoryTreeLeaf(String dirPath) throws MyRestPreconditionsException {
+	private void deleteEmptyDirectoryTreeLeaf(final String dirPath) throws MyRestPreconditionsException {
 		File dir = new File(dirPath);
 		// dirPath was already checked.
 		
 		// if directory is empty :
 		if(dir.list().length == 0) {
 			// delete empty dir and check :
-			RestPreconditions.assertTrue(dir.delete(),"Image Storage Service error : Failed to delete empty directory leaf "+dirPath);
+			RestPreconditions.assertTrue(dir.delete(),"Image Storage Service error", "Failed to delete empty directory leaf "+dirPath);
 			// make new dir path :
 			String newDirPath = dirPath.split("[^0-9][0-9]$")[0];
 			// recursive call - check if parent dir is empty too and delete it accordingly
@@ -83,7 +77,7 @@ public class StorageServiceImpl implements StorageService {
 		}
 	}
 	
-	public ResponseEntity<Resource> getImage(Long id, String name, HttpServletRequest request) throws MyRestPreconditionsException {
+	public ResponseEntity<Resource> getImage(final Long id, final String name) throws MyRestPreconditionsException {
 	    
 	    byte[] data = Base64.getEncoder().encodeToString(readImage(id, name)).getBytes();
 	    
@@ -99,11 +93,11 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	@Override
-	public void saveImage(final MultipartFile mpf, Long id, boolean isUser) throws MyRestPreconditionsException {	
-		RestPreconditions.assertTrue(null != mpf, "You are attempting to upload a non-existing file.");
-		RestPreconditions.assertTrue(!mpf.isEmpty(), "You are attempting to upload an empty file.");
-		RestPreconditions.assertTrue(!mpf.getOriginalFilename().contains(".."), "Upload filename contains invalid path sequence");
-		RestPreconditions.assertTrue(checkMpFileExtension(mpf.getOriginalFilename()), "You are only allowed to upload files with extensions jpg, jpeg, png and bmp");
+	public void saveImage(final MultipartFile mpf, final Long id, final boolean isUser) throws MyRestPreconditionsException {	
+		RestPreconditions.assertTrue(null != mpf, "Save image error", "You are attempting to upload a non-existing file.");
+		RestPreconditions.assertTrue(!mpf.isEmpty(), "Save image error", "You are attempting to upload an empty file.");
+		RestPreconditions.assertTrue(!mpf.getOriginalFilename().contains(".."), "Save image error", "Upload filename contains invalid path sequence");
+		RestPreconditions.assertTrue(checkMpFileExtension(mpf.getOriginalFilename()), "Save image error", "You are only allowed to upload files with extensions jpg, jpeg, png and bmp");
 		
 		// compose dir structure :
 		String path = buildDirPath(id);
@@ -160,7 +154,7 @@ public class StorageServiceImpl implements StorageService {
 	}
 	
 	// save file :
-	private void saveFileInDir(String dir, MultipartFile mpf, boolean isUser) throws MyRestPreconditionsException{
+	private void saveFileInDir(final String dir, final MultipartFile mpf, final boolean isUser) throws MyRestPreconditionsException{
 
 		String fileName = isUser ? "profile" : "herb";
 		
@@ -176,13 +170,14 @@ public class StorageServiceImpl implements StorageService {
 		try {
 			// save original :
 			if(!isUser){ // herb has both regular size image and thumbnail ; user has only thumbnail :
-				Path targetLocation = Paths.get(dir + fileName+"."+contentType).toAbsolutePath().normalize();
-				Files.copy(mpf.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(mpf.getInputStream(), 
+						Paths.get(dir + fileName+"."+contentType).toAbsolutePath().normalize(), // targetLocation
+						StandardCopyOption.REPLACE_EXISTING);
 			}
 			// save thumbnail :
-			Path targetLocation = Paths.get(dir + fileName+"_THUMBNAIL."+contentType).toAbsolutePath().normalize();
-			Files.copy(scaleImageInputstream(mpf, contentType, 100, 120), 
-					targetLocation, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(scaleImageInputstream(mpf, contentType, 80, 80), 
+					Paths.get(dir + fileName+"_THUMBNAIL."+contentType).toAbsolutePath().normalize(), // targetLocation
+					StandardCopyOption.REPLACE_EXISTING);
 			
 		}catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
@@ -190,7 +185,7 @@ public class StorageServiceImpl implements StorageService {
 		}
 	}
 	
-	private void deletePreviousImage(String dir, String name) throws MyRestPreconditionsException{
+	private void deletePreviousImage(final String dir, final String name) throws MyRestPreconditionsException{
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(dir))) {
             for (Path path : directoryStream) {
             	if(path.toString().contains(name)){
@@ -209,9 +204,8 @@ public class StorageServiceImpl implements StorageService {
 	
 	private InputStream scaleImageInputstream(final MultipartFile multipart,final String contentType,final int targetWidth,final int targetHeight) throws MyRestPreconditionsException {
 		try{
-	        BufferedImage originalImg = ImageIO.read(multipart.getInputStream());
-	        
-	        BufferedImage scaledImg = Scalr.resize(originalImg, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,
+	        BufferedImage scaledImg = Scalr.resize(ImageIO.read(multipart.getInputStream()), 
+	        									   Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,
 	                targetWidth, targetHeight, Scalr.OP_ANTIALIAS);
 	        
 	        ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -225,9 +219,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
 	// create dir path in classpath: from userId / herbId
-	private String buildDirPath(Long id) throws MyRestPreconditionsException{
-		RestPreconditions.assertTrue(id!=null && id>=0, "Dir path assembly error", 
-				"Id used for directory structure traverse is invalid");
+	private String buildDirPath(final Long id) throws MyRestPreconditionsException{
 		
 		char[] folders = (""+id).toCharArray();
 		
@@ -236,9 +228,6 @@ public class StorageServiceImpl implements StorageService {
 		for(int i=folders.length-1 ; i>=0 ; i--){
 			dir += (folders[i]+File.separator);
 		}
-		
-		/*RestPreconditions.assertTrue((new File(dir)).isDirectory(), 
-				"Dir path assembly error","The path "+dir+" is not a directory");*/
 		
 		return dir;
 	}

@@ -8,6 +8,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbLocaleJPA;
+import com.green.health.herb.service.HerbService;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.ratings.entities.LinkJPA;
@@ -24,16 +25,18 @@ public class RatingsServiceImpl implements RatingsService {
 	private UserSecurityRepository userSecurityRepo;
 	private HerbRepository herbRepo;
 	private IllnessRepository illnessRepo;
+	private HerbService herbServiceImpl;
 
 	@Autowired
 	public RatingsServiceImpl(UserSecurityRepository userSecurityRepo, HerbRepository herbRepo,
-			IllnessRepository illnessRepo) {
+			IllnessRepository illnessRepo, HerbService herbServiceImpl) {
 		this.userSecurityRepo = userSecurityRepo;
 		this.herbRepo = herbRepo;
 		this.illnessRepo = illnessRepo;
+		this.herbServiceImpl = herbServiceImpl;
 	}
 	
-	private LinkJPA findOneByHerbAndIllness(Long herbId, Long illnessId) {
+	private LinkJPA findOneByHerbAndIllness(final Long herbId, final Long illnessId) {
 		// ids are already checked.
 		if(herbRepo.getOne(herbId)==null) {
 			return null;
@@ -121,51 +124,38 @@ public class RatingsServiceImpl implements RatingsService {
 	}
 	
 	@Override
-	public RatingDTO getRatingForLink(Long herbId, Long illnessId) throws MyRestPreconditionsException {
-		if(checkId(herbId) && checkId(illnessId)){
-			LinkJPA jpa = RestPreconditions.checkNotNull(findOneByHerbAndIllness(herbId, illnessId),
-					"Retreaving ratings for herb-illness link failed !",
-					"Cannot find link with herbId="+herbId+" and illnessId="+illnessId);
+	public RatingDTO getRatingForLink(final Long herbId, final Long illnessId) throws MyRestPreconditionsException {
+		herbServiceImpl.checkId(herbId, "Get ratings for link - herbId invalid");
+		herbServiceImpl.checkId(illnessId, "Get ratings for link - illnessId invalid");
+		
+		LinkJPA jpa = RestPreconditions.checkNotNull(findOneByHerbAndIllness(herbId, illnessId),
+				"Retreaving ratings for herb-illness link failed !",
+				"Cannot find link with herbId="+herbId+" and illnessId="+illnessId);
 			
-			return convertJpaToModel(jpa);
-		} else {
-			MyRestPreconditionsException e = new MyRestPreconditionsException("Find herb-illness rating error!",
-					"Some of the necessary fields are missing or invalid");
-			
-			if(!checkId(herbId)){
-				e.getErrors().add("Herb id is missing or invalid");
-			}
-			if(!checkId(illnessId)){
-				e.getErrors().add("Illness id is missing or invalid");
-			}
-			
-			throw e;
-		}
+		return convertJpaToModel(jpa);
 	}
 	
 	@Override
-	public List<RatingDTO> getRatingsForHerbOrIllness(Long id, boolean ih) throws MyRestPreconditionsException {
-		MyRestPreconditionsException e = new MyRestPreconditionsException("Find herb-illness rating error !",
-				(ih ? "Herb" : "Illness")+" id invalid or no illness is linked to this herb");
-		if(checkId(id)){
-			if((ih && herbRepo.getOne(id)==null) || (!ih && illnessRepo.getOne(id)==null)) {
-				throw e;
-			}
-			Set<LinkJPA> result = ih ? herbRepo.getOne(id).getLinks() : illnessRepo.getOne(id).getLinks();
-			if(!(result!=null && !result.isEmpty())){
-				throw e;
-			}
-			
-			return result
-					.stream()
-					.map(i -> convertJpaToModel(i))
-					.collect(Collectors.toList());
-		} 
+	public List<RatingDTO> getRatingsForHerbOrIllness(final Long id, final boolean ih) throws MyRestPreconditionsException {
 		
-		throw e;
-	}
-	
-	private boolean checkId(Long id){
-		return id!=null && id>0;
+		herbServiceImpl.checkId(id, "Find herb-illness rating error !");
+		
+		Set<LinkJPA> result = null;
+		if(ih){
+			result = RestPreconditions.checkNotNull(herbRepo.getOne(id), 
+				"Find herb-illness rating error !", "No herb found for that id").getLinks();
+		} else {
+			result = RestPreconditions.checkNotNull(illnessRepo.getOne(id), 
+				"Find herb-illness rating error !", "No illness found for that id").getLinks();
+		}
+		
+		RestPreconditions.assertTrue(result!=null && !result.isEmpty(), 
+				"Find herb-illness rating error !", "No herb-illness link exists");
+		
+		return result
+				.stream()
+				.map(i -> convertJpaToModel(i))
+				.collect(Collectors.toList());
+		
 	}
 }

@@ -37,6 +37,7 @@ public class RatingsController {
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody RatingDTO getRatingForHerbAndIllness(@RequestParam("herbId") Long herbId,
 												@RequestParam("illnessId") Long illnessId) throws MyRestPreconditionsException{
+		
 		return ratingsServiceImpl.getRatingForLink(herbId, illnessId);
 	}
 	

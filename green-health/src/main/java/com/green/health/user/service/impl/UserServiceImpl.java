@@ -2,9 +2,6 @@ package com.green.health.user.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -100,7 +97,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
-		getRepository().deleteById(id);
+		UserService.super.delete(id);
 		storageServiceImpl.deleteImage(id, true);
 	}
 	
@@ -132,12 +129,13 @@ public class UserServiceImpl implements UserService {
 		
 		// check that username and email are unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
-				"Create user : the username "+ model.getUsername()+" belongs to another user.");
+				"Create user : Username "+ model.getUsername()+" belongs to another user.");
 		
-		if(!RestPreconditions.checkStringMatches(model.getEmail(),  "^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
+		// email checked in model annotation 
+		/*if(!RestPreconditions.checkStringMatches(model.getEmail(),  "^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
 			throw new MyRestPreconditionsException("Create new user failed",
 					"You must provide a valid email address.");
-		}
+		}*/
 		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
 				"Create user : Email " + model.getEmail() + " belongs to another user.");
 		
@@ -149,8 +147,11 @@ public class UserServiceImpl implements UserService {
 		// basic checks
 		model = UserService.super.edit(model, id);
 		
-		UserSecurityJPA usJpa = userSecurityRepository.findByUsername(model.getUsername());
-		RestPreconditions.assertTrue(usJpa.getId()==id, "Edit user error", "You cannot edit someone else's user account.");
+		UserSecurityJPA usJpa = RestPreconditions.checkNotNull(
+				userSecurityRepository.findByUsername(model.getUsername()), 
+				"Edit user error", "No user exists for that username");
+		RestPreconditions.assertTrue(usJpa.getId()==id, 
+				"Edit user error", "You cannot edit someone else's user account.");
 		
 		UserJPA jpa = usJpa.getUserJpa();
 		
@@ -188,9 +189,8 @@ public class UserServiceImpl implements UserService {
 			MyRestPreconditionsException ex = 
 					new MyRestPreconditionsException("Change password error","request json is missing some elements.");
 	
-			if((model.getId()==null || (model.getId()!=null && model.getId()<0))) {
-				ex.getErrors().add("Invalid or missing user id");
-			}
+			checkId(model.getId(), "Change user password error");
+			
 			if(!RestPreconditions.checkString(model.getPassword())) {
 				ex.getErrors().add("Original password is mandatory");
 			}
@@ -207,7 +207,7 @@ public class UserServiceImpl implements UserService {
 		
 		//check that user exists
 		UserSecurityJPA jpa = RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
-				"Change password error : user you are changing the password for does not exist.");
+				"Change password error","User you are changing the password for does not exist.");
 		// check that ids match
 		RestPreconditions.assertTrue(jpa.getId() == model.getId(), 
 				"Access violation !!!","You are trying to change someone elses's password");
@@ -270,8 +270,9 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getProfilePictureThumb(Long id, String name, HttpServletRequest request)
+	public ResponseEntity<Resource> getProfilePictureThumb(final Long id, final String name)
 			throws MyRestPreconditionsException {
-		return storageServiceImpl.getImage(id, "profile_THUMBNAIL", request);
+		checkId(id, "Get user profile picture error");
+		return storageServiceImpl.getImage(id, "profile_THUMBNAIL");
 	}
 }

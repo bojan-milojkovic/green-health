@@ -2,7 +2,6 @@ package com.green.health.user.controller;
 
 import java.security.Principal;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -64,8 +63,8 @@ public class UserController {
 	@RequestMapping(value = "/prfimg/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id, HttpServletRequest request) throws MyRestPreconditionsException {
-	    return userServiceImpl.getProfilePictureThumb(id, "profile_THUMBNAIL", request);
+	public @ResponseBody ResponseEntity<Resource> getImageAsResource(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
+	    return userServiceImpl.getProfilePictureThumb(id, "profile_THUMBNAIL");
 	}
 	
 	// .../gh/users
@@ -98,8 +97,6 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteUserById(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
-		userServiceImpl.checkId(id);
-		
 		RestPreconditions.assertTrue(
 					(RestPreconditions.checkNotNull(userServiceImpl.getUserByUsernameOrEmail(principal.getName(), null)
 							, "Delete user error", "Your user account no longer exists"))
@@ -114,7 +111,6 @@ public class UserController {
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void changePassword(@RequestBody @Valid UserDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
 		RestPreconditions.assertTrue(model!=null, "User password edit error !!!", "You are sending a request without the object");
-		RestPreconditions.assertTrue(id!=null, "User password edit error !!!", "User id is mandatory.");
 		model.setId(id);
 		userServiceImpl.changePassword(model, principal.getName());
 	}

@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbJPA;
+import com.green.health.herb.service.HerbService;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.ratings.entities.LinkJPA;
@@ -35,6 +36,8 @@ public class RatingsTests {
 	private HerbRepository mockHerbRepo;
 	@Mock
 	private IllnessRepository mockIllnessRepo;
+	@Mock
+	private HerbService mockHerbServiceImpl;
 	
 	@InjectMocks
 	private RatingsServiceImpl mockRatingsServiceImpl;
@@ -139,7 +142,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingForLink(-1L, 2L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
+			assertEquals("Cannot find link with herbId=-1 and illnessId=2", e.getDetails());
 		}
 	}
 	
@@ -149,7 +152,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingForLink(2L, -1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Some of the necessary fields are missing or invalid", e.getDetails());
+			assertEquals("Cannot find link with herbId=2 and illnessId=-1", e.getDetails());
 		}
 	}
 	
@@ -203,7 +206,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(-1L, true);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No herb found for that id", e.getDetails());
 		}
 	}
 	
@@ -214,7 +217,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(-1L, false);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No illness found for that id", e.getDetails());
 		}
 	}
 	
@@ -226,7 +229,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, true);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No herb found for that id", e.getDetails());
 		}
 	}
 	
@@ -238,7 +241,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, false);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No illness found for that id", e.getDetails());
 		}
 	}
 	
@@ -252,7 +255,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, true);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Herb id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No herb-illness link exists", e.getDetails());
 		}
 		
 		herb.getLinks().add(new LinkJPA(herb,illness));
@@ -268,7 +271,7 @@ public class RatingsTests {
 			mockRatingsServiceImpl.getRatingsForHerbOrIllness(2L, false);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness id invalid or no illness is linked to this herb", e.getDetails());
+			assertEquals("No herb-illness link exists", e.getDetails());
 		}
 		
 		illness.getLinks().add(new LinkJPA(herb,illness));

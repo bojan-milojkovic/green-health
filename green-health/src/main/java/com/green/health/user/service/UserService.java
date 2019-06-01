@@ -1,7 +1,5 @@
 package com.green.health.user.service;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +16,6 @@ public interface UserService extends ServiceParent<UserJPA, UserDTO>{
 	
 	void saveProfilePicture(MultipartFile file, final String username) throws MyRestPreconditionsException;
 	
-	ResponseEntity<Resource> getProfilePictureThumb(final Long id, final String name, final HttpServletRequest request) 
+	ResponseEntity<Resource> getProfilePictureThumb(final Long id, final String name) 
 			throws MyRestPreconditionsException;
 }

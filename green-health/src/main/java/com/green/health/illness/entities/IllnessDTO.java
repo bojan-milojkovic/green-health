@@ -22,7 +22,7 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 	private String latinName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ] {3,}+", message="Illness Serbian name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[A-Za-z ]{3,}+", message="Illness Serbian name can consist only of at least 3 letters and whitespaces")
 	private String localName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
@@ -32,6 +32,14 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 	@JsonProperty(access = Access.READ_WRITE)
 	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness symptoms can consist only of letters, digits, dot, comma, and whitespaces")
 	private String symptoms;
+	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness cause can consist only of letters, digits, dot, comma, and whitespaces")
+	private String cause;
+	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness treatment can consist only of letters, digits, dot, comma, and whitespaces")
+	private String treatment;
 	
 	@JsonProperty(access = Access.READ_WRITE)
 	private List<HerbDTO> herbs;
@@ -67,6 +75,22 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 
 	public void setSymptoms(String symptoms) {
 		this.symptoms = symptoms;
+	}
+	
+	public String getCause() {
+		return cause;
+	}
+
+	public void setCause(String cause) {
+		this.cause = cause;
+	}
+
+	public String getTreatment() {
+		return treatment;
+	}
+
+	public void setTreatment(String treatment) {
+		this.treatment = treatment;
 	}
 
 	public void setId(Long id) {

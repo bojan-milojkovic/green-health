@@ -59,7 +59,7 @@ public class IllnessServiceImpl implements IllnessService {
 	@Override
 	public IllnessDTO getOneByLatinName(final String name) throws MyRestPreconditionsException{
 		return convertJpaToModel(RestPreconditions.checkNotNull(illnessDao.findByLatinName(name),
-				"Cannot find the illness with latin name '"+name+"'"));
+				"Get Illness Error", "Cannot find the illness with latin name '"+name+"'"));
 	}
 	
 	// add new illness
@@ -74,12 +74,12 @@ public class IllnessServiceImpl implements IllnessService {
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
-					"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
+					"We assert your locale as English. The illness with eng. name "+model.getLocalName()+" is already in our database.");
 		}else {
 			RestPreconditions.checkSuchEntityAlreadyExists(
 					// 'if' ensures that LocaleContextHolder.getLocale() is not null
 					illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
-					"The herb with local name "+model.getLocalName()+" is already in our database.");
+					"The illness with local name "+model.getLocalName()+" is already in our database.");
 		}
 		
 		illnessDao.save(convertModelToJPA(model));
@@ -106,7 +106,11 @@ public class IllnessServiceImpl implements IllnessService {
 			if(RestPreconditions.checkLocaleIsEnglish()) {
 				tmp = illnessDao.findByEngName(model.getLocalName());
 			} else {
-				tmp = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()).getIllness();
+				try{
+					tmp = illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), 
+								model.getLocalName())
+							.getIllness();
+				} catch(NullPointerException e){}
 			}
 			if(tmp!=null) {
 				RestPreconditions.assertTrue(tmp.getId()==id, "Illness edit error", 
@@ -127,6 +131,12 @@ public class IllnessServiceImpl implements IllnessService {
 		if(RestPreconditions.checkString(model.getLocalName())){
 			jpa.setLocalName(model.getLocalName());
 		}
+		if(RestPreconditions.checkString(model.getCause())){
+			jpa.setCause(model.getCause());
+		}
+		if(RestPreconditions.checkString(model.getTreatment())){
+			jpa.setTreatment(model.getTreatment());
+		}
 	}
 	
 	@Override
@@ -141,7 +151,7 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		if(RestPreconditions.checkString(model.getLatinName())){
-			jpa.setLatinName(model.getLatinName());
+			jpa.setLatinName(model.getLatinName().toLowerCase());
 		}
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
@@ -157,7 +167,6 @@ public class IllnessServiceImpl implements IllnessService {
 					jpa = illnessDao.save(jpa);
 					//TODO: if it is a brand new herb, email admin to fill in english info
 				}
-				
 				ijpa.setLocale(LocaleContextHolder.getLocale().toString());
 				ijpa.setIllness(jpa);
 				jpa.getIllnessLocales().add(ijpa);
@@ -196,6 +205,8 @@ public class IllnessServiceImpl implements IllnessService {
 		model.setLocalName(jpa.getLocalName());
 		model.setSymptoms(jpa.getSymptoms());
 		model.setDescription(jpa.getDescription());
+		model.setCause(jpa.getCause());
+		model.setTreatment(jpa.getTreatment());
 	}
 	
 	@Override
@@ -255,6 +266,12 @@ public class IllnessServiceImpl implements IllnessService {
 		if(!RestPreconditions.checkString(model.getSymptoms())){
 			ex.getErrors().add("symptoms of the illness");
 		}
+		if(!RestPreconditions.checkString(model.getCause())){
+			ex.getErrors().add("cause of the illness");
+		}
+		if(!RestPreconditions.checkString(model.getTreatment())){
+			ex.getErrors().add("illness treatment");
+		}
 		
 		if(!ex.getErrors().isEmpty()) {
 			throw ex;
@@ -267,6 +284,7 @@ public class IllnessServiceImpl implements IllnessService {
 				RestPreconditions.checkString(model.getLatinName()) ||
 				RestPreconditions.checkString(model.getLocalName()) ||
 				RestPreconditions.checkString(model.getSymptoms()) ||
+				RestPreconditions.checkString(model.getCause()) ||
 				(model.getHerbs()!=null && !model.getHerbs().isEmpty());
 	}
 
