@@ -52,6 +52,12 @@ public class UserController {
 		return userServiceImpl.getOneById(id);
 	}
 	
+	@RequestMapping(value = "/act/{key}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public void activateUser(@PathVariable("key") final String key) throws MyRestPreconditionsException{
+		userServiceImpl.activateUser(key);
+	}
+	
 	// .../gh/users/ue?username=Koala2&email=blatruc@gmail.com
 	@RequestMapping(value = "/ue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")

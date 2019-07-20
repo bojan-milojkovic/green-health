@@ -1,15 +1,13 @@
 package com.green.health.security.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import com.green.health.security.JwtTokenUtil;
 import com.green.health.security.dto.CredentialsDTO;
-import com.green.health.security.entities.RoleJPA;
-import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.security.service.SecurityService;
@@ -35,17 +33,6 @@ public class SecurityServiceImpl implements SecurityService {
 			// check password - BCrypt.checkpw(password_plaintext, stored_hash)
 			if(BCrypt.checkpw(credentials.getPassword(), jpa.getPassword())){
 				
-				List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
-				
-				for(UserHasRolesJPA userRoles : jpa.getUserHasRolesJpa()){
-					RoleJPA role = userRoles.getRoleJpa();
-					
-					authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
-					/*for(AuthorityJPA authority : role.getAuthoritiesJpa()){
-						authorities.add(new SimpleGrantedAuthority(authority.getAuthName()));
-					}*/
-				}
-				
 				String token = jwtTokenUtil.generateToken(new User(
 							jpa.getUsername(),
 							credentials.getPassword(),
@@ -53,7 +40,10 @@ public class SecurityServiceImpl implements SecurityService {
 							true,
 							true,
 							jpa.isNotLocked(),
-							authorities
+							Arrays.asList(jpa.getUserHasRoles().split("#"))
+									.stream()
+									.map(a -> new SimpleGrantedAuthority(a))
+									.collect(Collectors.toList())
 						));
 				
 				// update last login datetime

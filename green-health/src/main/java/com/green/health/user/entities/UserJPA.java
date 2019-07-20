@@ -43,6 +43,9 @@ public class UserJPA implements PojoParent {
 	@Column
 	private String country;
 	
+	@Column(name="postal_code")
+	private String postalCode;
+	
 	@Column
 	private String city;
 	
@@ -140,5 +143,13 @@ public class UserJPA implements PojoParent {
 
 	public void setAddress2(String address2) {
 		this.address2 = address2;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
 	}
 }

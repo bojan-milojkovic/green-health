@@ -12,4 +12,6 @@ public interface UserSecurityRepository extends JpaRepository<UserSecurityJPA, L
 	@Query("select u from UserSecurityJPA u where u.username = :param")
 	UserSecurityJPA findByUsername(@Param("param") final String username);
 	
+	@Query("select u from UserSecurityJPA u where u.hashKey = :param")
+	UserSecurityJPA findByHashKey(@Param("param") final String hashKey);
 }

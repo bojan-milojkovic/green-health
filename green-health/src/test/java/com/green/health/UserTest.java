@@ -13,9 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import com.green.health.security.entities.UserSecurityJPA;
-import com.green.health.security.repositories.RoleRepository;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.entities.UserDTO;
@@ -28,9 +26,6 @@ public class UserTest {
 
 	@Mock
 	private UserRepository mockUserRepository;
-	
-	@Mock
-	private RoleRepository mockRoleRepository;
 	
 	@Mock
 	private UserSecurityRepository mockUserSecurityRepo;
@@ -56,6 +51,7 @@ public class UserTest {
 			UserSecurityJPA usjpa = new UserSecurityJPA();
 			usjpa.setId((long)i);
 			usjpa.setUsername("username_"+i);
+			usjpa.setUserHasRoles("ROLE_USER");
 			usjpa.setUserJpa(jpa);
 			usjpa.setPassword(BCrypt.hashpw("password_"+i, BCrypt.gensalt()));
 			jpa.setUserSecurityJpa(usjpa);
@@ -72,6 +68,7 @@ public class UserTest {
 		postModel.setAddress1("add1");
 		postModel.setCity("city");
 		postModel.setCountry("country");
+		postModel.setPostalCode("11000");
 		postModel.setPhone1("+381643771247");
 		
 		patchModel = new UserDTO();

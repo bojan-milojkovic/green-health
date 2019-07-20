@@ -20,4 +20,6 @@ public interface UserService extends ServiceParent<UserJPA, UserDTO>{
 			throws MyRestPreconditionsException;
 	
 	void setCurrentUsername(final String cun);
+	
+	String activateUser(final String key) throws MyRestPreconditionsException;
 }

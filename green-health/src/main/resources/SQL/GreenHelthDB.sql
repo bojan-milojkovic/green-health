@@ -221,32 +221,6 @@ INSERT INTO `ratings` (`id`, `user_id`, `link_id`) VALUES (2,5,1),(3,5,2);
 UNLOCK TABLES;
 
 --
--- Table structure for table `roles`
---
-
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `roles` (
-  `role_id` int(4) NOT NULL,
-  `role_name` varchar(45) NOT NULL,
-  PRIMARY KEY (`role_id`),
-  UNIQUE KEY `role_id_UNIQUE` (`role_id`),
-  UNIQUE KEY `role_name_UNIQUE` (`role_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `roles`
---
-
-LOCK TABLES `roles` WRITE;
-/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` (`role_id`, `role_name`) VALUES (3,'ROLE_ADMIN'),(2,'ROLE_HERBALIST'),(4,'ROLE_SUPERADMIN'),(1,'ROLE_USER');
-/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user`
 --
 
@@ -261,6 +235,7 @@ CREATE TABLE `user` (
   `reg_date` datetime NOT NULL,
   `city` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `country` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `postal_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address_1` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address_2` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `phone_1` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -268,7 +243,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `id_UNIQUE` (`user_id`),
   UNIQUE KEY `email_UNIQUE` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -277,38 +252,8 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (`user_id`, `first_name`, `last_name`, `email`, `reg_date`) VALUES (5,'Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20'),(6,'Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50');
+INSERT INTO `user` (`user_id`, `first_name`, `last_name`, `email`, `reg_date`, `city`, `country`, `postal_code`, `address_1`, `address_2`, `phone_1`, `phone_2`) VALUES (5,'Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20','Beograd','Srbija','11000','Ustanicka 10','3ci ulaz, drugi sprat stan broj 34','+381605178733','+381112443049'),(6,'Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50','','','11000','',NULL,'',NULL),(7,'Dusan','Kanlic','kanlic@eunet.rs','2019-07-20 11:21:37','Novi Beograd','Srbija','11000','asdfsd',NULL,'+381605643812',NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `user_has_roles`
---
-
-DROP TABLE IF EXISTS `user_has_roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_has_roles` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `role_id` int(4) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `fk_us_r_idx` (`user_id`),
-  KEY `fk_r_idx` (`role_id`),
-  CONSTRAINT `fk_r` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_us` FOREIGN KEY (`user_id`) REFERENCES `user_security` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_has_roles`
---
-
-LOCK TABLES `user_has_roles` WRITE;
-/*!40000 ALTER TABLE `user_has_roles` DISABLE KEYS */;
-INSERT INTO `user_has_roles` (`id`, `user_id`, `role_id`) VALUES (6,5,1),(7,5,2),(8,5,3),(9,5,4),(10,6,1);
-/*!40000 ALTER TABLE `user_has_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -322,15 +267,17 @@ CREATE TABLE `user_security` (
   `user_id` int(11) NOT NULL,
   `username` varchar(50) CHARACTER SET latin1 NOT NULL,
   `password` varchar(150) CHARACTER SET latin1 NOT NULL,
-  `hash_code` varchar(45) UNIQUE NULL,
+  `hash_key` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `not_locked` tinyint(1) NOT NULL DEFAULT '1',
   `last_login` datetime NOT NULL,
   `last_password_change` datetime NOT NULL,
   `last_update` datetime NOT NULL,
+  `user_has_roles` varchar(52) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_id_UNIQUE` (`user_id`),
   UNIQUE KEY `username_UNIQUE` (`username`),
+  UNIQUE KEY `hash_key` (`hash_key`),
   CONSTRAINT `fk_us_u` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -341,7 +288,7 @@ CREATE TABLE `user_security` (
 
 LOCK TABLES `user_security` WRITE;
 /*!40000 ALTER TABLE `user_security` DISABLE KEYS */;
-INSERT INTO `user_security` (`user_id`, `username`, `password`, `active`, `not_locked`, `last_login`, `last_password_change`, `last_update`) VALUES (5,'Lazaruss','$2a$10$nLmLTuMr1gRHsaaNfH8BFehEp5KpC3pyI91jLyAzKRz9MiUwTNgJ2',1,1,'2019-05-15 22:09:45','2018-07-23 19:49:20','2018-07-23 19:49:20'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50');
+INSERT INTO `user_security` (`user_id`, `username`, `password`, `hash_key`, `active`, `not_locked`, `last_login`, `last_password_change`, `last_update`, `user_has_roles`) VALUES (5,'Lazaruss','$2a$10$nLmLTuMr1gRHsaaNfH8BFehEp5KpC3pyI91jLyAzKRz9MiUwTNgJ2',NULL,1,1,'2019-07-20 13:23:25','2018-07-23 19:49:20','2018-07-23 19:49:20','ROLE_USER#ROLE_HERBALIST#ROLE_ADMIN#ROLE_SUPERADMIN'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',NULL,1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50','ROLE_USER'),(7,'KanlicD','$2a$10$tpfIZUSEHDF8yShgQGXljO.HrD7YwUMJEEgnq/Z5pmasH85sRPL22',NULL,1,1,'2019-07-20 11:21:37','2019-07-20 11:21:37','2019-07-20 11:21:39','ROLE_USER');
 /*!40000 ALTER TABLE `user_security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -354,4 +301,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-29 20:43:28
+-- Dump completed on 2019-07-20 13:26:01

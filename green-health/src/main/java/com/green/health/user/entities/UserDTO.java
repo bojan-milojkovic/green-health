@@ -49,6 +49,9 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="Country name must contain only letters and white spaces")
 	private String country;
 	
+	@Pattern(regexp="^[0-9]+$", message="Postal code can consist only of digits")
+	private String postalCode;
+	
 	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="City name must contain only letters and white spaces")
 	private String city;
 	
@@ -171,5 +174,13 @@ public class UserDTO implements PojoParent{
 
 	public void setAddress2(String address2) {
 		this.address2 = address2;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
 	}
 }

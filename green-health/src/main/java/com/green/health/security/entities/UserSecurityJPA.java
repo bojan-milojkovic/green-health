@@ -1,12 +1,8 @@
 package com.green.health.security.entities;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,10 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.MapsId;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.user.entities.UserJPA;
 
@@ -43,8 +37,8 @@ public class UserSecurityJPA {
 	@MapsId
 	private UserJPA userJpa;
 	
-	@OneToMany(mappedBy="userSecurityJpa", fetch=FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<UserHasRolesJPA> userHasRolesJpa = new ArrayList<UserHasRolesJPA>();
+	@Column(name="user_has_roles")
+	private String userHasRoles;
 	
 	@Column(name="active")
 	private Boolean active;
@@ -159,19 +153,19 @@ public class UserSecurityJPA {
 		this.userJpa = userJpa;
 	}
 
-	public List<UserHasRolesJPA> getUserHasRolesJpa() {
-		return userHasRolesJpa;
-	}
-
-	public void setUserHasRolesJpa(List<UserHasRolesJPA> userHasRolesJpa) {
-		this.userHasRolesJpa = userHasRolesJpa;
-	}
-
 	public Set<LinkJPA> getLinks() {
 		return links;
 	}
 
 	public void setLinks(Set<LinkJPA> links) {
 		this.links = links;
+	}
+
+	public String getUserHasRoles() {
+		return userHasRoles;
+	}
+
+	public void setUserHasRoles(String userHasRoles) {
+		this.userHasRoles = userHasRoles;
 	}
 }

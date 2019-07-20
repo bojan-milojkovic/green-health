@@ -14,9 +14,7 @@ import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.email.EmailUtil;
 import com.green.health.images.storage.StorageService;
-import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
-import com.green.health.security.repositories.RoleRepository;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
@@ -27,8 +25,6 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 public class UserServiceImpl implements UserService {
 
 	private UserRepository userRepository;
-	
-	private RoleRepository roleRepository;
 
 	private UserSecurityRepository userSecurityRepository;
 	
@@ -43,11 +39,10 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Autowired
-	public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+	public UserServiceImpl(UserRepository userRepository,
 			UserSecurityRepository userSecurityRepository,
 			StorageService storageServiceImpl, EmailUtil emailUtil) {
 		this.userRepository = userRepository;
-		this.roleRepository = roleRepository;
 		this.userSecurityRepository = userSecurityRepository;
 		this.storageServiceImpl = storageServiceImpl;
 		this.emailUtil = emailUtil;
@@ -61,6 +56,16 @@ public class UserServiceImpl implements UserService {
 	// get a specific user :
 	public UserDTO getOneById(final Long id) throws MyRestPreconditionsException{
 		return UserService.super.getOneById(id);
+	}
+	
+	public String activateUser(final String key) throws MyRestPreconditionsException {
+		UserSecurityJPA jpa = RestPreconditions.checkNotNull(userSecurityRepository.findByHashKey(key), "User activation error", "Cannot find user with that activation key");
+		
+		jpa.setHashKey(null);
+		jpa.setActive(true);
+		userSecurityRepository.save(jpa);
+		
+		return jpa.getUsername();
 	}
 	
 	public void isPostDataPresent(final UserDTO model) throws MyRestPreconditionsException {
@@ -88,6 +93,9 @@ public class UserServiceImpl implements UserService {
 		if(!RestPreconditions.checkString(model.getCountry())){
 			ex.getErrors().add("Country");
 		}
+		if(!RestPreconditions.checkString(model.getPostalCode())){
+			ex.getErrors().add("postal code");
+		}
 		if(!RestPreconditions.checkString(model.getAddress1())){
 			ex.getErrors().add("Address");
 		}
@@ -106,6 +114,7 @@ public class UserServiceImpl implements UserService {
 				RestPreconditions.checkString(model.getLastName()) ||
 				RestPreconditions.checkString(model.getCity()) ||
 				RestPreconditions.checkString(model.getCountry()) ||
+				RestPreconditions.checkString(model.getPostalCode()) ||
 				RestPreconditions.checkString(model.getAddress1()) ||
 				RestPreconditions.checkString(model.getAddress2()) ||
 				RestPreconditions.checkString(model.getPhone1()) ||
@@ -267,16 +276,11 @@ public class UserServiceImpl implements UserService {
 			usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
 			usJpa.setUsername(model.getUsername());
 			usJpa.setUserJpa(jpa);
+			usJpa.setUserHasRoles("ROLE_USER");
 			jpa.setUserSecurityJpa(usJpa);
 			
 			String key = UUID.randomUUID().toString();
 			usJpa.setHashKey(key);
-			
-			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
-			
-			uhrJpa.setUserSecurityJpa(usJpa);
-			uhrJpa.setRoleJpa(roleRepository.getOne(1L));
-			usJpa.getUserHasRolesJpa().add(uhrJpa);
 			
 			emailUtil.confirmRegistration(key, model.getFirstName()+" "+model.getLastName(), model.getEmail());
 		} else {
