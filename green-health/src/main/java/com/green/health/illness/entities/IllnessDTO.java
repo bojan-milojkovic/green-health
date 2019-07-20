@@ -18,27 +18,27 @@ public class IllnessDTO implements PojoParent, IllnessInterface {
 	private Long id;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ]{3,}", message="Illness Latin name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[A-Za-z ]{3,}", message="Illness Latin name can consist only of at least 3 latin letters and whitespaces")
 	private String latinName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z ]{3,}+", message="Illness Serbian name can consist only of at least 3 letters and whitespaces")
+	@Pattern(regexp="[^!@#$%^&*().,?`\";:{}|<>0-9_-]{3,}+", message="Illness local name can consist only of at least 3 letters and whitespaces")
 	private String localName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness description can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^!@#$%^&*()?`\";{}|<>]+", message="Illness description can consist only of letters, digits, dot, comma, and whitespaces")
 	private String description;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness symptoms can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^!@#$%^&*()?`\";{}|<>]+", message="Illness symptoms can consist only of letters, digits, dot, comma, and whitespaces")
 	private String symptoms;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness cause can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^!@#$%^&*()?`\";{}|<>]+", message="Illness cause can consist only of letters, digits, dot, comma, and whitespaces")
 	private String cause;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@Pattern(regexp="[A-Za-z0-9 .,:'()-]+", message="Illness treatment can consist only of letters, digits, dot, comma, and whitespaces")
+	@Pattern(regexp="[^!@#$%^&*()?`\";{}|<>]+", message="Illness treatment can consist only of letters, digits, dot, comma, and whitespaces")
 	private String treatment;
 	
 	@JsonProperty(access = Access.READ_WRITE)

@@ -19,7 +19,7 @@ public class UserDTO implements PojoParent{
 	@Min(0)
 	private Long id;
 	
-	@Pattern(regexp="^[^!@#$%^&*(),?`\";:{}|<>()]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
+	@Pattern(regexp="^[^!@#$%^&*(),?`\";:{}|<>]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
 	private String username;
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
@@ -30,10 +30,10 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[^ ;]{6,}$", message="New password cannot contain a white space or ; and must be at least 6 characters long")
 	private String newPassword;
 	
-	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9()_ -]+$", message="First name cannot contain digits or special characters")
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9_ -]+$", message="First name cannot contain digits or special characters")
 	private String firstName;
 	
-	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9()_ -]+$", message="Last name cannot contain digits or special characters")
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9_ -]+$", message="Last name cannot contain digits or special characters")
 	private String lastName;
 	
 	@JsonProperty(access = Access.READ_ONLY)
@@ -46,19 +46,19 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[+]?[0-9 ]+$", message="Phone number 2 must contain only digits white spaces and +")
 	private String phone2;
 	
-	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="Country name must contain only letters and white spaces")
+	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9_-]+$", message="Country name must contain only letters and white spaces")
 	private String country;
 	
 	@Pattern(regexp="^[0-9]+$", message="Postal code can consist only of digits")
 	private String postalCode;
 	
-	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="City name must contain only letters and white spaces")
+	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9_-]+$", message="City name must contain only letters and white spaces")
 	private String city;
 	
-	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>()_]+$", message="Address 1 must contain only letters, digits, white spaces, ., #, and -")
+	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>_]+$", message="Address 1 must contain only letters, digits, white spaces, ., #, and -")
 	private String address1;
 	
-	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>()_]+$", message="Address 2 must contain only letters, digits, white spaces, ., #, and -")
+	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>_]+$", message="Address 2 must contain only letters, digits, white spaces, ., #, and -")
 	private String address2;
 	
 	@EmailPattern

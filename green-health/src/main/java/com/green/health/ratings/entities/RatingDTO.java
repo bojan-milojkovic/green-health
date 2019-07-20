@@ -3,6 +3,8 @@ package com.green.health.ratings.entities;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -21,9 +23,11 @@ public class RatingDTO implements PojoParent{
 	private Long herbId;
 	
 	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^[A-Za-z ]+$", message="Herb latin name must consist only of latin letters and spaces.")
 	private String herbLatinName;
 	
 	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9_ -]+$", message="Herb local name cannot contain digits or special characters")
 	private String herbLocalName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
@@ -32,9 +36,11 @@ public class RatingDTO implements PojoParent{
 	private Long illnessId;
 	
 	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^[A-Za-z ]+$", message="Herb latin name must consist only of latin letters and spaces.")
 	private String illnessLatinName;
 	
 	@JsonProperty(access = Access.READ_ONLY)
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9_ -]+$", message="Illness local name cannot contain digits or special characters")
 	private String illnessLocalName;
 	
 	@JsonProperty(access = Access.WRITE_ONLY)

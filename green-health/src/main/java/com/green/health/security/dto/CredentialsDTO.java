@@ -9,7 +9,7 @@ public class CredentialsDTO {
 
 	@NotNull
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@Pattern(regexp="^[A-Za-z0-9._-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
+	@Pattern(regexp="^[^!@#$%^&*(),?`\";:{}|<>0-9_-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
 	private String username;
 	
 	@NotNull

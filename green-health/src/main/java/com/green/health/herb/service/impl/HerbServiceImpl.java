@@ -267,28 +267,28 @@ public class HerbServiceImpl implements HerbService {
 		// use .checkStringMatches() here because model object is created from json in controller
 		MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
 						"The following data is missing from the herb form");
-		if(!RestPreconditions.checkStringMatches(model.getDescription(),"[A-Za-z0-9 .,:'()-]{10,}")){
+		if(!RestPreconditions.checkStringMatches(model.getDescription(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
 			ex.getErrors().add("herb description");
 		}
-		if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[A-Za-z0-9 .,:'()-]{10,}")){
+		if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
 			ex.getErrors().add("where the herb grows");
 		}
 		if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
 			ex.getErrors().add("herb's latin name");
 		}
-		if(!RestPreconditions.checkStringMatches(model.getProperties(),"[A-Za-z0-9 .,:'()-]{10,}")){
+		if(!RestPreconditions.checkStringMatches(model.getProperties(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
 			ex.getErrors().add("herb's use properties");
 		}
-		if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[A-Za-z ]{3,}")){
+		if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[^!@#$%^&*?`\";:{}|<>()+=-]{3,}")){
 			ex.getErrors().add("herb's local name");
 		}
-		if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[A-Za-z0-9 .,:'()-]{10,}")){
+		if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
 			ex.getErrors().add("herb's use warnings");
 		}
-		if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[A-Za-z0-9 .,:'()-]{10,}")){
+		if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
 			ex.getErrors().add("when to pick the herb");
 		}
-		if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([A-Za-z0-9 .,:'()-]{10,})|(^$)")){ // regexp allows for ""
+		if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([^!@#$%^&*?`\";:{}|<>()+=-]{10,})|(^$)")){ // regexp allows for ""
 			ex.getErrors().add("where to buy the herb");
 		}
 		
