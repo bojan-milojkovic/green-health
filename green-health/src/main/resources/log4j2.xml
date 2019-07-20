@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+    	<Property name="APP_LOG_ROOT">./logs</Property>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] %-40.40c{1.} : %m%n%ex
+        </Property>
+    </Properties>
+    
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+		
+		<RollingFile name="debugLog" fileName="logs/log4j2-debug.log"
+            		filePattern="logs/log4j2-debug-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+		
+		<RollingFile name="errorLog" fileName="logs/log4j2-error.log" 
+		             filePattern="logs/log4j2-error-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="2"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.green.health" additivity="false" level="debug">
+            <AppenderRef ref="debugLog" level="debug"/>
+            <AppenderRef ref="errorLog" level="error"/>
+        </Logger>
+        
+        <Logger name="com.green" additivity="false">
+            <AppenderRef ref="errorLog" level="error"/>
+        </Logger>
+        
+        <Root level="info">
+            <AppenderRef ref="ConsoleAppender" />
+        </Root>
+    </Loggers>
+    
+</Configuration>

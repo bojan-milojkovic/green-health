@@ -103,7 +103,7 @@ public class UserTest {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(0).getUserSecurityJpa());
 		
 		try {
-			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail("username_0", null);
+			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail("username_0", null, null);
 			
 			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
@@ -116,7 +116,7 @@ public class UserTest {
 		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
-			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail(null, list.get(0).getEmail());
+			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail(null, list.get(0).getEmail(), null);
 			
 			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
@@ -155,7 +155,7 @@ public class UserTest {
 		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(null);
 		
 		try{
-			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg.com");
+			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg.com", null);
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("There is no user in our database with that email.", e.getDetails());
@@ -165,7 +165,7 @@ public class UserTest {
 	@Test
 	public void findUserByInvalidEmailTest(){
 		try{
-			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg");
+			mockUserServiceimpl.getUserByUsernameOrEmail(null, "ggg@ggg", null);
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("You must provide a valid email address.", e.getDetails());
@@ -177,7 +177,7 @@ public class UserTest {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(null);
 		
 		try{
-			mockUserServiceimpl.getUserByUsernameOrEmail("invalid", null);
+			mockUserServiceimpl.getUserByUsernameOrEmail("invalid", null, null);
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
 			assertEquals("There is no user in our database with that username.", e.getDetails());
@@ -187,10 +187,10 @@ public class UserTest {
 	@Test
 	public void findUserWithoutEmailOrUsername(){
 		try{
-			mockUserServiceimpl.getUserByUsernameOrEmail(null,null);
+			mockUserServiceimpl.getUserByUsernameOrEmail(null,null, null);
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
-			assertEquals("When searching a user, you must provide at least one parameter - username or email.", e.getDetails());
+			assertEquals("When searching a user, you must provide at least one parameter - username, phone or email.", e.getDetails());
 		}
 	}
 	

@@ -1,5 +1,7 @@
 package com.green.health.security.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -18,11 +20,15 @@ public class SecurityController {
 
 	@Autowired
 	private SecurityService securityServiceImpl;
+	private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
 	
 	@RequestMapping(value = "/roles", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody String generateToken(@RequestBody CredentialsDTO credentials) throws MyRestPreconditionsException{
-		return securityServiceImpl.generateTokenForUser(credentials);
+		logger.debug("User "+credentials.getUsername()+" logging in ...");
+		String token = securityServiceImpl.generateTokenForUser(credentials);
+		logger.debug("User "+credentials.getUsername()+" log in successfull.");
+		return token;
 	}
 	
 	@RequestMapping(value = "/refresh", method = RequestMethod.GET)

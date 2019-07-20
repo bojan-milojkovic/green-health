@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.mail.internet.MimeMessage;
 import org.apache.velocity.app.VelocityEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,6 +20,8 @@ public class EmailUtil {
 	public JavaMailSender javaMailSender;
     private VelocityEngine velocityEngine;
     private String hostName;
+    
+    private static final Logger logger = LoggerFactory.getLogger(EmailUtil.class);
 	
 	@Autowired
 	public EmailUtil(JavaMailSender javaMailSender, VelocityEngine velocityEngine, String hostName) {
@@ -30,7 +34,7 @@ public class EmailUtil {
 		Map<String,Object> model = new HashMap<String,Object>();
 		model.put("name", name);
 		model.put("url", hostName+"/users/act/"+key);
-		
+		logger.debug("Sending user activation email ...");
 		sendEmail("User activation", email, "user_activation.vm", model);
 	}
 	

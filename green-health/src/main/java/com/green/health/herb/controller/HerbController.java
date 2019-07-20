@@ -1,8 +1,12 @@
 package com.green.health.herb.controller;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -30,6 +34,8 @@ public class HerbController {
 	
 	private HerbService herbServiceImpl;
 	
+	private static final Logger logger = LoggerFactory.getLogger(HerbController.class);
+	
 	@Autowired
 	public HerbController(HerbService herbServiceImpl) {
 		this.herbServiceImpl = herbServiceImpl;
@@ -39,7 +45,8 @@ public class HerbController {
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody List<HerbDTO> getAllHerbs(){
+	public @ResponseBody List<HerbDTO> getAllHerbs(Principal principal){
+		logger.debug("User "+principal.getName()+" getting all herbs");
 		return herbServiceImpl.getAll();
 	}
 	
@@ -47,7 +54,8 @@ public class HerbController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody HerbDTO getOneById(@PathVariable("id") Long id) throws MyRestPreconditionsException{
+	public @ResponseBody HerbDTO getOneById(@PathVariable("id") Long id, Principal principal) throws MyRestPreconditionsException{
+		logger.debug("User "+principal.getName()+" getting herb id="+id);
 		return herbServiceImpl.getOneById(id);
 	}
 	
@@ -55,7 +63,8 @@ public class HerbController {
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name) throws MyRestPreconditionsException{
+	public @ResponseBody HerbDTO getHerbByName(@RequestParam(value="name", required=true) String name, Principal principal) throws MyRestPreconditionsException{
+		logger.debug("User "+principal.getName()+" getting herb "+name);
 		try {
 			return herbServiceImpl.getHerbByLatinName(name);
 		}catch (Exception e){
@@ -66,14 +75,16 @@ public class HerbController {
 	@RequestMapping(value = "/thumbnail/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
+	public @ResponseBody ResponseEntity<Resource> getImageThumbnail(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		logger.debug("User "+principal.getName()+" getting herb thumbnail image for herb id="+id);
 		return herbServiceImpl.getHerbImage(id, "herb_THUMBNAIL");
 	}
 	
 	@RequestMapping(value = "/image/{id}", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id) throws MyRestPreconditionsException{
+	public @ResponseBody ResponseEntity<Resource> getImageLarge(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException{
+		logger.debug("User "+principal.getName()+" getting herb large image for herb id="+id);
 		return herbServiceImpl.getHerbImage(id, "herb");
 	}
 	
@@ -95,13 +106,14 @@ Content-Type: image/jpeg
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void addHerb (@RequestParam(value="json", required=true) final String json,
-			@RequestParam(value="file", required=true) final MultipartFile file) throws MyRestPreconditionsException {
-
+			@RequestParam(value="file", required=true) final MultipartFile file, Principal principal) throws MyRestPreconditionsException {
+		
 		try {
 			HerbDTO model = (new ObjectMapper()).readValue(json, HerbDTO.class);
-			
+			logger.debug("User "+principal.getName()+" adding new herb "+model.getLatinName()+" ...");
 			model.setImage(file);
 			herbServiceImpl.addNew(model);
+			logger.debug("User "+principal.getName()+" added new herb "+model.getLatinName());
 		} catch (IOException e) {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
 			ex.getErrors().add(e.getMessage());
@@ -115,8 +127,11 @@ Content-Type: image/jpeg
 	@RequestMapping(value="/{id}", method = RequestMethod.PATCH, headers="Content-Type!=multipart/form-data")
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public @ResponseBody HerbDTO editHerb(@RequestBody @Valid HerbDTO model, @PathVariable("id") final Long id) throws MyRestPreconditionsException {
-		return herbServiceImpl.edit(model, id);
+	public @ResponseBody HerbDTO editHerb(@RequestBody @Valid HerbDTO model, @PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		logger.debug("User "+principal.getName()+" editing herb "+id+" without pictures ...");
+		model = herbServiceImpl.edit(model, id);
+		logger.debug("User "+principal.getName()+" edit successful.");
+		return model;
 	}
 	
 	// .../gh/herb/3
@@ -125,7 +140,7 @@ Content-Type: image/jpeg
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public @ResponseBody HerbDTO editHerb(@RequestParam(value="file", required=true) final MultipartFile file,
 										  @RequestParam(value="json", required=false) final String json,
-										  @PathVariable("id") final Long id) 
+										  @PathVariable("id") final Long id, Principal principal) 
 												  throws MyRestPreconditionsException {
 		try {
 			HerbDTO model;
@@ -136,7 +151,10 @@ Content-Type: image/jpeg
 			}
 			
 			model.setImage(file);
-			return herbServiceImpl.edit(model, id);
+			logger.debug("User "+principal.getName()+" editing herb "+id+" with pictures ...");
+			model = herbServiceImpl.edit(model, id);
+			logger.debug("User "+principal.getName()+" edit successful.");
+			return model;
 		} catch (IOException e) {
 			MyRestPreconditionsException ex = new MyRestPreconditionsException("Add Herb error","error transforming a json string into an object");
 			ex.getErrors().add(e.getMessage());
@@ -150,7 +168,9 @@ Content-Type: image/jpeg
 	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void deleteHerb(@PathVariable("id") final Long id) throws MyRestPreconditionsException {
+	public void deleteHerb(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException {
+		logger.debug("User "+principal.getName()+" deleting herb "+id+" ...");
 		herbServiceImpl.delete(id);
+		logger.debug("User "+principal.getName()+" delete successful.");
 	}
 }

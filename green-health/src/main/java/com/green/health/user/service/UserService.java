@@ -10,7 +10,7 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface UserService extends ServiceParent<UserJPA, UserDTO>{
 	
-	UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException;
+	UserDTO getUserByUsernameOrEmail(final String username, final String email, final String phone) throws MyRestPreconditionsException;
 	
 	void changePassword(UserDTO model, String username) throws MyRestPreconditionsException;
 	

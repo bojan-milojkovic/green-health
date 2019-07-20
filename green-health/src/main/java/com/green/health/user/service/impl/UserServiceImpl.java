@@ -136,7 +136,7 @@ public class UserServiceImpl implements UserService {
 		storageServiceImpl.deleteImage(id, true);
 	}
 	
-	public UserDTO getUserByUsernameOrEmail(final String username, final String email) throws MyRestPreconditionsException{
+	public UserDTO getUserByUsernameOrEmail(final String username, final String email, final String phone) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
 			return convertJpaToModel(RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
 							"Finding user by parameters failed", 
@@ -152,9 +152,19 @@ public class UserServiceImpl implements UserService {
 					"Finding user by parameters failed", 
 					"There is no user in our database with that email."));
 		}
+		if(RestPreconditions.checkString(phone)){
+			if(!phone.matches("^[+]?[0-9 ]$")){
+				throw new MyRestPreconditionsException("Finding user by parameters failed",
+						"You must provide a valid phone number.");
+			}
+			
+			return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.findByPhone(phone), 
+					"Finding user by parameters failed", 
+					"There is no user in our database with that phone number."));
+		}
 		
 		throw new MyRestPreconditionsException("Finding user by parameters failed",
-				"When searching a user, you must provide at least one parameter - username or email.");
+				"When searching a user, you must provide at least one parameter - username, phone or email.");
 	}
 	
 	// add new user to db :

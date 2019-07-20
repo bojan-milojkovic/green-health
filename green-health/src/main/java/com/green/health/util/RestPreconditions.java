@@ -25,7 +25,7 @@ public class RestPreconditions {
 	}
 	
 	public static boolean checkStringMatches(final String s, final String regExp){
-		return s!=null && s.matches(regExp);
+		return checkString(s) && s.matches(regExp);
 	}
 	
 	public static <T> T checkNotNull(T object, String description, String details)throws MyRestPreconditionsException {

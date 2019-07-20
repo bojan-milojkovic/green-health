@@ -40,10 +40,10 @@ public class UserDTO implements PojoParent{
 	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDate object from json string
 	private LocalDateTime registration;
 	
-	@Pattern(regexp="^[0-9 +]+$", message="Phone number 1 must contain only digits white spaces and +")
+	@Pattern(regexp="^[+]?[0-9 ]+$", message="Phone number 1 must contain only digits white spaces and +")
 	private String phone1;
 	
-	@Pattern(regexp="^[0-9 +]+$", message="Phone number 2 must contain only digits white spaces and +")
+	@Pattern(regexp="^[+]?[0-9 ]+$", message="Phone number 2 must contain only digits white spaces and +")
 	private String phone2;
 	
 	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="Country name must contain only letters and white spaces")
