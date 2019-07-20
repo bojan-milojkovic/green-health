@@ -38,7 +38,8 @@ public class UserController {
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody List<UserDTO> getAllUsers(){
+	public @ResponseBody List<UserDTO> getAllUsers(Principal principal){
+		userServiceImpl.setCurrentUsername(principal.getName());
 		return userServiceImpl.getAll();
 	}
 	
@@ -46,7 +47,8 @@ public class UserController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody UserDTO getUserById(@PathVariable("id") final Long id) throws MyRestPreconditionsException{
+	public @ResponseBody UserDTO getUserById(@PathVariable("id") final Long id, Principal principal) throws MyRestPreconditionsException{
+		userServiceImpl.setCurrentUsername(principal.getName());
 		return userServiceImpl.getOneById(id);
 	}
 	
@@ -55,8 +57,10 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody UserDTO getUserByUsernameOrEmail(@RequestParam(value="username", required=false) final String username,
-														  @RequestParam(value="email", required=false) final String email) 
+														  @RequestParam(value="email", required=false) final String email,
+														  Principal principal) 
 														  throws MyRestPreconditionsException{
+		userServiceImpl.setCurrentUsername(principal.getName());
 		return userServiceImpl.getUserByUsernameOrEmail(username, email);
 	}
 	

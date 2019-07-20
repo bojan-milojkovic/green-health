@@ -34,6 +34,24 @@ public class UserJPA implements PojoParent {
 	@Column(name="email")
 	private String email;
 	
+	@Column(name="phone_1")
+	private String phone1;
+	
+	@Column(name="phone_2")
+	private String phone2;
+	
+	@Column
+	private String country;
+	
+	@Column
+	private String city;
+	
+	@Column(name="address_1")
+	private String address1;
+	
+	@Column(name="address_2")
+	private String address2;
+	
 	@OneToOne(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private UserSecurityJPA userSecurityJpa;
 	
@@ -74,5 +92,53 @@ public class UserJPA implements PojoParent {
 	}
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getPhone1() {
+		return phone1;
+	}
+
+	public void setPhone1(String phone1) {
+		this.phone1 = phone1;
+	}
+
+	public String getPhone2() {
+		return phone2;
+	}
+
+	public void setPhone2(String phone2) {
+		this.phone2 = phone2;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getAddress1() {
+		return address1;
+	}
+
+	public void setAddress1(String address1) {
+		this.address1 = address1;
+	}
+
+	public String getAddress2() {
+		return address2;
+	}
+
+	public void setAddress2(String address2) {
+		this.address2 = address2;
 	}
 }

@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<UserJPA, Long>{
 	// query annotation can be skipped ; JpaRepository can guess the query from method name
 	@Query("select u from UserJPA u where u.email = :param")
 	public UserJPA findByEmail(@Param("param") final String email);
+	
+	@Query("select u from UserJPA u where u.phone1 = :param or u.phone2 = :param")
+	public UserJPA findByPhone(@Param("param") final String phone1);
 }

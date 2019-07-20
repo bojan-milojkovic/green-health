@@ -19,7 +19,7 @@ public class UserDTO implements PojoParent{
 	@Min(0)
 	private Long id;
 	
-	@Pattern(regexp="^[A-Za-z0-9._-]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
+	@Pattern(regexp="^[^!@#$%^&*(),?`\";:{}|<>()]{5,}$", message="Username can consist only of letters, digits, dot, dash and underscore")
 	private String username;
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
@@ -30,15 +30,33 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[^ ;]{6,}$", message="New password cannot contain a white space or ; and must be at least 6 characters long")
 	private String newPassword;
 	
-	@Pattern(regexp="^[^ ;]+$", message="First name cannot have ; or a white space")
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9()_ -]+$", message="First name cannot contain digits or special characters")
 	private String firstName;
 	
-	@Pattern(regexp="^[^ ;]+$", message="Last name cannot have ; or a white space")
+	@Pattern(regexp="^[^!@#$%^&*().,?`\";:{}|<>0-9()_ -]+$", message="Last name cannot contain digits or special characters")
 	private String lastName;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(shape=Shape.STRING, pattern = "yyyy-MM-dd") // initialize LocalDate object from json string
 	private LocalDateTime registration;
+	
+	@Pattern(regexp="^[0-9 +]+$", message="Phone number 1 must contain only digits white spaces and +")
+	private String phone1;
+	
+	@Pattern(regexp="^[0-9 +]+$", message="Phone number 2 must contain only digits white spaces and +")
+	private String phone2;
+	
+	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="Country name must contain only letters and white spaces")
+	private String country;
+	
+	@Pattern(regexp="^[^!@#$%^&*(),.?`\";:{}|<>0-9()_-]+$", message="City name must contain only letters and white spaces")
+	private String city;
+	
+	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>()_]+$", message="Address 1 must contain only letters, digits, white spaces, ., #, and -")
+	private String address1;
+	
+	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>()_]+$", message="Address 2 must contain only letters, digits, white spaces, ., #, and -")
+	private String address2;
 	
 	@EmailPattern
 	private String email;
@@ -105,5 +123,53 @@ public class UserDTO implements PojoParent{
 
 	public void setNewPassword(String newPassword) {
 		this.newPassword = newPassword;
+	}
+
+	public String getPhone1() {
+		return phone1;
+	}
+
+	public void setPhone1(String phone1) {
+		this.phone1 = phone1;
+	}
+
+	public String getPhone2() {
+		return phone2;
+	}
+
+	public void setPhone2(String phone2) {
+		this.phone2 = phone2;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getAddress1() {
+		return address1;
+	}
+
+	public void setAddress1(String address1) {
+		this.address1 = address1;
+	}
+
+	public String getAddress2() {
+		return address2;
+	}
+
+	public void setAddress2(String address2) {
+		this.address2 = address2;
 	}
 }

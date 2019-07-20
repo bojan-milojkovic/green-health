@@ -18,4 +18,6 @@ public interface UserService extends ServiceParent<UserJPA, UserDTO>{
 	
 	ResponseEntity<Resource> getProfilePictureThumb(final Long id, final String name) 
 			throws MyRestPreconditionsException;
+	
+	void setCurrentUsername(final String cun);
 }

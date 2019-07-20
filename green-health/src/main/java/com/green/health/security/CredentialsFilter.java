@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.green.health.util.RestPreconditions;
+
 @Component
 public class CredentialsFilter extends OncePerRequestFilter{
 
@@ -35,11 +37,11 @@ public class CredentialsFilter extends OncePerRequestFilter{
         	String token = request.getHeader("X-My-Security-Token");
         	String username = jwtTokenUtil.getUsernameFromToken(token);
 
-        	if (username!=null && SecurityContextHolder.getContext().getAuthentication()==null && jwtTokenUtil.validateToken(token)){
+        	if (RestPreconditions.checkString(username) && SecurityContextHolder.getContext().getAuthentication()==null && jwtTokenUtil.validateToken(token)){
         		UsernamePasswordAuthenticationToken 
         		authentication = new UsernamePasswordAuthenticationToken(
 		                				username, 
-		                				jwtTokenUtil.getPasswordFromToken(token), 
+		                				"", 
 		                				jwtTokenUtil.getAuthoritiesFromToken(token));
         		
         		SecurityContextHolder.getContext().setAuthentication(authentication);

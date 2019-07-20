@@ -50,6 +50,8 @@ public class UserTest {
 			jpa.setId((long)i);
 			jpa.setFirstName("something_"+i);
 			jpa.setRegistration(LocalDateTime.now());
+			jpa.setPhone1("+38164377124"+i);
+			jpa.setPhone2("+38164377125"+i);
 			
 			UserSecurityJPA usjpa = new UserSecurityJPA();
 			usjpa.setId((long)i);
@@ -67,6 +69,10 @@ public class UserTest {
 		postModel.setLastName("Jaja");
 		postModel.setPassword("jajaja");
 		postModel.setUsername("blanked");
+		postModel.setAddress1("add1");
+		postModel.setCity("city");
+		postModel.setCountry("country");
+		postModel.setPhone1("+381643771247");
 		
 		patchModel = new UserDTO();
 		patchModel.setEmail("ti@gmail.com");
@@ -89,7 +95,7 @@ public class UserTest {
 		assertEquals(result.size(), list.size());
 		
 		for(int i=0 ; i<result.size() ; i++){
-			assertEquals(list.get(i).getEmail(), result.get(i).getEmail());
+			assertEquals(list.get(i).getUserSecurityJpa().getUsername(), result.get(i).getUsername());
 			assertEquals(list.get(i).getId(), result.get(i).getId());
 			assertEquals(list.get(i).getFirstName(), result.get(i).getFirstName());
 		}
@@ -126,6 +132,7 @@ public class UserTest {
 		when(mockUserRepository.getOne(Mockito.anyLong())).thenReturn(list.get(0));
 
 		try {
+			mockUserServiceimpl.setCurrentUsername("username_0");
 			UserDTO result = mockUserServiceimpl.getOneById(1L);
 			
 			assertNotNull(result);
@@ -201,7 +208,7 @@ public class UserTest {
 	}
 	
 	@Test
-	public void newUserButUsernameAlreadyExistsTest(){
+	public void newUserUsernameAlreadyExistsTest(){
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(0).getUserSecurityJpa());
 		
 		try {
@@ -221,6 +228,18 @@ public class UserTest {
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Create user : Email ja@gmail.com belongs to another user.", e.getDetails());
+		}
+	}
+	
+	@Test
+	public void newUsetPhone1AlreadyExists(){
+		when(mockUserRepository.findByPhone(Mockito.anyString())).thenReturn(list.get(0));
+		
+		try {
+			mockUserServiceimpl.addNew(postModel);
+			fail("Exception expected");
+		} catch (MyRestPreconditionsException e) {
+			assertEquals("Create user : Phone number "+postModel.getPhone1()+" belongs to another user.", e.getDetails());
 		}
 	}
 	

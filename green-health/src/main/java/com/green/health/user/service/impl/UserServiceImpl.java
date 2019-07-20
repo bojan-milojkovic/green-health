@@ -2,6 +2,7 @@ package com.green.health.user.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,11 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
+import com.green.health.email.EmailUtil;
 import com.green.health.images.storage.StorageService;
 import com.green.health.security.entities.UserHasRolesJPA;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.RoleRepository;
-import com.green.health.security.repositories.UserHasRolesRepository;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
@@ -31,19 +32,25 @@ public class UserServiceImpl implements UserService {
 
 	private UserSecurityRepository userSecurityRepository;
 	
-	private UserHasRolesRepository userHasRolesRepository;
-	
 	private StorageService storageServiceImpl;
+	
+	private EmailUtil emailUtil;
+	
+	private String currentUsername;
+	
+	public void setCurrentUsername(final String cun){
+		currentUsername = cun;
+	}
 	
 	@Autowired
 	public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-			UserSecurityRepository userSecurityRepository, UserHasRolesRepository userHasRolesRepository,
-			StorageService storageServiceImpl) {
+			UserSecurityRepository userSecurityRepository,
+			StorageService storageServiceImpl, EmailUtil emailUtil) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.userSecurityRepository = userSecurityRepository;
-		this.userHasRolesRepository = userHasRolesRepository;
 		this.storageServiceImpl = storageServiceImpl;
+		this.emailUtil = emailUtil;
 	}
 
 	// get all users :
@@ -75,6 +82,18 @@ public class UserServiceImpl implements UserService {
 		if(!RestPreconditions.checkString(model.getUsername())){
 			ex.getErrors().add("username");
 		}
+		if(!RestPreconditions.checkString(model.getCity())){
+			ex.getErrors().add("City");
+		}
+		if(!RestPreconditions.checkString(model.getCountry())){
+			ex.getErrors().add("Country");
+		}
+		if(!RestPreconditions.checkString(model.getAddress1())){
+			ex.getErrors().add("Address");
+		}
+		if(!RestPreconditions.checkString(model.getPhone1())){
+			ex.getErrors().add("Pnone number 1");
+		}
 		
 		if(!ex.getErrors().isEmpty()) {
 			throw ex;
@@ -84,7 +103,14 @@ public class UserServiceImpl implements UserService {
 	public boolean isPatchDataPresent(final UserDTO model) {
 		return RestPreconditions.checkString(model.getEmail()) || 
 				RestPreconditions.checkString(model.getFirstName()) || 
-				RestPreconditions.checkString(model.getLastName());
+				RestPreconditions.checkString(model.getLastName()) ||
+				RestPreconditions.checkString(model.getCity()) ||
+				RestPreconditions.checkString(model.getCountry()) ||
+				RestPreconditions.checkString(model.getAddress1()) ||
+				RestPreconditions.checkString(model.getAddress2()) ||
+				RestPreconditions.checkString(model.getPhone1()) ||
+				RestPreconditions.checkString(model.getPhone2())
+				;
 	}
 	
 	public void saveProfilePicture(MultipartFile file, final String username) throws MyRestPreconditionsException{
@@ -130,14 +156,15 @@ public class UserServiceImpl implements UserService {
 		// check that username and email are unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
 				"Create user : Username "+ model.getUsername()+" belongs to another user.");
-		
-		// email checked in model annotation 
-		/*if(!RestPreconditions.checkStringMatches(model.getEmail(),  "^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
-			throw new MyRestPreconditionsException("Create new user failed",
-					"You must provide a valid email address.");
-		}*/
+
 		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
 				"Create user : Email " + model.getEmail() + " belongs to another user.");
+		
+		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone1()), 
+				"Create user : Phone number " + model.getPhone1() + " belongs to another user.");
+		
+		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone2()), 
+				"Create user : Phone number " + model.getPhone2() + " belongs to another user.");
 		
 		userRepository.save(convertModelToJPA(model));
 	}
@@ -151,7 +178,7 @@ public class UserServiceImpl implements UserService {
 				userSecurityRepository.findByUsername(model.getUsername()), 
 				"Edit user error", "No user exists for that username");
 		RestPreconditions.assertTrue(usJpa.getId()==id, 
-				"Edit user error", "You cannot edit someone else's user account.");
+				"Access violation", "You cannot edit someone else's user account.");
 		
 		UserJPA jpa = usJpa.getUserJpa();
 		
@@ -164,23 +191,30 @@ public class UserServiceImpl implements UserService {
 			
 			jpa.setEmail(model.getEmail());
 		}
-		// first name
-		if(RestPreconditions.checkString(model.getFirstName()) && !jpa.getFirstName().equals(model.getFirstName())) {
-			jpa.setFirstName(model.getFirstName());
-		}
-		// last name
-		if(RestPreconditions.checkString(model.getLastName()) && !jpa.getLastName().equals(model.getLastName())) {
-			jpa.setLastName(model.getLastName());
+		
+		// phone 1
+		if(RestPreconditions.checkString(model.getPhone1()) && !jpa.getEmail().equals(model.getPhone1())) {
+			// check this new phone number isn't in the db already :
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone1()), 
+					"Edit user : Phone number "+model.getPhone1()+" belongs to another user.");
+			
+			jpa.setPhone1(model.getPhone1());
 		}
 		
-		userRepository.save(jpa);
+		//phone2
+		if(RestPreconditions.checkString(model.getPhone2()) && !jpa.getEmail().equals(model.getPhone2())) {
+			// check this new phone number isn't in the db already :
+			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone2()), 
+					"Edit user : Phone number "+model.getPhone2()+" belongs to another user.");
+			
+			jpa.setPhone2(model.getPhone2());
+		}
 		
 		// update user security :
 		usJpa.setLastUpdate(LocalDateTime.now());
-		
 		userSecurityRepository.save(usJpa);
 		
-		return convertJpaToModel(jpa);
+		return convertJpaToModel(userRepository.save(convertModelToJPA(model)));
 	}
 	
 	@Override
@@ -220,28 +254,55 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserJPA convertModelToJPA(UserDTO model) {
-		UserJPA jpa = new UserJPA();
+	public UserJPA convertModelToJPA(final UserDTO model) {
+		UserJPA jpa = null;
 		
-		jpa.setEmail(model.getEmail());
-		jpa.setFirstName(model.getFirstName());
-		jpa.setLastName(model.getLastName());
-		jpa.setRegistration(LocalDateTime.now());
+		if(model.getId()==null){
+			jpa = new UserJPA();
+			jpa.setRegistration(LocalDateTime.now());
+			
+			UserSecurityJPA usJpa = new UserSecurityJPA();
+			usJpa.setActive(false);
+			usJpa.setNotLocked(true);
+			usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
+			usJpa.setUsername(model.getUsername());
+			usJpa.setUserJpa(jpa);
+			jpa.setUserSecurityJpa(usJpa);
+			
+			String key = UUID.randomUUID().toString();
+			usJpa.setHashKey(key);
+			
+			UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
+			
+			uhrJpa.setUserSecurityJpa(usJpa);
+			uhrJpa.setRoleJpa(roleRepository.getOne(1L));
+			usJpa.getUserHasRolesJpa().add(uhrJpa);
+			
+			emailUtil.confirmRegistration(key, model.getFirstName()+" "+model.getLastName(), model.getEmail());
+		} else {
+			jpa = userRepository.getOne(model.getId());
+		}
 		
-		UserSecurityJPA usJpa = new UserSecurityJPA();
-		usJpa.setActive(true);
-		usJpa.setNotLocked(true);
-		usJpa.setPassword(BCrypt.hashpw(model.getPassword(), BCrypt.gensalt()));
-		usJpa.setUsername(model.getUsername());
-		usJpa.setUserJpa(jpa);
-		jpa.setUserSecurityJpa(usJpa);
-		userSecurityRepository.save(usJpa);
+		jpa.getUserSecurityJpa().setLastUpdate(LocalDateTime.now());
 		
-		UserHasRolesJPA uhrJpa = new UserHasRolesJPA();
-		uhrJpa.setUserSecurityJpa(usJpa);
-		uhrJpa.setRoleJpa(roleRepository.getOne(1L));
-		usJpa.getUserHasRolesJpa().add(uhrJpa);
-		userHasRolesRepository.save(uhrJpa);
+		if(RestPreconditions.checkString(model.getEmail()))
+			jpa.setEmail(model.getEmail());
+		if(RestPreconditions.checkString(model.getFirstName()))
+			jpa.setFirstName(model.getFirstName());
+		if(RestPreconditions.checkString(model.getLastName()))
+			jpa.setLastName(model.getLastName());
+		if(RestPreconditions.checkString(model.getAddress1()))
+			jpa.setAddress1(model.getAddress1());
+		if(RestPreconditions.checkString(model.getAddress2()))
+			jpa.setAddress2(model.getAddress2());
+		if(RestPreconditions.checkString(model.getCity()))
+			jpa.setCity(model.getCity());
+		if(RestPreconditions.checkString(model.getCountry()))
+			jpa.setCountry(model.getCountry());
+		if(RestPreconditions.checkString(model.getPhone1()))
+			jpa.setPhone1(model.getPhone1());
+		if(RestPreconditions.checkString(model.getPhone2()))
+			jpa.setPhone2(model.getPhone2());
 		
 		return jpa;
 	}
@@ -251,10 +312,20 @@ public class UserServiceImpl implements UserService {
 		UserDTO model = new UserDTO();
 		
 		model.setId(jpa.getId());
+		model.setRegistration(jpa.getRegistration());
 		model.setUsername(jpa.getUserSecurityJpa().getUsername());
 		model.setFirstName(jpa.getFirstName());
-		model.setLastName(jpa.getLastName());
-		model.setEmail(jpa.getEmail());
+		
+		if(jpa.getUserSecurityJpa().getUsername().equals(currentUsername)){
+			model.setLastName(jpa.getLastName());
+			model.setEmail(jpa.getEmail());
+			model.setAddress1(jpa.getAddress1());
+			model.setAddress2(jpa.getAddress2());
+			model.setCity(jpa.getCity());
+			model.setCountry(jpa.getCountry());
+			model.setPhone1(jpa.getPhone1());
+			model.setPhone2(jpa.getPhone2());
+		}
 		
 		return model;
 	}

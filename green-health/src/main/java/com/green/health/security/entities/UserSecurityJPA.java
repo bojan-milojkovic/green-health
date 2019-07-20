@@ -35,6 +35,9 @@ public class UserSecurityJPA {
 	@Column(name="password")
 	private String password;
 	
+	@Column(name="hash_key")
+	private String hashKey;
+	
 	@OneToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	@MapsId
@@ -76,6 +79,14 @@ public class UserSecurityJPA {
 		this.setLastUpdate(LocalDateTime.now());
 	}
 	
+	public String getHashKey() {
+		return hashKey;
+	}
+
+	public void setHashKey(String hashKey) {
+		this.hashKey = hashKey;
+	}
+
 	public Long getId() {
 		return id;
 	}

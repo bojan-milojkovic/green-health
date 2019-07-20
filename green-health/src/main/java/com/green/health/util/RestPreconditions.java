@@ -21,7 +21,7 @@ public class RestPreconditions {
 	}
 	
 	public static boolean checkString(final String s){
-		return s!=null && !s.trim().isEmpty();
+		return !(s==null || s.trim().isEmpty());
 	}
 	
 	public static boolean checkStringMatches(final String s, final String regExp){

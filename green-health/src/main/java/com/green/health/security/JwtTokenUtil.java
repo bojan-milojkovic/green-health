@@ -29,7 +29,6 @@ public class JwtTokenUtil implements Serializable {
     private static final String CLAIM_KEY_USERNAME = "sub";
     private static final String CLAIM_KEY_CREATED = "created";
     private static final String CLAIM_KEY_AUTHORITIES = "a";
-    private static final String CLAIM_KEY_PASSWORD = "pwd";
     
     /*private static final String CLAIM_KEY_IP = "ipad";
     private static final String CLAIM_KEY_AUDIENCE = "audience";
@@ -113,16 +112,6 @@ public class JwtTokenUtil implements Serializable {
 			return false; // one is null the other is not
 		}
 		return true; // both are null
-    }
-    
-    public String refreshToken(String token) {
-        try {
-            final Claims claims = getClaimsFromToken(token);
-            claims.put(CLAIM_KEY_CREATED, new Date());
-            return generateTokenFromClaims(claims);
-        } catch (Exception e) {
-            return null;
-        }
     }*/
     
     public String refreshToken(String token) throws MyRestPreconditionsException {
@@ -167,13 +156,13 @@ public class JwtTokenUtil implements Serializable {
         }
     }
     
-    public String getPasswordFromToken(String token){
+    /*public String getPasswordFromToken(String token){
     	try {
     		return (String) (getClaimsFromToken(token).get(CLAIM_KEY_PASSWORD));
     	} catch (Exception e) {
             return null;
         }
-    }
+    }*/
 
     private Claims getClaimsFromToken(String token) {
         try {
@@ -189,7 +178,6 @@ public class JwtTokenUtil implements Serializable {
     public String generateToken(UserDetails userDetails/*, Device device, HttpServletRequest request*/) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
-        claims.put(CLAIM_KEY_PASSWORD, userDetails.getPassword());
         //claims.put(CLAIM_KEY_AUDIENCE, generateAudience(device));
         claims.put(CLAIM_KEY_CREATED, new Date());
         
@@ -286,6 +274,8 @@ public class JwtTokenUtil implements Serializable {
         try {
         	return ( // username is checked when getting user security
         			isTokenNotExpired(token)
+        			&& userSecurity.isActive()
+        			&& userSecurity.isNotLocked()
                 	&& isTokenCreatedAtLastLogin(created, convertLocalToDate(userSecurity.getLastLogin()))
                 	&& isTokenCreatedAfterLastPasswordReset(created, convertLocalToDate(userSecurity.getLastPasswordChange()))
                 	// you can also check device, and last login ip

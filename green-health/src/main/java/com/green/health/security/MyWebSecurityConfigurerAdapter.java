@@ -3,22 +3,22 @@ package com.green.health.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+//import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.green.health.security.service.BokiAuthenticationProvider;
+//import com.green.health.security.service.BokiAuthenticationProvider;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled=true)
 public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	
-	@Autowired
-	private BokiAuthenticationProvider bokiAuthenticationProvider;
+	/*@Autowired
+	private BokiAuthenticationProvider bokiAuthenticationProvider;*/
 	
 	@Autowired
 	private CredentialsFilter credentialsFilter;
@@ -68,9 +68,9 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 		http.addFilterBefore(credentialsFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 	
-	@Override
+	/*@Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.eraseCredentials(false)
 			.authenticationProvider(bokiAuthenticationProvider);
-    }
+    }*/
 }
