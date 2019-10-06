@@ -1,6 +1,9 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,15 +11,17 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import com.green.health.parents.PojoParent;
 import com.green.health.security.entities.UserSecurityJPA;
+import com.green.health.store.entities.StoreJPA;
 
 @Entity
 @Table(name = "user")
 public class UserJPA implements PojoParent {
-
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="user_id")
@@ -58,6 +63,17 @@ public class UserJPA implements PojoParent {
 	@OneToOne(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private UserSecurityJPA userSecurityJpa;
 	
+	@OneToMany(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
+	private Set<StoreJPA> storeJpa = new HashSet<StoreJPA>();
+	
+	public Set<StoreJPA> getStoreJpa() {
+		return storeJpa;
+	}
+
+	public void setStoreJpa(Set<StoreJPA> storeJpa) {
+		this.storeJpa = storeJpa;
+	}
+
 	public UserSecurityJPA getUserSecurityJpa() {
 		return userSecurityJpa;
 	}

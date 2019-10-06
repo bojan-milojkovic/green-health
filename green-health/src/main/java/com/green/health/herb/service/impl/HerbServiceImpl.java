@@ -68,20 +68,6 @@ public class HerbServiceImpl implements HerbService {
 	public void addNew(HerbDTO model) throws MyRestPreconditionsException {
 		// basic checks
 		HerbService.super.addNew(model);
-		
-		// check that herb name is unique :
-		RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByLatinName(model.getLatinName()),
-				"The herb with Latin name "+model.getLatinName()+" is already in our database.");
-		
-		if(RestPreconditions.checkLocaleIsEnglish()) {
-			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()),
-				"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
-		} else {
-			RestPreconditions.checkSuchEntityAlreadyExists(
-				// 'if' ensures that LocaleContextHolder.getLocale() is not null
-				herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
-					"The herb with local name "+model.getLocalName()+" is already in our database.");
-		}
 
 		HerbJPA jpa = herbDao.save(convertModelToJPA(model));
 		
@@ -95,27 +81,6 @@ public class HerbServiceImpl implements HerbService {
 	public HerbDTO edit(HerbDTO model, Long id) throws MyRestPreconditionsException {
 		// basic checks :
 		model = HerbService.super.edit(model, id);
-
-		// check that latin name is not taken :
-		if(RestPreconditions.checkString(model.getLatinName())) {
-			HerbJPA jpa = herbDao.getHerbByLatinName(model.getLatinName());
-			if(jpa!=null) {
-				RestPreconditions.assertTrue(jpa.getId()==id, "Herb edit error", 
-						"The latin name "+model.getLatinName()+" has already been assigned to another herb");
-			}
-		}
-		// check that new locale name is not taken:
-		if(RestPreconditions.checkString(model.getLocalName())) {
-			if(RestPreconditions.checkLocaleIsEnglish()) {
-				RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()), 
-						"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
-			} else {
-				// 'if' ensures that LocaleContextHolder.getLocale() is not null
-				RestPreconditions.checkSuchEntityAlreadyExists(
-						herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
-						"The herb with local name "+model.getLocalName()+" is already in our database.");
-			}
-		}
 
 		if(model.getImage()!=null){
 			// save image :
@@ -160,14 +125,21 @@ public class HerbServiceImpl implements HerbService {
 					"Herb edit error", "Herb with id = "+model.getId()+" does not exist in our database.");
 		}
 		if(RestPreconditions.checkString(model.getLatinName())){
+			HerbJPA pom = herbDao.getHerbByLatinName(model.getLatinName());
+			RestPreconditions.assertTrue(pom==null || pom.getId()==model.getId(), "Herb add/edit error", 
+					"The latin name "+model.getLatinName()+" has already been assigned to another herb");
 			jpa.setLatinName(model.getLatinName().toLowerCase());
 		}
 		// english
 		if(RestPreconditions.checkLocaleIsEnglish()) {
+			RestPreconditions.checkSuchEntityAlreadyExists(herbDao.getHerbByEngName(model.getLocalName()), 
+					"We assert your locale as English. The herb with eng. name "+model.getLocalName()+" is already in our database.");
 			useSettersInConvertToJPA(model, jpa);
 		} else {
-			
 			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
+			RestPreconditions.checkSuchEntityAlreadyExists(
+					herbLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
+					"The herb with local name "+model.getLocalName()+" is already in our database.");
 			HerbLocaleJPA hjpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(hjpa==null) {
 				hjpa = new HerbLocaleJPA();
@@ -263,41 +235,6 @@ public class HerbServiceImpl implements HerbService {
 	}
 
 	@Override
-	public void isPostDataPresent(HerbDTO model) throws MyRestPreconditionsException {
-		// use .checkStringMatches() here because model object is created from json in controller
-		MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this herb",
-						"The following data is missing from the herb form");
-		if(!RestPreconditions.checkStringMatches(model.getDescription(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
-			ex.getErrors().add("herb description");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
-			ex.getErrors().add("where the herb grows");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
-			ex.getErrors().add("herb's latin name");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getProperties(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
-			ex.getErrors().add("herb's use properties");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[^!@#$%^&*?`\";:{}|<>()+=-]{3,}")){
-			ex.getErrors().add("herb's local name");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
-			ex.getErrors().add("herb's use warnings");
-		}
-		if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
-			ex.getErrors().add("when to pick the herb");
-		}
-		if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([^!@#$%^&*?`\";:{}|<>()+=-]{10,})|(^$)")){ // regexp allows for ""
-			ex.getErrors().add("where to buy the herb");
-		}
-		
-		if(!ex.getErrors().isEmpty()) {
-			throw ex;
-		}
-	}
-
-	@Override
 	public boolean isPatchDataPresent(HerbDTO model) {
 		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getGrowsAt()) ||
@@ -326,5 +263,34 @@ public class HerbServiceImpl implements HerbService {
 	public ResponseEntity<Resource> getHerbImage(Long id, String name) throws MyRestPreconditionsException {
 		checkId(id, "Get herb image error");
 		return storageServiceImpl.getImage(id, name);
+	}
+
+	@Override
+	public void getPostValidationErrors(HerbDTO model, List<String> list) {
+		// use .checkStringMatches() here because model object is created from json in controller
+		if(!RestPreconditions.checkStringMatches(model.getDescription(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
+			list.add("herb description");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getGrowsAt(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
+			list.add("where the herb grows");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getLatinName(),"[A-Za-z ]{3,}")){
+			list.add("herb's latin name");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getProperties(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
+			list.add("herb's use properties");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getLocalName(),"[^!@#$%^&*?`\";:{}|<>()+=-]{3,}")){
+			list.add("herb's local name");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getWarnings(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
+			list.add("herb's use warnings");
+		}
+		if(!RestPreconditions.checkStringMatches(model.getWhenToPick(),"[^!@#$%^&*?`\";:{}|<>()+=-]{10,}")){
+			list.add("when to pick the herb");
+		}
+		if(model.getWhereToBuy()!=null && !model.getWhereToBuy().matches("([^!@#$%^&*?`\";:{}|<>()+=-]{10,})|(^$)")){ // regexp allows for ""
+			list.add("where to buy the herb");
+		}
 	}
 }

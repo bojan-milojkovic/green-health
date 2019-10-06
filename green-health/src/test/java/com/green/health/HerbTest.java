@@ -218,7 +218,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(patchModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The following data is missing from the herb form",e.getDetails());
+			assertEquals("The following request form data is missing or invalid :",e.getDetails());
 		}
 	}
 	
@@ -244,7 +244,7 @@ public class HerbTest {
 			mockHerbServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The herb with Latin name "+postModel.getLatinName()+" is already in our database.",e.getDetails());
+			assertEquals("The latin name "+postModel.getLatinName()+" has already been assigned to another herb",e.getDetails());
 		}
 	}
 	

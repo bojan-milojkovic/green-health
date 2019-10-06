@@ -69,9 +69,6 @@ public class IllnessServiceImpl implements IllnessService {
 		IllnessService.super.addNew(model);
 		
 		// check names :
-		RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
-				"Illness with Latin name "+model.getLatinName()+" is already in our database.");
-		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
 					"We assert your locale as English. The illness with eng. name "+model.getLocalName()+" is already in our database.");
@@ -90,15 +87,6 @@ public class IllnessServiceImpl implements IllnessService {
 	public IllnessDTO edit(IllnessDTO model, final Long id) throws MyRestPreconditionsException{
 		// basic checks
 		model = IllnessService.super.edit(model, id);
-		
-		// check Latin name is not already taken :
-		if(RestPreconditions.checkString(model.getLatinName())) {
-			IllnessJPA tmp = illnessDao.findByLatinName(model.getLatinName());
-			if(tmp!=null) {
-				RestPreconditions.assertTrue(tmp.getId()==id, "Illness edit error", 
-						"The Latin name '"+model.getLatinName()+"' has already been assigned to another illness.");
-			}
-		}
 		
 		// check local name is not already taken :
 		if(RestPreconditions.checkString(model.getLocalName())) {
@@ -151,6 +139,10 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		if(RestPreconditions.checkString(model.getLatinName())){
+			if(!model.getLatinName().equalsIgnoreCase(jpa.getLatinName())){
+				RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
+					"Illness with Latin name "+model.getLatinName()+" has already been assigned to another illness.");
+			}
 			jpa.setLatinName(model.getLatinName().toLowerCase());
 		}
 		
@@ -250,35 +242,6 @@ public class IllnessServiceImpl implements IllnessService {
 	}
 
 	@Override
-	public void isPostDataPresent(final IllnessDTO model) throws MyRestPreconditionsException {
-		MyRestPreconditionsException ex = new MyRestPreconditionsException("You cannot add this illness",
-				"The following data is missing from the illness form");
-		
-		if(!RestPreconditions.checkString(model.getDescription())){
-			ex.getErrors().add("illness description");
-		}
-		if(!RestPreconditions.checkString(model.getLatinName() )){
-			ex.getErrors().add("illness Latin name");			
-		}
-		if(!RestPreconditions.checkString(model.getLocalName())){
-			ex.getErrors().add("illness local name");
-		}
-		if(!RestPreconditions.checkString(model.getSymptoms())){
-			ex.getErrors().add("symptoms of the illness");
-		}
-		if(!RestPreconditions.checkString(model.getCause())){
-			ex.getErrors().add("cause of the illness");
-		}
-		if(!RestPreconditions.checkString(model.getTreatment())){
-			ex.getErrors().add("illness treatment");
-		}
-		
-		if(!ex.getErrors().isEmpty()) {
-			throw ex;
-		}
-	}
-
-	@Override
 	public boolean isPatchDataPresent(final IllnessDTO model) {
 		return RestPreconditions.checkString(model.getDescription()) ||
 				RestPreconditions.checkString(model.getLatinName()) ||
@@ -296,5 +259,27 @@ public class IllnessServiceImpl implements IllnessService {
 	@Override
 	public String getName(){
 		return "illness";
+	}
+
+	@Override
+	public void getPostValidationErrors(IllnessDTO model, List<String> list) {
+		if(!RestPreconditions.checkString(model.getDescription())){
+			list.add("illness description");
+		}
+		if(!RestPreconditions.checkString(model.getLatinName() )){
+			list.add("illness Latin name");			
+		}
+		if(!RestPreconditions.checkString(model.getLocalName())){
+			list.add("illness local name");
+		}
+		if(!RestPreconditions.checkString(model.getSymptoms())){
+			list.add("symptoms of the illness");
+		}
+		if(!RestPreconditions.checkString(model.getCause())){
+			list.add("cause of the illness");
+		}
+		if(!RestPreconditions.checkString(model.getTreatment())){
+			list.add("illness treatment");
+		}
 	}
 }

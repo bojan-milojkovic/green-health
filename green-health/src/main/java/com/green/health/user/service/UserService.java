@@ -1,9 +1,12 @@
 package com.green.health.user.service;
 
+import java.util.Set;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import com.green.health.parents.ServiceParent;
+import com.green.health.store.entities.StoreJPA;
 import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
@@ -22,4 +25,6 @@ public interface UserService extends ServiceParent<UserJPA, UserDTO>{
 	void setCurrentUsername(final String cun);
 	
 	String activateUser(final String key) throws MyRestPreconditionsException;
+	
+	Set<StoreJPA> getStoreByUser(final String username) throws MyRestPreconditionsException;
 }

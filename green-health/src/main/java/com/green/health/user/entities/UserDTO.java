@@ -1,6 +1,8 @@
 package com.green.health.user.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.green.health.annotations.EmailPattern;
 import com.green.health.parents.PojoParent;
+import com.green.health.store.entities.StoreDTO;
 
 @JsonInclude(Include.NON_NULL)
 public class UserDTO implements PojoParent{
@@ -61,6 +64,17 @@ public class UserDTO implements PojoParent{
 	@Pattern(regexp="^[^!@$%^&*()?`\";:{}|<>_]+$", message="Address 2 must contain only letters, digits, white spaces, ., #, and -")
 	private String address2;
 	
+	@JsonProperty(access = Access.READ_ONLY)
+	private List<StoreDTO> stores = new ArrayList<StoreDTO>();
+	
+	public List<StoreDTO> getStores() {
+		return stores;
+	}
+
+	public void setStores(List<StoreDTO> stores) {
+		this.stores = stores;
+	}
+
 	@EmailPattern
 	private String email;
 

@@ -1,6 +1,7 @@
 package com.green.health;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+
+import com.green.health.email.EmailUtil;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.user.dao.UserRepository;
@@ -29,6 +32,9 @@ public class UserTest {
 	
 	@Mock
 	private UserSecurityRepository mockUserSecurityRepo;
+	
+	@Mock
+	private EmailUtil mockEmailUtil;
 	
 	@InjectMocks
 	private UserServiceImpl mockUserServiceimpl;
@@ -200,7 +206,7 @@ public class UserTest {
 			mockUserServiceimpl.addNew(patchModel);
 			fail("Exception expected");
 		} catch(MyRestPreconditionsException e){
-			assertEquals("The following data is missing from your registration form", e.getDetails());
+			assertEquals("The following request form data is missing or invalid :", e.getDetails());
 		}
 	}
 	
@@ -219,24 +225,26 @@ public class UserTest {
 	@Test
 	public void newUserEmailAlreadyExists(){
 		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(list.get(0));
+		doNothing().when(mockEmailUtil).confirmRegistration(Mockito.anyString(),Mockito.anyString(),Mockito.anyString());
 		
 		try {
 			mockUserServiceimpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Create user : Email ja@gmail.com belongs to another user.", e.getDetails());
+			assertEquals("User email ja@gmail.com belongs to another user.", e.getDetails());
 		}
 	}
 	
 	@Test
 	public void newUsetPhone1AlreadyExists(){
 		when(mockUserRepository.findByPhone(Mockito.anyString())).thenReturn(list.get(0));
+		doNothing().when(mockEmailUtil).confirmRegistration(Mockito.anyString(),Mockito.anyString(),Mockito.anyString());
 		
 		try {
 			mockUserServiceimpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Create user : Phone number "+postModel.getPhone1()+" belongs to another user.", e.getDetails());
+			assertEquals("User phone number "+postModel.getPhone1()+" belongs to another user.", e.getDetails());
 		}
 	}
 	
@@ -270,6 +278,7 @@ public class UserTest {
 	@Test
 	public void editUserWithAnotherUsersEmail(){
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(1).getUserSecurityJpa());
+		when(mockUserRepository.getOne(Mockito.anyLong())).thenReturn(list.get(1));
 		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(list.get(2));
 		
 		UserDTO badPatchModel = new UserDTO();
@@ -281,7 +290,7 @@ public class UserTest {
 			mockUserServiceimpl.edit(badPatchModel, 1L);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Edit user : Email bla_2@truc.com belongs to another user.", e.getDetails());
+			assertEquals("User email bla_2@truc.com belongs to another user.", e.getDetails());
 		}
 	}
 	

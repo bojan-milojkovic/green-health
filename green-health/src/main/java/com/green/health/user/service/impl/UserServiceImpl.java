@@ -2,6 +2,7 @@ package com.green.health.user.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -16,6 +17,7 @@ import com.green.health.email.EmailUtil;
 import com.green.health.images.storage.StorageService;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
+import com.green.health.store.entities.StoreJPA;
 import com.green.health.user.dao.UserRepository;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
@@ -23,7 +25,7 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Service
 public class UserServiceImpl implements UserService {
-
+	
 	private UserRepository userRepository;
 
 	private UserSecurityRepository userSecurityRepository;
@@ -47,6 +49,13 @@ public class UserServiceImpl implements UserService {
 		this.storageServiceImpl = storageServiceImpl;
 		this.emailUtil = emailUtil;
 	}
+	
+	public Set<StoreJPA> getStoreByUser(final String username) throws MyRestPreconditionsException {
+		return RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
+				"Error while retrieving the store for the user "+username, 
+				"No such user exists in the database.")
+				.getUserJpa().getStoreJpa();
+	}
 
 	// get all users :
 	public List<UserDTO> getAll(){
@@ -66,46 +75,6 @@ public class UserServiceImpl implements UserService {
 		userSecurityRepository.save(jpa);
 		
 		return jpa.getUsername();
-	}
-	
-	public void isPostDataPresent(final UserDTO model) throws MyRestPreconditionsException {
-		MyRestPreconditionsException ex = 
-				new MyRestPreconditionsException("You cannot register",
-						"The following data is missing from your registration form");
-		if(!RestPreconditions.checkString(model.getEmail())){
-			ex.getErrors().add("email");
-		}
-		if(!RestPreconditions.checkString(model.getFirstName())){
-			ex.getErrors().add("first name");
-		}
-		if(!RestPreconditions.checkString(model.getLastName())){
-			ex.getErrors().add("last name");
-		}
-		if(!RestPreconditions.checkString(model.getPassword())){
-			ex.getErrors().add("password");
-		}
-		if(!RestPreconditions.checkString(model.getUsername())){
-			ex.getErrors().add("username");
-		}
-		if(!RestPreconditions.checkString(model.getCity())){
-			ex.getErrors().add("City");
-		}
-		if(!RestPreconditions.checkString(model.getCountry())){
-			ex.getErrors().add("Country");
-		}
-		if(!RestPreconditions.checkString(model.getPostalCode())){
-			ex.getErrors().add("postal code");
-		}
-		if(!RestPreconditions.checkString(model.getAddress1())){
-			ex.getErrors().add("Address");
-		}
-		if(!RestPreconditions.checkString(model.getPhone1())){
-			ex.getErrors().add("Pnone number 1");
-		}
-		
-		if(!ex.getErrors().isEmpty()) {
-			throw ex;
-		}
 	}
 	
 	public boolean isPatchDataPresent(final UserDTO model) {
@@ -175,15 +144,6 @@ public class UserServiceImpl implements UserService {
 		// check that username and email are unique :
 		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
 				"Create user : Username "+ model.getUsername()+" belongs to another user.");
-
-		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
-				"Create user : Email " + model.getEmail() + " belongs to another user.");
-		
-		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone1()), 
-				"Create user : Phone number " + model.getPhone1() + " belongs to another user.");
-		
-		RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone2()), 
-				"Create user : Phone number " + model.getPhone2() + " belongs to another user.");
 		
 		userRepository.save(convertModelToJPA(model));
 	}
@@ -198,36 +158,6 @@ public class UserServiceImpl implements UserService {
 				"Edit user error", "No user exists for that username");
 		RestPreconditions.assertTrue(usJpa.getId()==id, 
 				"Access violation", "You cannot edit someone else's user account.");
-		
-		UserJPA jpa = usJpa.getUserJpa();
-		
-		// email
-		if(RestPreconditions.checkString(model.getEmail()) && !jpa.getEmail().equals(model.getEmail())) {
-			
-			// check this new email isn't in the db already :
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
-					"Edit user : Email "+model.getEmail()+" belongs to another user.");
-			
-			jpa.setEmail(model.getEmail());
-		}
-		
-		// phone 1
-		if(RestPreconditions.checkString(model.getPhone1()) && !jpa.getEmail().equals(model.getPhone1())) {
-			// check this new phone number isn't in the db already :
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone1()), 
-					"Edit user : Phone number "+model.getPhone1()+" belongs to another user.");
-			
-			jpa.setPhone1(model.getPhone1());
-		}
-		
-		//phone2
-		if(RestPreconditions.checkString(model.getPhone2()) && !jpa.getEmail().equals(model.getPhone2())) {
-			// check this new phone number isn't in the db already :
-			RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone2()), 
-					"Edit user : Phone number "+model.getPhone2()+" belongs to another user.");
-			
-			jpa.setPhone2(model.getPhone2());
-		}
 		
 		// update user security :
 		usJpa.setLastUpdate(LocalDateTime.now());
@@ -273,7 +203,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserJPA convertModelToJPA(final UserDTO model) {
+	public UserJPA convertModelToJPA(final UserDTO model) throws MyRestPreconditionsException {
 		UserJPA jpa = null;
 		
 		if(model.getId()==null){
@@ -294,13 +224,19 @@ public class UserServiceImpl implements UserService {
 			
 			emailUtil.confirmRegistration(key, model.getFirstName()+" "+model.getLastName(), model.getEmail());
 		} else {
-			jpa = userRepository.getOne(model.getId());
+			jpa = RestPreconditions.checkNotNull(userRepository.getOne(model.getId()),"User edit error",
+					"User with id "+model.getId()+" does not exist in our database");
 		}
 		
 		jpa.getUserSecurityJpa().setLastUpdate(LocalDateTime.now());
 		
-		if(RestPreconditions.checkString(model.getEmail()))
+		if(RestPreconditions.checkString(model.getEmail())){
+			if(!model.getEmail().equals(jpa.getEmail())){
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
+						"User email "+model.getEmail()+" belongs to another user.");
+			}
 			jpa.setEmail(model.getEmail());
+		}
 		if(RestPreconditions.checkString(model.getFirstName()))
 			jpa.setFirstName(model.getFirstName());
 		if(RestPreconditions.checkString(model.getLastName()))
@@ -313,11 +249,21 @@ public class UserServiceImpl implements UserService {
 			jpa.setCity(model.getCity());
 		if(RestPreconditions.checkString(model.getCountry()))
 			jpa.setCountry(model.getCountry());
-		if(RestPreconditions.checkString(model.getPhone1()))
+		if(RestPreconditions.checkString(model.getPhone1())){
+			if(!(model.getPhone1().equals(jpa.getPhone1()) || model.getPhone1().equals(jpa.getPhone2()))){
+				// check this new phone number isn't in the db already :
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone1()), 
+						"User phone number "+model.getPhone1()+" belongs to another user.");
+			}
 			jpa.setPhone1(model.getPhone1());
-		if(RestPreconditions.checkString(model.getPhone2()))
+		}
+		if(RestPreconditions.checkString(model.getPhone2())){
+			if(!(model.getPhone2().equals(jpa.getPhone1()) || model.getPhone2().equals(jpa.getPhone2()))){
+				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByPhone(model.getPhone2()), 
+						"User phone number "+model.getPhone2()+" belongs to another user.");
+			}
 			jpa.setPhone2(model.getPhone2());
-		
+		}
 		return jpa;
 	}
 
@@ -359,5 +305,39 @@ public class UserServiceImpl implements UserService {
 			throws MyRestPreconditionsException {
 		checkId(id, "Get user profile picture error");
 		return storageServiceImpl.getImage(id, "profile_THUMBNAIL");
+	}
+
+	@Override
+	public void getPostValidationErrors(UserDTO model, List<String> list) {
+		if(!RestPreconditions.checkString(model.getEmail())){
+			list.add("email");
+		}
+		if(!RestPreconditions.checkString(model.getFirstName())){
+			list.add("first name");
+		}
+		if(!RestPreconditions.checkString(model.getLastName())){
+			list.add("last name");
+		}
+		if(!RestPreconditions.checkString(model.getPassword())){
+			list.add("password");
+		}
+		if(!RestPreconditions.checkString(model.getUsername())){
+			list.add("username");
+		}
+		if(!RestPreconditions.checkString(model.getCity())){
+			list.add("City");
+		}
+		if(!RestPreconditions.checkString(model.getCountry())){
+			list.add("Country");
+		}
+		if(!RestPreconditions.checkString(model.getPostalCode())){
+			list.add("postal code");
+		}
+		if(!RestPreconditions.checkString(model.getAddress1())){
+			list.add("Address");
+		}
+		if(!RestPreconditions.checkString(model.getPhone1())){
+			list.add("Pnone number 1");
+		}
 	}
 }

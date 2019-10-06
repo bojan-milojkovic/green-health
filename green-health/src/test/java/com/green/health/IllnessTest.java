@@ -187,7 +187,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(patchModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("The following data is missing from the illness form", e.getDetails());
+			assertEquals("The following request form data is missing or invalid :", e.getDetails());
 		}
 	}
 	
@@ -200,7 +200,7 @@ public class IllnessTest {
 			mockIllnessServiceImpl.addNew(postModel);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness with Latin name Some latin name is already in our database.", e.getDetails());
+			assertEquals("Illness with Latin name Some latin name has already been assigned to another illness.", e.getDetails());
 		}
 	}
 	
@@ -286,7 +286,7 @@ public class IllnessTest {
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			patchModel.setLatinName(null);
-			assertEquals("The Latin name 'Latin name 2' has already been assigned to another illness.", e.getDetails());
+			assertEquals("Illness with Latin name Latin name 2 has already been assigned to another illness.", e.getDetails());
 		}
 	}
 	

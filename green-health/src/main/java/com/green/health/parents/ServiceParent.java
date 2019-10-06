@@ -10,11 +10,21 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 
 	J convertModelToJPA(final M model) throws MyRestPreconditionsException;
 	M convertJpaToModel(final J jpa);
-	void isPostDataPresent(final M model) throws MyRestPreconditionsException;
+	void getPostValidationErrors(final M model, List<String> list);
 	boolean isPatchDataPresent(final M model);
 	public JpaRepository<J, Long> getRepository();
 	public String getName();
 	
+	default void isPostDataPresent(final M model) throws MyRestPreconditionsException{
+		MyRestPreconditionsException ex = new MyRestPreconditionsException("Failed to create a new "+getName()+" object",
+				"The following request form data is missing or invalid :");
+		
+		getPostValidationErrors(model, ex.getErrors());
+		
+		if(!ex.getErrors().isEmpty()){
+			throw ex;
+		}
+	}
 	
 	public default List<M> getAll(){
 		return getRepository().findAll().stream().map(jpa -> convertJpaToModel(jpa)).collect(Collectors.toList());
@@ -41,6 +51,7 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 		model.setId(id);
 		RestPreconditions.assertTrue(isPatchDataPresent(model), "Edit "+getName()+" error", 
 				"Your edit request is invalid - You must provide some editable data");
+		
 		return model;
 	}
 	

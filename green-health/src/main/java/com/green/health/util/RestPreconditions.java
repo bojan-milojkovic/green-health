@@ -28,6 +28,12 @@ public class RestPreconditions {
 		return checkString(s) && s.matches(regExp);
 	}
 	
+	public static <T> void checkNull(T object, String description, String details)throws MyRestPreconditionsException {
+		if(object!=null){
+			throw new MyRestPreconditionsException(description, details);
+		}
+	}
+	
 	public static <T> T checkNotNull(T object, String description, String details)throws MyRestPreconditionsException {
 		if(object!=null){
 			return object;
