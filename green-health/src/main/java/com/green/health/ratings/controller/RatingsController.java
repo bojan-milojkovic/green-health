@@ -29,17 +29,37 @@ public class RatingsController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RatingsController.class);
 
-	@RequestMapping(value = "/rating", method = RequestMethod.POST)
+	@RequestMapping(value = "/rating/link", method = RequestMethod.POST)
 	@PreAuthorize("hasRole('ROLE_HERBALIST')")
 	@ResponseStatus(HttpStatus.OK)
-	public void addNewRatings(@RequestBody @Valid RatingDTO model, Principal principal) throws MyRestPreconditionsException {
+	public void addNewRatingsLink(@RequestBody @Valid RatingDTO model, Principal principal) throws MyRestPreconditionsException {
 		logger.debug("User "+principal.getName()+" adding a new rating "+model.getNewRatings()+" for (herb,illness)=("+model.getHerbId()+","+model.getIllnessId()+")");
 		model.setUsername(principal.getName());
-		ratingsServiceImpl.addNew(model);
+		ratingsServiceImpl.addNewRatingLink(model);
 		logger.debug("User "+principal.getName()+" ratings added successfully");
 	}
 	
-	@RequestMapping(value = "/rating", method = RequestMethod.GET)
+	@RequestMapping(value = "/rating/store", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public void addNewRatingsStore(@RequestBody @Valid RatingDTO model, Principal principal) throws MyRestPreconditionsException {
+		logger.debug("User "+principal.getName()+" adding a new rating "+model.getNewRatings()+" for store id ="+model.getStoreId());
+		model.setUsername(principal.getName());
+		ratingsServiceImpl.addNewRatingStore(model);
+		logger.debug("User "+principal.getName()+" ratings added successfully");
+	}
+	
+	@RequestMapping(value = "/rating/product", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public void addNewRatingsProduct(@RequestBody @Valid RatingDTO model, Principal principal) throws MyRestPreconditionsException {
+		logger.debug("User "+principal.getName()+" adding a new rating "+model.getNewRatings()+" for product id ="+model.getProductId());
+		model.setUsername(principal.getName());
+		ratingsServiceImpl.addNewRatingProduct(model);
+		logger.debug("User "+principal.getName()+" ratings added successfully");
+	}
+	
+	@RequestMapping(value = "/rating/link", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody RatingDTO getRatingForHerbAndIllness(@RequestParam("herbId") Long herbId,

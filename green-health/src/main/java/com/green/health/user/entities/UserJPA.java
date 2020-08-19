@@ -27,6 +27,9 @@ public class UserJPA implements PojoParent {
 	@Column(name="user_id")
 	private Long id;
 	
+	@Column(name="username")
+	private String username;
+	
 	@Column(name="first_name")
 	private String firstName;
 	
@@ -60,10 +63,18 @@ public class UserJPA implements PojoParent {
 	@Column(name="address_2")
 	private String address2;
 	
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	@OneToOne(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private UserSecurityJPA userSecurityJpa;
 	
-	@OneToMany(mappedBy="userJpa", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="userJpa", orphanRemoval=true, fetch=FetchType.LAZY)
 	private Set<StoreJPA> storeJpa = new HashSet<StoreJPA>();
 	
 	public Set<StoreJPA> getStoreJpa() {

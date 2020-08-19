@@ -28,34 +28,48 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 		
 		// request handling
 		http.authorizeRequests()
-			.antMatchers(HttpMethod.GET, "/gh/users").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/users/*").hasRole("USER")
-			.antMatchers(HttpMethod.POST, "/gh/users").permitAll() // everyone should access register-api
-			.antMatchers(HttpMethod.GET, "/gh/users/prfimg/*").hasRole("USER")
-			.antMatchers(HttpMethod.POST, "/gh/users/prfimg").hasRole("USER")
-			.antMatchers(HttpMethod.PATCH, "/gh/users/*").hasRole("USER")
-			.antMatchers(HttpMethod.DELETE, "/gh/users/*").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/users").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/users/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/users").permitAll() // everyone should access register-api
+			.antMatchers(HttpMethod.GET, "/users/prfimg/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/users/prfimg").hasRole("USER")
+			.antMatchers(HttpMethod.PATCH, "/users/*").hasRole("USER")
+			.antMatchers(HttpMethod.DELETE, "/users/*").hasRole("USER")
 			
-			.antMatchers(HttpMethod.GET, "/gh/herb").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/herb/*").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/herb/thumbnail/*").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/herb/image/*").hasRole("USER")
-			.antMatchers(HttpMethod.POST, "/gh/herb").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.PATCH, "/gh/herb/*").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.POST, "/gh/herb/*").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.DELETE, "/gh/herb/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.GET, "/herb").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/herb/*").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/herb/thumbnail/*").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/herb/image/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/herb").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.PATCH, "/herb/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.POST, "/herb/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.DELETE, "/herb/*").hasRole("HERBALIST")
 			
-			.antMatchers(HttpMethod.GET, "/gh/illness").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/illness/*").hasRole("USER")
-			.antMatchers(HttpMethod.POST, "/gh/illness").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.PATCH, "/gh/illness/*").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.DELETE, "/gh/illness/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.GET, "/illness").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/illness/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/illness").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.PATCH, "/illness/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.DELETE, "/illness/*").hasRole("HERBALIST")
 			
-			.antMatchers(HttpMethod.POST, "/gh/rating").hasRole("HERBALIST")
-			.antMatchers(HttpMethod.GET, "/gh/rating").hasRole("USER")
-			.antMatchers(HttpMethod.GET, "/gh/rating/*").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/rating/link").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.POST, "/rating/store").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/rating/product").hasRole("USER")
+			.antMatchers(HttpMethod.GET, "/rating/*").hasRole("USER")
 			
-			.antMatchers(HttpMethod.POST, "/gh/roles").permitAll() // everyone should access login-api
+			.antMatchers(HttpMethod.GET, "/store/my").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.GET, "/store/*").hasRole("USER")
+			.antMatchers(HttpMethod.PUT, "/store/bypar").hasRole("USER")
+			.antMatchers(HttpMethod.POST, "/store").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.PATCH, "/store/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.DELETE, "/store/*").hasRole("HERBALIST")
+			
+			.antMatchers(HttpMethod.GET, "/store/pr/*").hasRole("USER")
+			.antMatchers(HttpMethod.PUT, "/store/pr").hasRole("USER")
+			.antMatchers(HttpMethod.DELETE, "/store/pr").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.POST, "/store/pr/*").hasRole("HERBALIST")
+			.antMatchers(HttpMethod.PATCH, "/store/pr").hasRole("HERBALIST")
+			
+			.antMatchers(HttpMethod.POST, "/roles").permitAll() // everyone should access login-api
 			;
 
 		// disable csrf

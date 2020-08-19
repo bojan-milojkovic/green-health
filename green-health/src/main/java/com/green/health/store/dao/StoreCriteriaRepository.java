@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import com.green.health.store.entities.StoreDTO;
 import com.green.health.store.entities.StoreJPA;
-import com.green.health.store.entities.metamodel.StoreJPA_;
+import com.green.health.store.entities.StoreJPA_;
 import com.green.health.util.RestPreconditions;
 
 @Repository
@@ -47,11 +47,14 @@ public class StoreCriteriaRepository {
 		if(RestPreconditions.checkString(model.getAddress2())){
 			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.address2), model.getAddress2()));
 		}
-		if(RestPreconditions.checkString(model.getPhone1())){
-			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.phone1), model.getPhone1()));
+		if(RestPreconditions.checkString(model.getPhone())){
+			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.phone), model.getPhone()));
 		}
-		if(RestPreconditions.checkString(model.getPhone2())){
-			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.phone2), model.getPhone2()));
+		if(RestPreconditions.checkString(model.getEmail())){
+			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.email), model.getEmail()));
+		}
+		if(RestPreconditions.checkString(model.getWorkHours())){
+			cPred = builder.and(cPred, builder.equal(croot.get(StoreJPA_.workHours), model.getWorkHours()));
 		}
 		
 		return entityManagerFactory.createEntityManager()

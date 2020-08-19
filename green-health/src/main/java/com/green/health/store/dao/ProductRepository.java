@@ -2,9 +2,9 @@ package com.green.health.store.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.green.health.store.entities.SpecialOfferJPA;
+import com.green.health.store.entities.ProductJPA;
 
 @Repository
-public interface SpecialOfferRepository extends JpaRepository<SpecialOfferJPA, Long>{
+public interface ProductRepository extends JpaRepository<ProductJPA, Long> {
 
 }

@@ -8,11 +8,11 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface StoreService extends ServiceParent<StoreJPA, StoreDTO>{
 
-	List<StoreDTO> getMyStore(final String username) throws MyRestPreconditionsException;
+	public List<StoreDTO> getMyStores(final String username) throws MyRestPreconditionsException;
 	
-	List<StoreDTO> getStoresByProperties(final StoreDTO model) throws MyRestPreconditionsException;
+	public List<StoreDTO> getStoresByProperties(final StoreDTO model) throws MyRestPreconditionsException;
 	
-	List<StoreDTO> getAllStores();
+	public List<StoreDTO> getAllStores() throws MyRestPreconditionsException;
 	
-	boolean checkUserOwnsTheStore(final String username, final Long id);
+	public void deleteStore(final Long id, final String username) throws MyRestPreconditionsException;
 }

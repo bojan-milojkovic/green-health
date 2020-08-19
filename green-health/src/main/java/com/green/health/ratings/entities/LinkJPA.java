@@ -15,12 +15,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import com.green.health.herb.entities.HerbJPA;
 import com.green.health.illness.entities.IllnessJPA;
-import com.green.health.parents.PojoParent;
+import com.green.health.parents.RatingsParent;
 import com.green.health.security.entities.UserSecurityJPA;
 
 @Entity
 @Table(name="herb_for_illness")
-public class LinkJPA implements PojoParent{
+public class LinkJPA implements RatingsParent{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,19 +35,19 @@ public class LinkJPA implements PojoParent{
 	private IllnessJPA illness;
 	
 	@Column(name="rating_ones")
-	private int ratingOnes;
+	private long ratingOnes;
 	
 	@Column(name="rating_twos")
-	private int ratingTwos;
+	private long ratingTwos;
 	
 	@Column(name="rating_threes")
-	private int ratingThrees;
+	private long ratingThrees;
 	
 	@Column(name="rating_fours")
-	private int ratingFours;
+	private long ratingFours;
 
 	@Column(name="rating_fives")
-	private int ratingFives;
+	private long ratingFives;
 	
 	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name="ratings",
@@ -106,50 +106,44 @@ public class LinkJPA implements PojoParent{
 	    }
 	    return false;
 	}
-	
-	public double calculateRating() {
-		int total = ratingOnes + ratingTwos + ratingThrees + ratingFours + ratingFives;
-		return (ratingOnes + 2*ratingTwos + 3*ratingThrees + 4*ratingFours + 5*ratingFives)/
-				(total!=0 ? total : 1);
-	}
 
-	public int getRatingOnes() {
+	public long getRatingOnes() {
 		return ratingOnes;
 	}
 
-	public void setRatingOnes(int ratingOnes) {
+	public void setRatingOnes(long ratingOnes) {
 		this.ratingOnes = ratingOnes;
 	}
 
-	public int getRatingTwos() {
+	public long getRatingTwos() {
 		return ratingTwos;
 	}
 
-	public void setRatingTwos(int ratingTwos) {
+	public void setRatingTwos(long ratingTwos) {
 		this.ratingTwos = ratingTwos;
 	}
 
-	public int getRatingThrees() {
+	public long getRatingThrees() {
 		return ratingThrees;
 	}
 
-	public void setRatingThrees(int ratingThrees) {
+	public void setRatingThrees(long ratingThrees) {
 		this.ratingThrees = ratingThrees;
 	}
 
-	public int getRatingFours() {
+	public long getRatingFours() {
 		return ratingFours;
 	}
 
-	public void setRatingFours(int ratingFours) {
+	public void setRatingFours(long ratingFours) {
 		this.ratingFours = ratingFours;
 	}
 
-	public int getRatingFives() {
+	public long getRatingFives() {
 		return ratingFives;
 	}
 
-	public void setRatingFives(int ratingFives) {
+	public void setRatingFives(long ratingFives) {
 		this.ratingFives = ratingFives;
 	}
 

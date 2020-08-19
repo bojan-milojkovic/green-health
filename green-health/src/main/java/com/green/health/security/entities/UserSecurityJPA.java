@@ -13,6 +13,8 @@ import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import com.green.health.ratings.entities.LinkJPA;
+import com.green.health.store.entities.ProductJPA;
+import com.green.health.store.entities.StoreJPA;
 import com.green.health.user.entities.UserJPA;
 
 @Entity
@@ -57,6 +59,12 @@ public class UserSecurityJPA {
 	
 	@ManyToMany(mappedBy="raters")
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
+	
+	@ManyToMany(mappedBy="raters")
+	private Set<StoreJPA> stores = new HashSet<StoreJPA>();
+	
+	@ManyToMany(mappedBy="raters")
+	private Set<ProductJPA> products = new HashSet<ProductJPA>();
 	
 	public LocalDateTime getLastUpdate() {
 		return lastUpdate;
@@ -167,5 +175,21 @@ public class UserSecurityJPA {
 
 	public void setUserHasRoles(String userHasRoles) {
 		this.userHasRoles = userHasRoles;
+	}
+
+	public Set<StoreJPA> getStores() {
+		return stores;
+	}
+
+	public void setStores(Set<StoreJPA> stores) {
+		this.stores = stores;
+	}
+
+	public Set<ProductJPA> getProducts() {
+		return products;
+	}
+
+	public void setProducts(Set<ProductJPA> products) {
+		this.products = products;
 	}
 }

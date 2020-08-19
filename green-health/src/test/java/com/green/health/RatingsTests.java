@@ -70,7 +70,7 @@ public class RatingsTests {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(null);
 		
 		try {
-			mockRatingsServiceImpl.addNew(model);
+			mockRatingsServiceImpl.addNewRatingLink(model);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find the user with username = "+model.getUsername(), e.getDetails());
@@ -83,7 +83,7 @@ public class RatingsTests {
 		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(null);
 		
 		try {
-			mockRatingsServiceImpl.addNew(model);
+			mockRatingsServiceImpl.addNewRatingLink(model);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
@@ -98,7 +98,7 @@ public class RatingsTests {
 		herb.setLinks(new HashSet<LinkJPA>());
 		
 		try {
-			mockRatingsServiceImpl.addNew(model);
+			mockRatingsServiceImpl.addNewRatingLink(model);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId(), e.getDetails());
@@ -113,7 +113,7 @@ public class RatingsTests {
 		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(herb);
 		
 		try {
-			mockRatingsServiceImpl.addNew(model);
+			mockRatingsServiceImpl.addNewRatingLink(model);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("The user "+model.getUsername()+" has already rated this herb-illness link", e.getDetails());
@@ -128,7 +128,7 @@ public class RatingsTests {
 		userSecurity.setLinks(new HashSet<LinkJPA>());
 		
 		try {
-			mockRatingsServiceImpl.addNew(model);
+			mockRatingsServiceImpl.addNewRatingLink(model);
 			
 			assertEquals(1, userSecurity.getLinks().size());
 		} catch (MyRestPreconditionsException e) {

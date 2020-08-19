@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
+import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.entities.HerbLocaleJPA;
 import com.green.health.herb.service.HerbService;
 import com.green.health.illness.dao.IllnessRepository;
@@ -16,6 +17,10 @@ import com.green.health.ratings.entities.RatingDTO;
 import com.green.health.ratings.service.RatingsService;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
+import com.green.health.store.dao.ProductRepository;
+import com.green.health.store.dao.StoreRepository;
+import com.green.health.store.entities.ProductJPA;
+import com.green.health.store.entities.StoreJPA;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
@@ -26,32 +31,78 @@ public class RatingsServiceImpl implements RatingsService {
 	private HerbRepository herbRepo;
 	private IllnessRepository illnessRepo;
 	private HerbService herbServiceImpl;
+	private StoreRepository storeRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
 	public RatingsServiceImpl(UserSecurityRepository userSecurityRepo, HerbRepository herbRepo,
-			IllnessRepository illnessRepo, HerbService herbServiceImpl) {
+			IllnessRepository illnessRepo, HerbService herbServiceImpl, StoreRepository storeRepository, ProductRepository productRepository) {
 		this.userSecurityRepo = userSecurityRepo;
 		this.herbRepo = herbRepo;
 		this.illnessRepo = illnessRepo;
 		this.herbServiceImpl = herbServiceImpl;
+		this.storeRepository = storeRepository;
+		this.productRepository = productRepository;
 	}
 	
 	private LinkJPA findOneByHerbAndIllness(final Long herbId, final Long illnessId) {
 		// ids are already checked.
-		if(herbRepo.getOne(herbId)==null) {
-			return null;
-		}
-		for(LinkJPA jpa : herbRepo.getOne(herbId).getLinks()){
-			if(jpa.getIllness().getId() == illnessId){
-				return jpa;
+		HerbJPA hjpa = herbRepo.getOne(herbId);
+		if(hjpa!=null){
+			for(LinkJPA jpa : hjpa.getLinks()){
+				if(jpa.getIllness().getId() == illnessId){
+					return jpa;
+				}
 			}
 		}
 		return null;
 	}
 	
+	public void addNewRatingStore(RatingDTO model) throws MyRestPreconditionsException {
+		RestPreconditions.assertTrue(model.getStoreId()!=null, "Add new store rating error!", "You need a storeId to rate a store");
+		
+		// check username (not necessary, but just in case)
+		UserSecurityJPA user = RestPreconditions.checkNotNull(userSecurityRepo.findByUsername(model.getUsername()), 
+				"Add new store rating error!", "Cannot find the user with username = "+model.getUsername());
+		
+		// find store by storeId :
+		StoreJPA sjpa = RestPreconditions.checkNotNull(storeRepository.getOne(model.getStoreId()),
+				"Add new store rating error!", "Cannot find store with id = "+model.getStoreId());
+		
+		// check that this user did not rate this link yet :
+		RestPreconditions.assertTrue(user.getStores().contains(sjpa),
+				"Add new store rating error!", "The user "+model.getUsername()+" has already rated this store");
+		
+		sjpa.addNewRating(model.getNewRatings(), user);
+		
+		// mark that user has rated this link
+		user.getStores().add(sjpa);
+		
+		userSecurityRepo.save(user);
+	}
+	
+	public void addNewRatingProduct(RatingDTO model) throws MyRestPreconditionsException {
+		RestPreconditions.assertTrue(model.getProductId()!=null, "Add new product rating error!", "You need a productId to rate a product");
+		
+		UserSecurityJPA user = RestPreconditions.checkNotNull(userSecurityRepo.findByUsername(model.getUsername()), 
+				"Add new product rating error!", "Cannot find the user with username = "+model.getUsername());
+		
+		ProductJPA pjpa = RestPreconditions.checkNotNull(productRepository.getOne(model.getProductId()),
+				"Add new product rating error!", "Cannot find product with id = "+model.getProductId());
+		
+		RestPreconditions.assertTrue(!user.getProducts().contains(pjpa),
+				"Add new product rating error!", "The user "+model.getUsername()+" has already rated this product");
+		
+		pjpa.addNewRating(model.getNewRatings(), user);
+		user.getProducts().add(pjpa);
+		
+		userSecurityRepo.save(user);
+	}
+	
 	@Override
-	public void addNew(RatingDTO model) throws MyRestPreconditionsException {
-		// model's herb/illness ids are already checked by @Valid
+	public void addNewRatingLink(RatingDTO model) throws MyRestPreconditionsException {
+		RestPreconditions.assertTrue(model.getHerbId()!=null && model.getIllnessId()!=null, 
+				"Add new herb-illness rating error!", "You need a herbId and illnessId to rate a herb-illness link");
 		
 		// check username (not necessary, but just in case)
 		UserSecurityJPA user = RestPreconditions.checkNotNull(userSecurityRepo.findByUsername(model.getUsername()), 
@@ -65,30 +116,12 @@ public class RatingsServiceImpl implements RatingsService {
 		
 		// check that this user did not rate this link yet :
 		RestPreconditions.assertTrue(!user.getLinks().contains(link), 
-				"Add new herb-illness rating error!", 
-				"The user "+model.getUsername()+" has already rated this herb-illness link");
+				"Add new herb-illness rating error!", "The user "+model.getUsername()+" has already rated this herb-illness link");
 		
-		switch(model.getNewRatings()){
-			case 1:
-				link.setRatingOnes(link.getRatingOnes()+1);
-				break;
-			case 2:
-				link.setRatingTwos(link.getRatingTwos()+1);
-				break;
-			case 3:
-				link.setRatingThrees(link.getRatingThrees()+1);
-				break;
-			case 4:
-				link.setRatingFours(link.getRatingFours()+1);
-				break;
-			default:
-				link.setRatingFives(link.getRatingFives()+1);
-				break;
-		};
+		link.addNewRating(model.getNewRatings(), user);
 		
 		// mark that user has rated this link
 		user.getLinks().add(link);
-		link.getRaters().add(user);
 		
 		userSecurityRepo.save(user);
 	}

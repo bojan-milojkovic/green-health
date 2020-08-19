@@ -192,51 +192,6 @@ public class IllnessTest {
 	}
 	
 	@Test
-	public void addIllnessLatinNameTakenTest() {
-		
-		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(list.get(0));
-		
-		try {
-			mockIllnessServiceImpl.addNew(postModel);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("Illness with Latin name Some latin name has already been assigned to another illness.", e.getDetails());
-		}
-	}
-	
-	@Test
-	public void addIllnessEngNameTakenTest() {
-		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(list.get(0));
-		
-		try {
-			mockIllnessServiceImpl.addNew(postModel);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("We assert your locale as English. The illness with eng. name "+postModel.getLocalName()+
-					" is already in our database.", e.getDetails());
-		}
-	}
-	
-	@Test
-	public void addIllnessLocalNameTakenTest(){
-		LocaleContextHolder.setLocale(Locale.FRENCH);
-		postModel.setLocalName("French name");
-		
-		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessRepo.findByEngName(Mockito.anyString())).thenReturn(null);
-		when(mockIllnessLocaleRepo.findWhereLocaleAndLocalName(Mockito.anyString(), Mockito.anyString())).thenReturn(ijpa);
-		
-		try{
-			mockIllnessServiceImpl.addNew(postModel);
-		} catch (MyRestPreconditionsException e){
-			assertEquals("The illness with local name "+postModel.getLocalName()+" is already in our database.", e.getDetails());
-		}
-		postModel.setLocalName("Some illness name");
-	}
-	
-	
-	@Test
 	public void editIllnessInvalidId() {
 		IllnessDTO badModel = new IllnessDTO();
 		
@@ -271,22 +226,6 @@ public class IllnessTest {
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("Illness with id = 1 does not exist in our database.", e.getDetails());
-		}
-	}
-	
-	@Test
-	public void tryToEditIllnessByGivingItLatinNameOfAnotherIllnessTest() {
-		when(mockIllnessRepo.getOne(Mockito.anyLong())).thenReturn(list.get(1));
-		when(mockIllnessRepo.findByLatinName(Mockito.anyString())).thenReturn(list.get(2));
-		
-		patchModel.setLatinName("Latin name 2");
-		
-		try {
-			mockIllnessServiceImpl.edit(patchModel, 1L);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			patchModel.setLatinName(null);
-			assertEquals("Illness with Latin name Latin name 2 has already been assigned to another illness.", e.getDetails());
 		}
 	}
 	

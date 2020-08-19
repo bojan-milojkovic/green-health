@@ -10,7 +10,7 @@ public class RestPreconditions {
 	
 	public static void checkSuchEntityAlreadyExists(Object entity, String message) throws MyRestPreconditionsException{
 		if(entity!=null) {
-			throw new MyRestPreconditionsException("The value you have entered is already being used by another user.", message);
+			throw new MyRestPreconditionsException("The value you are tryiong to enter is already being used", message);
 		}
 	}
 	

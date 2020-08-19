@@ -3,9 +3,9 @@ package com.green.health.util;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 import com.green.health.util.exceptions.UsernameNotFoundException;
 
-@ControllerAdvice
+@ControllerAdvice//(basePackages = "com.green.health")
 public class MyControllerAdvice {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MyControllerAdvice.class);
@@ -62,7 +62,7 @@ public class MyControllerAdvice {
 	}
 	
 	@ExceptionHandler(UsernameNotFoundException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
 	public MyBadInputResponse BadCredentials(UsernameNotFoundException ex){
 		logger.error("invalid credentials.");
@@ -80,8 +80,22 @@ public class MyControllerAdvice {
 		return bir;
 	}
 	
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	@ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+	public MyBadInputResponse databaseIntegrityViolationDuplicate(DataIntegrityViolationException ex){
+		String message = ex.getLocalizedMessage();
+		if(message.contains("constraint")){
+			message = "Database already contains an entry with that " + message.split("constraint \\[")[1].split("\\];")[0].replaceAll("_", " ");
+		}
+		MyBadInputResponse bir = new MyBadInputResponse("Database did not like one of the variables in the request body", message);
+		logger.error(bir.toString());
+		return bir;
+	}
+	
+	
 	@ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
     public MyBadInputResponse databaseIntegrityViolation(SQLIntegrityConstraintViolationException ex) {
 		MyBadInputResponse bir = new MyBadInputResponse("Database did not like one of the request values", 

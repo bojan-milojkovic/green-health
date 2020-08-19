@@ -49,6 +49,7 @@ public class UserTest {
 			UserJPA jpa = new UserJPA();
 			jpa.setEmail("bla_"+i+"@truc.com");
 			jpa.setId((long)i);
+			jpa.setUsername("username_"+i);
 			jpa.setFirstName("something_"+i);
 			jpa.setRegistration(LocalDateTime.now());
 			jpa.setPhone1("+38164377124"+i);
@@ -98,7 +99,7 @@ public class UserTest {
 		assertEquals(result.size(), list.size());
 		
 		for(int i=0 ; i<result.size() ; i++){
-			assertEquals(list.get(i).getUserSecurityJpa().getUsername(), result.get(i).getUsername());
+			assertEquals(list.get(i).getUsername(), result.get(i).getUsername());
 			assertEquals(list.get(i).getId(), result.get(i).getId());
 			assertEquals(list.get(i).getFirstName(), result.get(i).getFirstName());
 		}
@@ -106,12 +107,12 @@ public class UserTest {
 	
 	@Test
 	public void findOneByUsernameTest(){
-		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(0).getUserSecurityJpa());
+		when(mockUserRepository.findByUsername(Mockito.anyString())).thenReturn(list.get(0));
 		
 		try {
 			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail("username_0", null, null);
 			
-			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
+			assertEquals(list.get(0).getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());
 		}
@@ -124,7 +125,7 @@ public class UserTest {
 		try {
 			UserDTO result = mockUserServiceimpl.getUserByUsernameOrEmail(null, list.get(0).getEmail(), null);
 			
-			assertEquals(list.get(0).getUserSecurityJpa().getUsername(), result.getUsername());
+			assertEquals(list.get(0).getUsername(), result.getUsername());
 		} catch (MyRestPreconditionsException e) {
 			fail(e.getDescription());
 		}
@@ -211,31 +212,6 @@ public class UserTest {
 	}
 	
 	@Test
-	public void newUserUsernameAlreadyExistsTest(){
-		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(0).getUserSecurityJpa());
-		
-		try {
-			mockUserServiceimpl.addNew(postModel);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("Create user : Username blanked belongs to another user.", e.getDetails());
-		}
-	}
-	
-	@Test
-	public void newUserEmailAlreadyExists(){
-		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(list.get(0));
-		doNothing().when(mockEmailUtil).confirmRegistration(Mockito.anyString(),Mockito.anyString(),Mockito.anyString());
-		
-		try {
-			mockUserServiceimpl.addNew(postModel);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("User email ja@gmail.com belongs to another user.", e.getDetails());
-		}
-	}
-	
-	@Test
 	public void newUsetPhone1AlreadyExists(){
 		when(mockUserRepository.findByPhone(Mockito.anyString())).thenReturn(list.get(0));
 		doNothing().when(mockEmailUtil).confirmRegistration(Mockito.anyString(),Mockito.anyString(),Mockito.anyString());
@@ -274,26 +250,6 @@ public class UserTest {
 			assertEquals("Your edit request is invalid - You must provide some editable data", e.getDetails());
 		}
 	}
-	
-	@Test
-	public void editUserWithAnotherUsersEmail(){
-		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(list.get(1).getUserSecurityJpa());
-		when(mockUserRepository.getOne(Mockito.anyLong())).thenReturn(list.get(1));
-		when(mockUserRepository.findByEmail(Mockito.anyString())).thenReturn(list.get(2));
-		
-		UserDTO badPatchModel = new UserDTO();
-		badPatchModel.setUsername("username_1");
-		badPatchModel.setId(1L);
-		badPatchModel.setEmail("bla_2@truc.com");
-		
-		try {
-			mockUserServiceimpl.edit(badPatchModel, 1L);
-			fail("Exception expected");
-		} catch (MyRestPreconditionsException e) {
-			assertEquals("User email bla_2@truc.com belongs to another user.", e.getDetails());
-		}
-	}
-	
 	
 	@Test
 	public void changePasswordWithNoData(){

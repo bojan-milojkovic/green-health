@@ -69,7 +69,7 @@ public class IllnessServiceImpl implements IllnessService {
 		IllnessService.super.addNew(model);
 		
 		// check names :
-		if(RestPreconditions.checkLocaleIsEnglish()) {
+		/*if(RestPreconditions.checkLocaleIsEnglish()) {
 			RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByEngName(model.getLocalName()),
 					"We assert your locale as English. The illness with eng. name "+model.getLocalName()+" is already in our database.");
 		}else {
@@ -77,7 +77,7 @@ public class IllnessServiceImpl implements IllnessService {
 					// 'if' ensures that LocaleContextHolder.getLocale() is not null
 					illnessLocaleDao.findWhereLocaleAndLocalName(LocaleContextHolder.getLocale().toString(), model.getLocalName()),
 					"The illness with local name "+model.getLocalName()+" is already in our database.");
-		}
+		}*/
 		
 		illnessDao.save(convertModelToJPA(model));
 	}
@@ -139,17 +139,12 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		if(RestPreconditions.checkString(model.getLatinName())){
-			if(!model.getLatinName().equalsIgnoreCase(jpa.getLatinName())){
-				RestPreconditions.checkSuchEntityAlreadyExists(illnessDao.findByLatinName(model.getLatinName()),
-					"Illness with Latin name "+model.getLatinName()+" has already been assigned to another illness.");
-			}
 			jpa.setLatinName(model.getLatinName().toLowerCase());
 		}
 		
 		if(RestPreconditions.checkLocaleIsEnglish()) {
 			useSettersInConvertToJPA(model, jpa);
 		} else {
-			
 			// 'if' above ensures that LocaleContextHolder.getLocale() is not null
 			IllnessLocaleJPA ijpa = jpa.getForSpecificLocale(LocaleContextHolder.getLocale().toString());
 			if(ijpa == null) {
@@ -157,7 +152,7 @@ public class IllnessServiceImpl implements IllnessService {
 				if(jpa.getId()==null){
 					// illness needs to have id before we put IllnessLocale into its set
 					jpa = illnessDao.save(jpa);
-					//TODO: if it is a brand new herb, email admin to fill in english info
+					//TODO: if it is a brand new illness, email admin to fill in english info
 				}
 				ijpa.setLocale(LocaleContextHolder.getLocale().toString());
 				ijpa.setIllness(jpa);
@@ -191,6 +186,30 @@ public class IllnessServiceImpl implements IllnessService {
 		}
 		
 		return jpa;
+	}
+	
+	@Override
+	public IllnessDTO getMiniIllness(final Long id) throws MyRestPreconditionsException {
+		IllnessDTO pom = convertJpaToModel(
+				RestPreconditions.checkNotNull(illnessDao.getOne(id), 
+				"Find illness error", 
+				"No illness found with id = "+id));
+		
+		IllnessDTO result = new IllnessDTO();
+		result.setId(id);
+		result.setLatinName(pom.getLatinName());
+		result.setLocalName(pom.getLocalName());
+		return result;
+	}
+	
+	@Override
+	public List<IllnessDTO> getListOfMinIllnesses(final String ids) throws MyRestPreconditionsException {
+		RestPreconditions.checkStringMatches(ids, "[1-9][0-9]*([,][1-9][0-9]*)*");
+		List<IllnessDTO> result = new ArrayList<IllnessDTO>();
+		for(String id : ids.split(",")){
+			result.add(getMiniIllness(Long.parseLong(id)));
+		}
+		return result;
 	}
 	
 	private void useSettersInConvertToModel(IllnessInterface model, IllnessInterface jpa){

@@ -2,9 +2,9 @@ package com.green.health.ratings.entities;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -14,11 +14,10 @@ import com.green.health.parents.PojoParent;
 @JsonInclude(Include.NON_NULL)
 public class RatingDTO implements PojoParent{
 	
-	@JsonProperty(access = Access.WRITE_ONLY)
+	@JsonIgnore
 	private String username;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@NotNull
 	@Min(1)
 	private Long herbId;
 	
@@ -31,7 +30,6 @@ public class RatingDTO implements PojoParent{
 	private String herbLocalName;
 	
 	@JsonProperty(access = Access.READ_WRITE)
-	@NotNull
 	@Min(1)
 	private Long illnessId;
 	
@@ -50,8 +48,30 @@ public class RatingDTO implements PojoParent{
 	@JsonProperty(access = Access.READ_ONLY)
 	private double ratings;
 	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Min(1)
+	private Long storeId;
 	
+	@JsonProperty(access = Access.READ_WRITE)
+	@Min(1)
+	private Long  productId;
 	
+	public Long getStoreId() {
+		return storeId;
+	}
+
+	public void setStoreId(Long storeId) {
+		this.storeId = storeId;
+	}
+
+	public Long getProductId() {
+		return productId;
+	}
+
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+
 	public int getNewRatings() {
 		return newRatings;
 	}

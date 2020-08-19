@@ -62,11 +62,11 @@ CREATE TABLE `herb_for_illness` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `herb_id` int(11) NOT NULL,
   `illness_id` int(11) NOT NULL,
-  `rating_ones` tinyint(1) NOT NULL DEFAULT '0',
-  `rating_twos` tinyint(1) NOT NULL DEFAULT '0',
-  `rating_threes` tinyint(1) NOT NULL DEFAULT '0',
-  `rating_fours` tinyint(1) NOT NULL DEFAULT '0',
-  `rating_fives` tinyint(1) NOT NULL DEFAULT '0',
+  `rating_ones` int(11) NOT NULL DEFAULT '0',
+  `rating_twos` int(11) NOT NULL DEFAULT '0',
+  `rating_threes` int(11) NOT NULL DEFAULT '0',
+  `rating_fours` int(11) NOT NULL DEFAULT '0',
+  `rating_fives` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_herb_idx` (`herb_id`),
@@ -132,17 +132,17 @@ DROP TABLE IF EXISTS `illness`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `illness` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `latin_name` varchar(75) CHARACTER SET latin1 NOT NULL,
-  `eng_name` varchar(75) CHARACTER SET latin1 DEFAULT NULL,
+  `latin_name` varchar(75) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `eng_name` varchar(75) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` text CHARACTER SET latin1,
   `symptoms` text CHARACTER SET latin1,
   `cause` text CHARACTER SET latin1,
   `treatment` text CHARACTER SET latin1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `latin_name_UNIQUE` (`latin_name`),
-  UNIQUE KEY `srb_name_UNIQUE` (`eng_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `latin_name` (`latin_name`),
+  UNIQUE KEY `eng_name` (`eng_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -151,7 +151,7 @@ CREATE TABLE `illness` (
 
 LOCK TABLES `illness` WRITE;
 /*!40000 ALTER TABLE `illness` DISABLE KEYS */;
-INSERT INTO `illness` (`id`, `latin_name`, `eng_name`, `description`, `symptoms`, `cause`, `treatment`) VALUES (1,'Astma','Asthma','Asthma is a common long-term inflammatory disease of the airways of the lungs. It is characterized by variable and recurring symptoms, reversible airflow obstruction, and bronchospasm.','Symptoms include episodes of wheezing, coughing, chest tightness, and shortness of breath. These episodes may occur a few times a day or a few times per week. Depending on the person, they may become worse at night or with exercise.','Opstrukcija sinusa, Stres, Promaja, Depresija, Mamurluk, Dehidratacija, Istegnuce','Opustanje, Lekovi za bolove'),(2,'Cephalea','Head ache','Headache is a persistent pain anywhere in the region of the head or neck.','It occurs in migraines (sharp, or throbbing pains), tension-type headaches, and cluster headaches. Frequent headaches can affect relationships and employment. There is also an increased risk of depression in those with severe headaches.','Sinus obstruction, Stress, Draft, Depression, Hangover','Relaxation, Painkillers');
+INSERT INTO `illness` (`id`, `latin_name`, `eng_name`, `description`, `symptoms`, `cause`, `treatment`) VALUES (1,'Astma','Asthma','Asthma is a common long-term inflammatory disease of the airways of the lungs. It is characterized by variable and recurring symptoms, reversible airflow obstruction, and bronchospasm.','Symptoms include episodes of wheezing, coughing, chest tightness, and shortness of breath. These episodes may occur a few times a day or a few times per week. Depending on the person, they may become worse at night or with exercise.','Opstrukcija sinusa, Stres, Promaja, Depresija, Mamurluk, Dehidratacija, Istegnuce','Opustanje, Lekovi za bolove'),(2,'Cephalea','Head ache','Headache is a persistent pain anywhere in the region of the head or neck.','It occurs in migraines (sharp, or throbbing pains), tension-type headaches, and cluster headaches. Frequent headaches can affect relationships and employment. There is also an increased risk of depression in those with severe headaches.','Sinus obstruction, Stress, Draft, Depression, Hangover','Relaxation, Painkillers'),(3,'astmaa',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `illness` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,9 +173,9 @@ CREATE TABLE `illness_locale` (
   `treatment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `illness_id_and_locale` (`illness_id`,`locale`),
+  UNIQUE KEY `locale_and_local_name_UNIQUE` (`locale`,`local_name`),
   KEY `fk_illness_idx` (`illness_id`),
-  KEY `index1` (`illness_id`,`locale`),
-  KEY `index2` (`locale`,`local_name`),
   CONSTRAINT `fk_illness_parent` FOREIGN KEY (`illness_id`) REFERENCES `illness` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -191,6 +191,48 @@ INSERT INTO `illness_locale` (`id`, `illness_id`, `locale`, `local_name`, `descr
 UNLOCK TABLES;
 
 --
+-- Table structure for table `product`
+--
+
+DROP TABLE IF EXISTS `product`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `local_name` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `local_description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `price` double NOT NULL,
+  `currency` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expires` date DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `contains` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `treats` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `city` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rating_ones` int(11) NOT NULL DEFAULT '0',
+  `rating_twos` int(11) NOT NULL DEFAULT '0',
+  `rating_threes` int(11) NOT NULL DEFAULT '0',
+  `rating_fours` int(11) NOT NULL DEFAULT '0',
+  `rating_fives` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `product_unique_columns` (`store_id`,`contains`,`treats`),
+  KEY `city_index` (`city`),
+  CONSTRAINT `fk_product_store` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product`
+--
+
+LOCK TABLES `product` WRITE;
+/*!40000 ALTER TABLE `product` DISABLE KEYS */;
+INSERT INTO `product` (`id`, `local_name`, `local_description`, `price`, `currency`, `expires`, `store_id`, `contains`, `treats`, `city`, `rating_ones`, `rating_twos`, `rating_threes`, `rating_fours`, `rating_fives`) VALUES (32,'Moja tinktura','bilo sta',55.55,'RSD',NULL,13,'1','1,2,3','Budapest',0,0,0,0,0),(33,'Moja tinktura dva','bilo sta2',55.55,'RSD',NULL,13,'1','1,2','Budapest',0,0,0,0,0);
+/*!40000 ALTER TABLE `product` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `ratings`
 --
 
@@ -200,12 +242,21 @@ DROP TABLE IF EXISTS `ratings`;
 CREATE TABLE `ratings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `link_id` int(11) NOT NULL,
+  `link_id` int(11) DEFAULT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `fk_unique_link` (`user_id`,`link_id`),
+  UNIQUE KEY `fk_unique_store` (`user_id`,`store_id`),
+  UNIQUE KEY `fk_unique_product` (`user_id`,`product_id`),
   KEY `fk_user_idx` (`user_id`),
   KEY `fk_link_idx` (`link_id`),
+  KEY `fk_product2` (`product_id`),
+  KEY `fk_store2` (`store_id`),
   CONSTRAINT `fk_link` FOREIGN KEY (`link_id`) REFERENCES `herb_for_illness` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_product2` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_store2` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -216,8 +267,56 @@ CREATE TABLE `ratings` (
 
 LOCK TABLES `ratings` WRITE;
 /*!40000 ALTER TABLE `ratings` DISABLE KEYS */;
-INSERT INTO `ratings` (`id`, `user_id`, `link_id`) VALUES (2,5,1),(3,5,2);
+INSERT INTO `ratings` (`id`, `user_id`, `link_id`, `product_id`, `store_id`) VALUES (2,5,1,NULL,NULL),(3,5,2,NULL,NULL);
 /*!40000 ALTER TABLE `ratings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `store`
+--
+
+DROP TABLE IF EXISTS `store`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `store` (
+  `store_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `coordinates` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `website` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `added` datetime NOT NULL,
+  `phone` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `postal_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `city` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address1` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address2` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `work_hours` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `closed_until` datetime DEFAULT NULL,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rating_ones` int(11) NOT NULL DEFAULT '0',
+  `rating_twos` int(11) NOT NULL DEFAULT '0',
+  `rating_threes` int(11) NOT NULL DEFAULT '0',
+  `rating_fours` int(11) NOT NULL DEFAULT '0',
+  `rating_fives` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`store_id`),
+  UNIQUE KEY `phone_unique_index` (`phone`),
+  UNIQUE KEY `email_unique_index` (`email`),
+  KEY `store_user_fk` (`user_id`),
+  CONSTRAINT `store_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `store`
+--
+
+LOCK TABLES `store` WRITE;
+/*!40000 ALTER TABLE `store` DISABLE KEYS */;
+INSERT INTO `store` (`store_id`, `name`, `description`, `coordinates`, `website`, `user_id`, `added`, `phone`, `country`, `postal_code`, `city`, `address1`, `address2`, `email`, `work_hours`, `closed_until`, `username`, `rating_ones`, `rating_twos`, `rating_threes`, `rating_fours`, `rating_fives`) VALUES (13,'Dr. Josif Pancic','Najbolja biljna apoteka u Srbiji2',NULL,NULL,5,'2020-07-25 00:00:00','+386 64 258 96 47','Srbija','11000','Novi Beograd','Trg Nikole Tesle 22',NULL,'dr_josif_pan2cic@gmail.com','09-17#',NULL,'Lazaruss',0,0,0,0,0);
+/*!40000 ALTER TABLE `store` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -229,6 +328,7 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) CHARACTER SET latin1 NOT NULL,
   `first_name` varchar(50) CHARACTER SET latin1 NOT NULL,
   `last_name` varchar(50) CHARACTER SET latin1 NOT NULL,
   `email` varchar(100) CHARACTER SET latin1 NOT NULL,
@@ -242,7 +342,9 @@ CREATE TABLE `user` (
   `phone_2` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `id_UNIQUE` (`user_id`),
-  UNIQUE KEY `email_UNIQUE` (`email`)
+  UNIQUE KEY `email_UNIQUE` (`email`),
+  UNIQUE KEY `username_UNIQUE` (`username`),
+  CONSTRAINT `fk_us_username` FOREIGN KEY (`username`) REFERENCES `user_security` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -252,7 +354,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (`user_id`, `first_name`, `last_name`, `email`, `reg_date`, `city`, `country`, `postal_code`, `address_1`, `address_2`, `phone_1`, `phone_2`) VALUES (5,'Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20','Beograd','Srbija','11000','Ustanicka 10','3ci ulaz, drugi sprat stan broj 34','+381605178733','+381112443049'),(6,'Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50','','','11000','',NULL,'',NULL),(7,'Dusan','Kanlic','kanlic@eunet.rs','2019-07-20 11:21:37','Novi Beograd','Srbija','11000','asdfsd',NULL,'+381605643812',NULL);
+INSERT INTO `user` (`user_id`, `username`, `first_name`, `last_name`, `email`, `reg_date`, `city`, `country`, `postal_code`, `address_1`, `address_2`, `phone_1`, `phone_2`) VALUES (5,'Lazaruss','Bojan','Milojkovic','lord_lazaruss@yahoo.com','2018-07-23 19:49:20','Beograd','Srbija','11000','Ustanicka 10','3ci ulaz, drugi sprat stan broj 34','+381605178733','+381112443049'),(6,'Kale01','Davor','Milojkovic','milojkovicdavor@yahoo.com','2018-07-23 20:12:50','','','11000','',NULL,'',NULL),(7,'KanlicD','Dusan','Kanlic','kanlic@eunet.rs','2019-07-20 11:21:37','Novi Beograd','Srbija','11000','asdfsd',NULL,'+381605643812',NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -288,7 +390,7 @@ CREATE TABLE `user_security` (
 
 LOCK TABLES `user_security` WRITE;
 /*!40000 ALTER TABLE `user_security` DISABLE KEYS */;
-INSERT INTO `user_security` (`user_id`, `username`, `password`, `hash_key`, `active`, `not_locked`, `last_login`, `last_password_change`, `last_update`, `user_has_roles`) VALUES (5,'Lazaruss','$2a$10$nLmLTuMr1gRHsaaNfH8BFehEp5KpC3pyI91jLyAzKRz9MiUwTNgJ2',NULL,1,1,'2019-07-20 13:23:25','2018-07-23 19:49:20','2018-07-23 19:49:20','ROLE_USER#ROLE_HERBALIST#ROLE_ADMIN#ROLE_SUPERADMIN'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',NULL,1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50','ROLE_USER'),(7,'KanlicD','$2a$10$tpfIZUSEHDF8yShgQGXljO.HrD7YwUMJEEgnq/Z5pmasH85sRPL22',NULL,1,1,'2019-07-20 11:21:37','2019-07-20 11:21:37','2019-07-20 11:21:39','ROLE_USER');
+INSERT INTO `user_security` (`user_id`, `username`, `password`, `hash_key`, `active`, `not_locked`, `last_login`, `last_password_change`, `last_update`, `user_has_roles`) VALUES (5,'Lazaruss','$2a$10$nLmLTuMr1gRHsaaNfH8BFehEp5KpC3pyI91jLyAzKRz9MiUwTNgJ2',NULL,1,1,'2020-08-18 20:57:10','2018-07-23 19:49:20','2018-07-23 19:49:20','ROLE_USER#ROLE_HERBALIST#ROLE_ADMIN#ROLE_SUPERADMIN'),(6,'Kale01','$2a$10$ZHtFYXIvxYYGjUqsC45TQOYQpxm3JWRiMJF8uJEmgsXrN1RJpZS9q',NULL,1,1,'2018-08-18 17:03:01','2018-07-23 20:12:50','2018-07-23 20:12:50','ROLE_USER'),(7,'KanlicD','$2a$10$tpfIZUSEHDF8yShgQGXljO.HrD7YwUMJEEgnq/Z5pmasH85sRPL22',NULL,1,1,'2019-07-20 11:21:37','2019-07-20 11:21:37','2019-07-20 11:21:39','ROLE_USER');
 /*!40000 ALTER TABLE `user_security` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -301,4 +403,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-20 13:26:01
+-- Dump completed on 2020-08-19 21:53:48

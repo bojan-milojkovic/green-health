@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-
+import com.green.health.images.storage.StorageService.ImgType;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.i18n.LocaleContextHolder;
-
 import com.green.health.herb.dao.HerbLocaleRepository;
 import com.green.health.herb.dao.HerbRepository;
 import com.green.health.herb.entities.HerbDTO;
@@ -415,7 +414,7 @@ public class HerbTest {
 		doNothing().when(mockHerbDao).deleteById(isA(Long.class));
 
 		try {
-			doNothing().when(mockStorageServiceImpl).deleteImage(isA(Long.class), isA(boolean.class));
+			doNothing().when(mockStorageServiceImpl).deleteImage(isA(Long.class), isA(ImgType.class));
 			mockHerbServiceImpl.delete(1L);
 			assertTrue(true);
 		} catch (MyRestPreconditionsException e) {

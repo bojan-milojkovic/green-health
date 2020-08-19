@@ -10,6 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.io.ResourceLoader;
 import com.green.health.images.storage.impl.StorageServiceImpl;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
+import com.green.health.images.storage.StorageService.ImgType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ImageServiceTest {
@@ -23,7 +24,7 @@ public class ImageServiceTest {
 	@Test
 	public void deleteImageButDirPathInvalid(){
 		try {
-			mockStorageServiceImpl.deleteImage(-1L, true);
+			mockStorageServiceImpl.deleteImage(-1L, ImgType.profile);
 			fail("Exception expected");
 		} catch (MyRestPreconditionsException e) {
 			assertEquals("No directory exists for that id.", e.getDetails());

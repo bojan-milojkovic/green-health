@@ -15,6 +15,10 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	public JpaRepository<J, Long> getRepository();
 	public String getName();
 	
+	public default String addOrEdit(final M model){
+		return model.getId()==null ? "Add" : "Edit";
+	}
+	
 	default void isPostDataPresent(final M model) throws MyRestPreconditionsException{
 		MyRestPreconditionsException ex = new MyRestPreconditionsException("Failed to create a new "+getName()+" object",
 				"The following request form data is missing or invalid :");
@@ -58,10 +62,8 @@ public interface ServiceParent<J extends PojoParent, M extends PojoParent> {
 	public default void delete(final Long id) throws MyRestPreconditionsException {
 		checkId(id,"Delete "+getName()+" error");
 		
-		RestPreconditions.checkNotNull(getRepository().getOne(id), "Delete "+getName()+" error",
-				getName()+" with id = "+ id + " does not exist in our database.");
-		
-		getRepository().deleteById(id);
+		getRepository().delete(RestPreconditions.checkNotNull(getRepository().getOne(id), "Delete "+getName()+" error",
+				getName()+" with id = "+ id + " does not exist in our database."));
 	}
 	
 	public default void checkId(final Long id, final String title) throws MyRestPreconditionsException {

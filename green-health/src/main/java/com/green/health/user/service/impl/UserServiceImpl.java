@@ -15,6 +15,7 @@ import com.green.health.user.entities.UserDTO;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.email.EmailUtil;
 import com.green.health.images.storage.StorageService;
+import com.green.health.images.storage.StorageService.ImgType;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
 import com.green.health.store.entities.StoreJPA;
@@ -43,7 +44,8 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	public UserServiceImpl(UserRepository userRepository,
 			UserSecurityRepository userSecurityRepository,
-			StorageService storageServiceImpl, EmailUtil emailUtil) {
+			StorageService storageServiceImpl, 
+			EmailUtil emailUtil) {
 		this.userRepository = userRepository;
 		this.userSecurityRepository = userSecurityRepository;
 		this.storageServiceImpl = storageServiceImpl;
@@ -51,10 +53,10 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	public Set<StoreJPA> getStoreByUser(final String username) throws MyRestPreconditionsException {
-		return RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
+		return RestPreconditions.checkNotNull(userRepository.findByUsername(username), 
 				"Error while retrieving the store for the user "+username, 
 				"No such user exists in the database.")
-				.getUserJpa().getStoreJpa();
+				.getStoreJpa();
 	}
 
 	// get all users :
@@ -96,36 +98,32 @@ public class UserServiceImpl implements UserService {
 					RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username),
 					"Save profile picture error","The user '"+username+"' doesn't exist")
 				.getId(), 
-				true);
+				ImgType.profile);
 	}
 	
 	@Override
 	public void delete(final Long id) throws MyRestPreconditionsException {
 		UserService.super.delete(id);
-		storageServiceImpl.deleteImage(id, true);
+		storageServiceImpl.deleteImage(id, ImgType.profile);
 	}
 	
 	public UserDTO getUserByUsernameOrEmail(final String username, final String email, final String phone) throws MyRestPreconditionsException{
 		if(RestPreconditions.checkString(username)){
-			return convertJpaToModel(RestPreconditions.checkNotNull(userSecurityRepository.findByUsername(username), 
+			return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.findByUsername(username), 
 							"Finding user by parameters failed", 
-							"There is no user in our database with that username.").getUserJpa());
+							"There is no user in our database with that username."));
 		}
 		if(RestPreconditions.checkString(email)){
-			if(!email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$")){
-				throw new MyRestPreconditionsException("Finding user by parameters failed",
+			RestPreconditions.assertTrue(email.matches("^[^@]+@[^@.]+(([.][a-z]{3})|(([.][a-z]{2}){1,2}))$"), "Finding user by parameters failed",
 						"You must provide a valid email address.");
-			}
 			
 			return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.findByEmail(email), 
 					"Finding user by parameters failed", 
 					"There is no user in our database with that email."));
 		}
 		if(RestPreconditions.checkString(phone)){
-			if(!phone.matches("^[+]?[0-9 ]$")){
-				throw new MyRestPreconditionsException("Finding user by parameters failed",
-						"You must provide a valid phone number.");
-			}
+			RestPreconditions.assertTrue(phone.matches("^[+]?[0-9 ]$"),"Finding user by parameters failed",
+					"You must provide a valid phone number.");
 			
 			return convertJpaToModel(RestPreconditions.checkNotNull(userRepository.findByPhone(phone), 
 					"Finding user by parameters failed", 
@@ -140,10 +138,6 @@ public class UserServiceImpl implements UserService {
 	public void addNew(final UserDTO model) throws MyRestPreconditionsException {
 		// basic checks
 		UserService.super.addNew(model);
-		
-		// check that username and email are unique :
-		RestPreconditions.checkSuchEntityAlreadyExists(userSecurityRepository.findByUsername(model.getUsername()), 
-				"Create user : Username "+ model.getUsername()+" belongs to another user.");
 		
 		userRepository.save(convertModelToJPA(model));
 	}
@@ -166,25 +160,29 @@ public class UserServiceImpl implements UserService {
 		return convertJpaToModel(userRepository.save(convertModelToJPA(model)));
 	}
 	
-	@Override
-	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
-		{
-			MyRestPreconditionsException ex = 
+	private void changePasswordPreliminaryChecks(final UserDTO model) throws MyRestPreconditionsException {
+		MyRestPreconditionsException ex = 
 					new MyRestPreconditionsException("Change password error","request json is missing some elements.");
 	
-			checkId(model.getId(), "Change user password error");
-			
-			if(!RestPreconditions.checkString(model.getPassword())) {
-				ex.getErrors().add("Original password is mandatory");
-			}
-			if(!RestPreconditions.checkString(model.getNewPassword())) {
-				ex.getErrors().add("New password is mandatory");
-			}
-			
-			if(!ex.getErrors().isEmpty()){
-				throw ex;
-			}
+		checkId(model.getId(), "Change user password error");
+		
+		if(!RestPreconditions.checkString(model.getPassword())) {
+			ex.getErrors().add("Original password is mandatory");
 		}
+		if(!RestPreconditions.checkString(model.getNewPassword())) {
+			ex.getErrors().add("New password is mandatory");
+		}
+		
+		if(!ex.getErrors().isEmpty()){
+			throw ex;
+		}
+	}
+	
+	@Override
+	public void changePassword(UserDTO model, String username) throws MyRestPreconditionsException {
+		
+		changePasswordPreliminaryChecks(model);
+		
 		RestPreconditions.assertTrue(!model.getPassword().equals(model.getNewPassword()),
 				"Change password error","Old password and new password should be different.");
 		
@@ -208,6 +206,7 @@ public class UserServiceImpl implements UserService {
 		
 		if(model.getId()==null){
 			jpa = new UserJPA();
+			jpa.setUsername(model.getUsername());
 			jpa.setRegistration(LocalDateTime.now());
 			
 			UserSecurityJPA usJpa = new UserSecurityJPA();
@@ -230,13 +229,8 @@ public class UserServiceImpl implements UserService {
 		
 		jpa.getUserSecurityJpa().setLastUpdate(LocalDateTime.now());
 		
-		if(RestPreconditions.checkString(model.getEmail())){
-			if(!model.getEmail().equals(jpa.getEmail())){
-				RestPreconditions.checkSuchEntityAlreadyExists(userRepository.findByEmail(model.getEmail()), 
-						"User email "+model.getEmail()+" belongs to another user.");
-			}
+		if(RestPreconditions.checkString(model.getEmail()))
 			jpa.setEmail(model.getEmail());
-		}
 		if(RestPreconditions.checkString(model.getFirstName()))
 			jpa.setFirstName(model.getFirstName());
 		if(RestPreconditions.checkString(model.getLastName()))
@@ -249,6 +243,8 @@ public class UserServiceImpl implements UserService {
 			jpa.setCity(model.getCity());
 		if(RestPreconditions.checkString(model.getCountry()))
 			jpa.setCountry(model.getCountry());
+		if(RestPreconditions.checkString(model.getPostalCode()))
+			jpa.setPostalCode(model.getPostalCode());
 		if(RestPreconditions.checkString(model.getPhone1())){
 			if(!(model.getPhone1().equals(jpa.getPhone1()) || model.getPhone1().equals(jpa.getPhone2()))){
 				// check this new phone number isn't in the db already :
@@ -273,10 +269,10 @@ public class UserServiceImpl implements UserService {
 		
 		model.setId(jpa.getId());
 		model.setRegistration(jpa.getRegistration());
-		model.setUsername(jpa.getUserSecurityJpa().getUsername());
+		model.setUsername(jpa.getUsername());
 		model.setFirstName(jpa.getFirstName());
 		
-		if(jpa.getUserSecurityJpa().getUsername().equals(currentUsername)){
+		if(jpa.getUsername().equals(currentUsername)){
 			model.setLastName(jpa.getLastName());
 			model.setEmail(jpa.getEmail());
 			model.setAddress1(jpa.getAddress1());
@@ -304,7 +300,7 @@ public class UserServiceImpl implements UserService {
 	public ResponseEntity<Resource> getProfilePictureThumb(final Long id, final String name)
 			throws MyRestPreconditionsException {
 		checkId(id, "Get user profile picture error");
-		return storageServiceImpl.getImage(id, "profile_THUMBNAIL");
+		return storageServiceImpl.getImage(id, StorageService.ImgType.profile.name()+"_THUMBNAIL");
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import com.green.health.images.storage.StorageService;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
+import com.green.health.images.storage.StorageService.ImgType;
 
 @Service
 public class HerbServiceImpl implements HerbService {
@@ -73,7 +74,7 @@ public class HerbServiceImpl implements HerbService {
 		
 		if(model.getImage()!=null){
 			// save image :
-			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), false);
+			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), ImgType.herb);
 		}
 	}
 
@@ -84,7 +85,7 @@ public class HerbServiceImpl implements HerbService {
 
 		if(model.getImage()!=null){
 			// save image :
-			storageServiceImpl.saveImage(model.getImage(), model.getId(), false);
+			storageServiceImpl.saveImage(model.getImage(), model.getId(), ImgType.herb);
 		}
 		
 		return convertJpaToModel(herbDao.save(convertModelToJPA(model)));
@@ -112,6 +113,29 @@ public class HerbServiceImpl implements HerbService {
 		if(RestPreconditions.checkString(model.getWhereToBuy())){
 			jpa.setWhereToBuy(model.getWhereToBuy());
 		}
+	}
+	
+	@Override
+	public HerbDTO getMiniHerb(final Long id) throws MyRestPreconditionsException {
+		HerbDTO pom = convertJpaToModel(
+				RestPreconditions.checkNotNull(herbDao.getOne(id), 
+						"Retrieving herb by id error" ,
+						"No herb found for id = "+id));
+		HerbDTO result = new HerbDTO();
+		result.setId(id);
+		result.setLatinName(pom.getLatinName());
+		result.setLocalName(pom.getLocalName());
+		return result;
+	}
+	
+	@Override
+	public List<HerbDTO> getListOfMiniHerbs(final String ids) throws MyRestPreconditionsException {
+		RestPreconditions.checkStringMatches(ids, "([0-9]+[,])*[0-9]+");
+		List<HerbDTO> result = new ArrayList<HerbDTO>();
+		for(String id : ids.split(",")){
+			result.add(getMiniHerb(Long.parseLong(id)));
+		}
+		return result;
 	}
 
 	@Override

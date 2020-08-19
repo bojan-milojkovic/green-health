@@ -6,7 +6,11 @@ import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 public interface RatingsService {
 	
-	void addNew(RatingDTO model) throws MyRestPreconditionsException;
+	void addNewRatingLink(RatingDTO model) throws MyRestPreconditionsException;
+	
+	void addNewRatingProduct(RatingDTO model) throws MyRestPreconditionsException;
+	
+	void addNewRatingStore(RatingDTO model) throws MyRestPreconditionsException;
 	
 	RatingDTO getRatingForLink(final Long herbId, final Long illnessId) throws MyRestPreconditionsException;
 	

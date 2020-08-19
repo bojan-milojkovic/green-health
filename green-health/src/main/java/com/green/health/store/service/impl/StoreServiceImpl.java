@@ -1,90 +1,125 @@
 package com.green.health.store.service.impl;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
-import com.green.health.security.repositories.UserSecurityRepository;
+
+import com.green.health.images.storage.StorageService;
+import com.green.health.images.storage.StorageService.ImgType;
 import com.green.health.store.dao.StoreCriteriaRepository;
 import com.green.health.store.dao.StoreRepository;
-import com.green.health.store.entities.SpecialOfferDTO;
+import com.green.health.store.entities.ProductJPA;
 import com.green.health.store.entities.StoreDTO;
 import com.green.health.store.entities.StoreJPA;
-import com.green.health.store.service.SpecialOfferService;
+import com.green.health.store.service.ProductService;
 import com.green.health.store.service.StoreService;
+import com.green.health.user.dao.UserRepository;
 import com.green.health.user.entities.UserJPA;
 import com.green.health.user.service.UserService;
 import com.green.health.util.RestPreconditions;
 import com.green.health.util.exceptions.MyRestPreconditionsException;
 
 @Service
-public class StoreServiceImpl implements StoreService{
+public class StoreServiceImpl implements StoreService {
 	private StoreRepository storeRepo;
-	private SpecialOfferService specialOfferServiceImpl;
+	private ProductService productServiceImpl;
 	private UserService userServiceImpl;
-	private UserSecurityRepository userSecurityRepo;
+	private UserRepository userRepo;
 	private StoreCriteriaRepository storeCriteriaRepo;
+	private StorageService storageServiceImpl;
 	
 	private final int MAX_NUM_STORES = 3;
 	
 	@Autowired
-	public StoreServiceImpl(StoreRepository storeRepo, UserSecurityRepository userRepo, SpecialOfferService specialOfferServiceImpl, UserService userServiceImpl, StoreCriteriaRepository storeCriteriaRepo) {
+	public StoreServiceImpl(StoreRepository storeRepo, ProductService productServiceImpl, UserService userServiceImpl, UserRepository userRepo, StoreCriteriaRepository storeCriteriaRepo, StorageService storageServiceImpl) {
 		super();
 		this.storeRepo = storeRepo;
-		this.specialOfferServiceImpl = specialOfferServiceImpl;
-		this.userSecurityRepo = userRepo;
+		this.productServiceImpl = productServiceImpl;
+		this.userRepo = userRepo;
 		this.userServiceImpl = userServiceImpl;
-		this.storeCriteriaRepo = storeCriteriaRepo; 
+		this.storeCriteriaRepo = storeCriteriaRepo;
+		this.storageServiceImpl = storageServiceImpl;
 	}
 	
-	public List<StoreDTO> getMyStore(final String username) throws MyRestPreconditionsException {
+	private List<StoreDTO> convertJpaListToDtoList(Collection<StoreJPA> jpaCollection) throws MyRestPreconditionsException {
+		List<StoreDTO> result = new ArrayList<>();
+		for(StoreJPA jpa : jpaCollection){
+			result.add(completeConversion(jpa));
+		}
+		return result;
+	}
+	
+	public List<StoreDTO> getMyStores(final String username) throws MyRestPreconditionsException {
 		Set<StoreJPA> jpas = userServiceImpl.getStoreByUser(username);
 		RestPreconditions.assertTrue(!jpas.isEmpty(), "Error getting user's stores", "No stores exist for user "+username);
-		return jpas.stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
+		return convertJpaListToDtoList(jpas);
 	}
 	
 	public List<StoreDTO> getStoresByProperties(final StoreDTO model) throws MyRestPreconditionsException {
-		RestPreconditions.assertTrue(isPatchDataPresentBasic(model),"Error retreaving stores","You must provide some search criteria.");
-		return storeCriteriaRepo.getStoresByProperties(model).stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
+		RestPreconditions.assertTrue(RestPreconditions.checkString(model.getPhone()) || isPatchDataPresentBasic(model),"Error retreaving stores","You must provide some search criteria.");
+		return convertJpaListToDtoList(storeCriteriaRepo.getStoresByProperties(model));
 	}
 	
-	public List<StoreDTO> getAllStores() {
-		return storeRepo.findAll().stream().map(j -> convertJpaToModel(j)).collect(Collectors.toList());
+	public List<StoreDTO> getAllStores() throws MyRestPreconditionsException {
+		return convertJpaListToDtoList(storeRepo.findAll());
 	}
 
 	@Override
 	public void addNew(final StoreDTO model) throws MyRestPreconditionsException{
 		StoreService.super.addNew(model);
 		
-		// TODO : also add contact center phone
 		// user must exist because it passed security
-		UserJPA ujpa = userSecurityRepo.findByUsername(model.getUsername()).getUserJpa();
+		UserJPA ujpa = userRepo.findByUsername(model.getUsername());
+		
 		// check how many stores the user has :
 		RestPreconditions.assertTrue(ujpa.getStoreJpa().size()<MAX_NUM_STORES, 
 				"Adding new store error", "The user "+model.getUsername()+" already has the maximum number of stores allowed.");
 		
 		StoreJPA jpa = convertModelToJPA(model);
-		
-		ujpa.getStoreJpa().add(jpa);
 		jpa.setUserJpa(ujpa);
 		
-		storeRepo.save(jpa);
+		jpa = getRepository().save(jpa);
+		
+		if(model.getImage()!=null){
+			// save image :
+			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), ImgType.store);
+		}
 	}
 	
-	public boolean checkUserOwnsTheStore(final String username, final Long id){
+	public boolean checkUserOwnsTheStore(final String username, final String phone) throws MyRestPreconditionsException {
 		// check user is editing his store and not someone elses's :
-		return userSecurityRepo.findByUsername(username).getUserJpa().getStoreJpa().contains(new StoreJPA(id));
+		return userRepo.findByUsername(username).getStoreJpa().contains(new StoreJPA(phone));
 	}
 	
 	public StoreDTO edit(StoreDTO model, final Long id) throws MyRestPreconditionsException{
+		model = StoreService.super.edit(model, id);
+		
 		RestPreconditions.assertTrue( 
-			checkUserOwnsTheStore(model.getUsername(), id),
+			checkUserOwnsTheStore(model.getUsername(), model.getPhone()),
 			"Edit store error", "You cannot edit someone else's store");
 		
-		return convertJpaToModel(storeRepo.save(convertModelToJPA(StoreService.super.edit(model, id))));
+		StoreJPA jpa = storeRepo.save(convertModelToJPA(model)); 
+		
+		if(model.getImage()!=null){
+			// save image :
+			storageServiceImpl.saveImage(model.getImage(), jpa.getId(), ImgType.store);
+		}
+		
+		return completeConversion(jpa);
+	}
+	
+	private StoreDTO completeConversion(StoreJPA jpa) throws MyRestPreconditionsException{
+		StoreDTO model = convertJpaToModel(jpa);
+		for(ProductJPA so : jpa.getSpecialOffers()){
+			model.getSpecialOffers().add(productServiceImpl.completeConversion(so));
+		}
+		
+		return model;
 	}
 	
 	@Override
@@ -94,6 +129,7 @@ public class StoreServiceImpl implements StoreService{
 		if(model.getId()==null){
 			jpa = new StoreJPA();
 			jpa.setAdded(LocalDate.now());
+			jpa.setUsername(model.getUsername());
 		} else {
 			jpa = RestPreconditions.checkNotNull(storeRepo.getOne(model.getId()), "Store edit error", "Store with that id does not exist");
 		}
@@ -105,20 +141,10 @@ public class StoreServiceImpl implements StoreService{
 			jpa.setGoogleMapsLocation(model.getGoogleMapsLocation());
 		}
 		if(RestPreconditions.checkString(model.getName())){
-			if(!model.getName().equals(jpa.getName())){
-				RestPreconditions.checkNull(storeRepo.findByName(model.getName()), 
-						"Add/Edit store for user "+model.getUsername(), "The store with that name belongs to another user");
-			}
 			jpa.setName(model.getName());
 		}
 		if(RestPreconditions.checkString(model.getStoreWebSite())){
 			jpa.setStoreWebSite(model.getStoreWebSite());
-		}
-		if(!model.getSpecialOffers().isEmpty()){
-			for(SpecialOfferDTO so : model.getSpecialOffers()){
-				specialOfferServiceImpl.isPostDataPresent(so);
-				jpa.getSpecialOffers().add(specialOfferServiceImpl.convertModelToJPA(so));
-			}
 		}
 		if(RestPreconditions.checkString(model.getAddress1())){
 			jpa.setAddress1(model.getAddress1());
@@ -135,26 +161,25 @@ public class StoreServiceImpl implements StoreService{
 		if(RestPreconditions.checkString(model.getEmail())){
 			if(!model.getEmail().equals(jpa.getEmail())){
 				RestPreconditions.checkNull(storeRepo.findByEmail(model.getEmail()), 
-						"Add/Edit store for user "+model.getUsername(), "The store with that email belongs to another user");
+						addOrEdit(model)+" store for user "+model.getUsername(), "The store with that email belongs to another user");
 			}
 			jpa.setEmail(model.getEmail());
 		}
-		if(RestPreconditions.checkString(model.getPhone1())){
-			if(!(model.getPhone1().equals(jpa.getPhone1()) || model.getPhone1().equals(jpa.getPhone2()))){
-				RestPreconditions.checkNull(storeRepo.findByPhoneNumber(model.getPhone1()), 
-						"Add/Edit store for user "+model.getUsername(), "The store with that phone number belongs to another user");
+		if(RestPreconditions.checkString(model.getPhone())){
+			if(!model.getPhone().equals(jpa.getPhone())){
+				RestPreconditions.checkNull(storeRepo.findByPhoneNumber(model.getPhone()),
+						addOrEdit(model)+" store for user "+model.getUsername(), "The store with that phone number belongs to another user");
 			}
-			jpa.setPhone1(model.getPhone1());
-		}
-		if(RestPreconditions.checkString(model.getPhone2())){
-			if(!(model.getPhone2().equals(jpa.getPhone1()) || model.getPhone2().equals(jpa.getPhone2()))){
-				RestPreconditions.checkNull(storeRepo.findByPhoneNumber(model.getPhone2()), 
-						"Add/Edit store for user "+model.getUsername(), "The store with that phone number belongs to another user");
-			}
-			jpa.setPhone2(model.getPhone2());
+			jpa.setPhone(model.getPhone());
 		}
 		if(RestPreconditions.checkString(model.getPostalCode())){
 			jpa.setPostalCode(model.getPostalCode());
+		}
+		if(RestPreconditions.checkString(model.getWorkHours())){
+			jpa.setWorkHours(model.getWorkHours());
+		}
+		if(model.getClosedUntil()!=null){
+			jpa.setClosedUntil(model.getClosedUntil());
 		}
 		
 		return jpa;
@@ -169,19 +194,17 @@ public class StoreServiceImpl implements StoreService{
 		model.setId(model.getId());
 		model.setName(jpa.getName());
 		model.setStoreWebSite(jpa.getStoreWebSite());
-		model.setOwner(userServiceImpl.convertJpaToModel(jpa.getUserJpa()));
-		model.setUsername(jpa.getUserJpa().getUserSecurityJpa().getUsername());
+		model.setUsername(jpa.getUsername());
 		model.setAddress1(jpa.getAddress1());
 		model.setAddress2(jpa.getAddress2());
 		model.setCity(jpa.getCity());
 		model.setCountry(jpa.getCountry());
 		model.setPostalCode(jpa.getPostalCode());
 		model.setEmail(jpa.getEmail());
-		model.setPhone1(jpa.getPhone1());
-		model.setPhone2(jpa.getPhone2());
+		model.setPhone(jpa.getPhone());
 		model.setAdded(jpa.getAdded());
-		
-		jpa.getSpecialOffers().stream().forEach(so -> model.getSpecialOffers().add(specialOfferServiceImpl.convertJpaToModel(so)));
+		model.setWorkHours(jpa.getWorkHours());
+		model.setClosedUntil(jpa.getClosedUntil());
 		
 		return model;
 	}
@@ -194,10 +217,10 @@ public class StoreServiceImpl implements StoreService{
 		if(!RestPreconditions.checkString(model.getName())){
 			list.add("Store name is mandatory");
 		}
-		if(!(RestPreconditions.checkString(model.getAddress1()) && RestPreconditions.checkString(model.getAddress2()))){
-			list.add("Store address is mandatory");
+		if(!RestPreconditions.checkString(model.getAddress1())){
+			list.add("Store address1 is mandatory");
 		}
-		if(!(RestPreconditions.checkString(model.getPhone1()) && RestPreconditions.checkString(model.getPhone2()))){
+		if(!RestPreconditions.checkString(model.getPhone())){
 			list.add("Store phone number is mandatory");
 		}
 		if(!RestPreconditions.checkString(model.getCity())){
@@ -206,35 +229,64 @@ public class StoreServiceImpl implements StoreService{
 		if(!RestPreconditions.checkString(model.getCountry())){
 			list.add("Country is mandatory for store address");
 		}
-		if(RestPreconditions.checkString(model.getPostalCode())){
+		if(!RestPreconditions.checkString(model.getPostalCode())){
 			list.add("Postal code is mandatory for store address");
 		}
-		if(!RestPreconditions.checkString(model.getEmail())){
-			list.add("Store email is mandatory");
+		if(model.getClosedUntil()!=null && model.getClosedUntil().isBefore(LocalDate.now())){
+			list.add("ClosedUntil date cannot be in the past");
+		}
+		if(!RestPreconditions.checkString(model.getWorkHours())){
+			list.add("Store work hours are mandatory");
+		} else if(!checkWorkHours(model.getWorkHours())){
+			list.add("Work hours are in an invalid format");
 		}
 	}
 	
+	private boolean checkWorkHours(String wh){
+		for(String part : wh.split("#")){
+			if(!part.isEmpty()){
+				String[] numbers = part.split("-");
+				if(!(Integer.valueOf(numbers[0])<25 && Integer.valueOf(numbers[1])<25 && Integer.valueOf(numbers[0])<Integer.valueOf(numbers[1]))){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	private boolean isPatchDataPresentBasic(final StoreDTO model){
-		return RestPreconditions.checkString(model.getName()) ||
+		return  RestPreconditions.checkString(model.getName()) ||
 		RestPreconditions.checkString(model.getAddress1()) ||
 		RestPreconditions.checkString(model.getAddress2()) ||
-		RestPreconditions.checkString(model.getPhone1()) ||
-		RestPreconditions.checkString(model.getPhone2()) ||
 		RestPreconditions.checkString(model.getCity()) ||
 		RestPreconditions.checkString(model.getCountry()) ||
 		RestPreconditions.checkString(model.getPostalCode()) ||
-		RestPreconditions.checkString(model.getEmail()) 
+		RestPreconditions.checkString(model.getEmail()) ||
+		(RestPreconditions.checkString(model.getWorkHours()) && checkWorkHours(model.getWorkHours()))
 		;
 	}
 
 	@Override
 	public boolean isPatchDataPresent(final StoreDTO model) {
-		return isPatchDataPresentBasic(model) ||
+		return RestPreconditions.checkString(model.getPhone()) && (isPatchDataPresentBasic(model) ||
 				RestPreconditions.checkString(model.getGoogleMapsLocation()) ||
 				RestPreconditions.checkString(model.getStoreWebSite()) ||
+				(model.getClosedUntil()!=null && model.getClosedUntil().isAfter(LocalDate.now())) ||
 				RestPreconditions.checkString(model.getDescription())
-				;
+				);
 				//TODO ratings
+	}
+	
+	@Override
+	public void deleteStore(final Long id, final String username) throws MyRestPreconditionsException {
+		checkId(id,"Delete "+getName()+" error");
+		
+		StoreJPA jpa = RestPreconditions.checkNotNull(getRepository().getOne(id), "Delete store error",
+				"Store with id = "+ id + " does not exist in our database.");
+		
+		RestPreconditions.assertTrue(jpa.getUsername().equals(username), "Delete store error", "User "+username+" does not own this store.");
+		
+		getRepository().delete(jpa);
 	}
 
 	@Override
@@ -246,6 +298,4 @@ public class StoreServiceImpl implements StoreService{
 	public String getName() {
 		return "Store";
 	}
-
-	
 }
