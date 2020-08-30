@@ -14,6 +14,22 @@ import com.green.health.parents.PojoParent;
 @JsonInclude(Include.NON_NULL)
 public class RatingDTO implements PojoParent{
 	
+	public RatingDTO(){}
+	
+	private RatingDTO(Long sid, Long pid, double ratings){
+		this.ratings = ratings;
+		this.storeId = sid;
+		this.productId = pid;
+	}
+	
+	public static RatingDTO buildStoreRating(Long sid, double ratings){
+		return new RatingDTO(sid, null, ratings);
+	}
+	
+	public static RatingDTO buildProductRating(Long pid, double ratings){
+		return new RatingDTO(null, pid, ratings);
+	}
+	
 	@JsonIgnore
 	private String username;
 	

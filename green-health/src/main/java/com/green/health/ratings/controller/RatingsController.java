@@ -62,8 +62,8 @@ public class RatingsController {
 	@RequestMapping(value = "/rating/link", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody RatingDTO getRatingForHerbAndIllness(@RequestParam("herbId") Long herbId,
-												@RequestParam("illnessId") Long illnessId, Principal principal) throws MyRestPreconditionsException{
+	public @ResponseBody RatingDTO getRatingForHerbAndIllness(@RequestParam(name="herbId", required=true) Long herbId,
+												@RequestParam(name="illnessId", required=true) Long illnessId, Principal principal) throws MyRestPreconditionsException{
 		logger.debug("User "+principal.getName()+" getting ratings for link (herb,illness)=("+herbId+","+illnessId+")");
 		return ratingsServiceImpl.getRatingForLink(herbId, illnessId);
 	}
@@ -71,7 +71,7 @@ public class RatingsController {
 	@RequestMapping(value = "/rating/herb", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody List<RatingDTO> getRatingsForHerb(@RequestParam("id") Long id, Principal principal) throws MyRestPreconditionsException{
+	public @ResponseBody List<RatingDTO> getRatingsForHerb(@RequestParam(name="id", required=true) Long id, Principal principal) throws MyRestPreconditionsException{
 		logger.debug("User "+principal.getName()+" getting ratings for link where herbId = "+id);
 		return ratingsServiceImpl.getRatingsForHerbOrIllness(id, true);
 	}
@@ -79,8 +79,24 @@ public class RatingsController {
 	@RequestMapping(value = "/rating/illness", method = RequestMethod.GET)
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody List<RatingDTO> getRatingsForIllness(@RequestParam("id") Long id, Principal principal) throws MyRestPreconditionsException{
+	public @ResponseBody List<RatingDTO> getRatingsForIllness(@RequestParam(name="id", required=true) Long id, Principal principal) throws MyRestPreconditionsException{
 		logger.debug("User "+principal.getName()+" getting ratings for link where herbId = "+id);
 		return ratingsServiceImpl.getRatingsForHerbOrIllness(id, false);
+	}
+	
+	@RequestMapping(value = "/rating/store", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public RatingDTO getRatingForStore(@RequestParam(name="sid", required=true) Long sid, Principal principal) throws MyRestPreconditionsException{
+		logger.debug("User "+principal.getName()+" getting ratings for store where store Id = "+sid);
+		return ratingsServiceImpl.getRatingForStore(sid);
+	}
+	
+	@RequestMapping(value = "/rating/product", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@ResponseStatus(HttpStatus.OK)
+	public RatingDTO getRatingForProduct(@RequestParam(name="pid", required=true) Long pid, Principal principal) throws MyRestPreconditionsException{
+		logger.debug("User "+principal.getName()+" getting ratings for product where product Id = "+pid);
+		return ratingsServiceImpl.getRatingForProduct(pid);
 	}
 }

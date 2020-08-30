@@ -45,7 +45,7 @@ public class IllnessJPA implements PojoParent, IllnessInterface {
 		illnessLocales = new HashSet<IllnessLocaleJPA>();
 	}
 
-	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	@OneToMany(mappedBy="illness", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)

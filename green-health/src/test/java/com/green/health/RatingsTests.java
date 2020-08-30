@@ -22,6 +22,7 @@ import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessJPA;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.ratings.entities.RatingDTO;
+import com.green.health.ratings.repository.RatingsRepository;
 import com.green.health.ratings.service.impl.RatingsServiceImpl;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
@@ -38,6 +39,8 @@ public class RatingsTests {
 	private IllnessRepository mockIllnessRepo;
 	@Mock
 	private HerbService mockHerbServiceImpl;
+	@Mock
+	private RatingsRepository mockRatingsRepo;
 	
 	@InjectMocks
 	private RatingsServiceImpl mockRatingsServiceImpl;
@@ -46,6 +49,7 @@ public class RatingsTests {
 	private static UserSecurityJPA userSecurity;
 	private static HerbJPA herb;
 	private static IllnessJPA illness;
+	private static LinkJPA link;
 	
 	@BeforeClass
 	public static void init() {
@@ -62,7 +66,9 @@ public class RatingsTests {
 		illness.getLinks().add(new LinkJPA(herb,illness));
 		
 		userSecurity = new UserSecurityJPA();
-		userSecurity.getLinks().add(new LinkJPA(herb,illness));
+		
+		link = new LinkJPA(herb,illness);
+		userSecurity.getLinks().add(link);
 	}
 	
 	@Test
@@ -110,7 +116,7 @@ public class RatingsTests {
 	@Test
 	public void addNewRatingUserAlreadyRatedTest() {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(userSecurity);
-		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(herb);
+		when(mockRatingsRepo.findByHerbAndIllness(Mockito.anyLong(), Mockito.anyLong())).thenReturn(link);
 		
 		try {
 			mockRatingsServiceImpl.addNewRatingLink(model);
@@ -123,7 +129,7 @@ public class RatingsTests {
 	@Test
 	public void addNewRatingValidTest() {
 		when(mockUserSecurityRepo.findByUsername(Mockito.anyString())).thenReturn(userSecurity);
-		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(herb);
+		when(mockRatingsRepo.findByHerbAndIllness(Mockito.anyLong(), Mockito.anyLong())).thenReturn(link);
 		
 		userSecurity.setLinks(new HashSet<LinkJPA>());
 		
@@ -186,7 +192,7 @@ public class RatingsTests {
 	
 	@Test
 	public void getOneRatingValidTest() {
-		when(mockHerbRepo.getOne(Mockito.anyLong())).thenReturn(herb);
+		when(mockRatingsRepo.findByHerbAndIllness(Mockito.anyLong(), Mockito.anyLong())).thenReturn(link);
 		
 		try {
 			RatingDTO result = mockRatingsServiceImpl.getRatingForLink(2L, 2L);

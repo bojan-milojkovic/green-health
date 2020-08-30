@@ -51,7 +51,7 @@ public class HerbJPA implements PojoParent, HerbInterface{
 		herbLocales = new HashSet<HerbLocaleJPA>();
 	}
 
-	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)
 	private Set<LinkJPA> links = new HashSet<LinkJPA>();
 	
 	@OneToMany(mappedBy="herb", cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY)

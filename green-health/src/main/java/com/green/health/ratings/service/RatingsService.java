@@ -15,4 +15,8 @@ public interface RatingsService {
 	RatingDTO getRatingForLink(final Long herbId, final Long illnessId) throws MyRestPreconditionsException;
 	
 	List<RatingDTO> getRatingsForHerbOrIllness(final Long id, final boolean ih) throws MyRestPreconditionsException;
+	
+	RatingDTO getRatingForStore(final Long sid) throws MyRestPreconditionsException;
+	
+	RatingDTO getRatingForProduct(final Long pid) throws MyRestPreconditionsException;
 }

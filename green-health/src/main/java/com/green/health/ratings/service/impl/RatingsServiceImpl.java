@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import com.green.health.herb.dao.HerbRepository;
-import com.green.health.herb.entities.HerbJPA;
 import com.green.health.herb.entities.HerbLocaleJPA;
 import com.green.health.herb.service.HerbService;
 import com.green.health.illness.dao.IllnessRepository;
 import com.green.health.illness.entities.IllnessLocaleJPA;
 import com.green.health.ratings.entities.LinkJPA;
 import com.green.health.ratings.entities.RatingDTO;
+import com.green.health.ratings.repository.RatingsRepository;
 import com.green.health.ratings.service.RatingsService;
 import com.green.health.security.entities.UserSecurityJPA;
 import com.green.health.security.repositories.UserSecurityRepository;
@@ -33,29 +33,18 @@ public class RatingsServiceImpl implements RatingsService {
 	private HerbService herbServiceImpl;
 	private StoreRepository storeRepository;
 	private ProductRepository productRepository;
+	private RatingsRepository ratingsRepository;
 
 	@Autowired
-	public RatingsServiceImpl(UserSecurityRepository userSecurityRepo, HerbRepository herbRepo,
-			IllnessRepository illnessRepo, HerbService herbServiceImpl, StoreRepository storeRepository, ProductRepository productRepository) {
+	public RatingsServiceImpl(UserSecurityRepository userSecurityRepo, HerbRepository herbRepo, IllnessRepository illnessRepo,
+			 HerbService herbServiceImpl, StoreRepository storeRepository, ProductRepository productRepository, RatingsRepository ratingsRepository) {
 		this.userSecurityRepo = userSecurityRepo;
 		this.herbRepo = herbRepo;
 		this.illnessRepo = illnessRepo;
 		this.herbServiceImpl = herbServiceImpl;
 		this.storeRepository = storeRepository;
 		this.productRepository = productRepository;
-	}
-	
-	private LinkJPA findOneByHerbAndIllness(final Long herbId, final Long illnessId) {
-		// ids are already checked.
-		HerbJPA hjpa = herbRepo.getOne(herbId);
-		if(hjpa!=null){
-			for(LinkJPA jpa : hjpa.getLinks()){
-				if(jpa.getIllness().getId() == illnessId){
-					return jpa;
-				}
-			}
-		}
-		return null;
+		this.ratingsRepository = ratingsRepository;
 	}
 	
 	public void addNewRatingStore(RatingDTO model) throws MyRestPreconditionsException {
@@ -110,7 +99,7 @@ public class RatingsServiceImpl implements RatingsService {
 		
 		// get the link :
 		LinkJPA link = RestPreconditions.checkNotNull(
-				findOneByHerbAndIllness(model.getHerbId(), model.getIllnessId()),
+				ratingsRepository.findByHerbAndIllness(model.getHerbId(), model.getIllnessId()),
 				"Add new herb-illness rating error!",
 				"Cannot find link with herbId="+model.getHerbId()+" and illnessId="+ model.getIllnessId());
 		
@@ -161,7 +150,7 @@ public class RatingsServiceImpl implements RatingsService {
 		herbServiceImpl.checkId(herbId, "Get ratings for link - herbId invalid");
 		herbServiceImpl.checkId(illnessId, "Get ratings for link - illnessId invalid");
 		
-		LinkJPA jpa = RestPreconditions.checkNotNull(findOneByHerbAndIllness(herbId, illnessId),
+		LinkJPA jpa = RestPreconditions.checkNotNull(ratingsRepository.findByHerbAndIllness(herbId, illnessId),
 				"Retreaving ratings for herb-illness link failed !",
 				"Cannot find link with herbId="+herbId+" and illnessId="+illnessId);
 			
@@ -190,5 +179,24 @@ public class RatingsServiceImpl implements RatingsService {
 				.map(i -> convertJpaToModel(i))
 				.collect(Collectors.toList());
 		
+	}
+
+	@Override
+	public RatingDTO getRatingForStore(Long sid) throws MyRestPreconditionsException {
+		return RatingDTO.buildStoreRating(sid, getRatingFor(sid, true));
+	}
+
+	@Override
+	public RatingDTO getRatingForProduct(Long pid) throws MyRestPreconditionsException {
+		return RatingDTO.buildProductRating(pid, getRatingFor(pid, false));
+	}
+	
+	private double getRatingFor(Long id, boolean type) throws MyRestPreconditionsException {
+		String stype = type ? "store" : "product";
+		
+		herbServiceImpl.checkId(id, "Get ratings for "+stype+" error");
+		
+		return RestPreconditions.checkNotNull((type ? storeRepository : productRepository).getOne(id),
+				"Get ratings for "+stype+" error", "Cannot find "+stype+" with id = "+id).calculateRating();
 	}
 }
